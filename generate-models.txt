@@ -1,0 +1,29 @@
+npx sequelize-cli model:generate --name User --attributes email:string,password_hash:string,name:string,avatar:string,is_email_verified:boolean,auth_provider:enum:{email,google},auth_provider_id:string,role:enum:{student,teacher,admin},created_at:date,updated_at:date,last_login:date
+npx sequelize-cli model:generate --name Skill --attributes name:string,description:text,created_at:date,updated_at:date
+npx sequelize-cli model:generate --name StudyMusic --attributes title:string,duration:integer,file_url:string,created_at:date,updated_at:date
+npx sequelize-cli model:generate --name Vocabulary --attributes word:string,image_url:string,pronunciation:string,speech_audio_url:string,meaning:text,example:text,context:string,status:enum:{pending,approved,rejected},created_at:date,updated_at:date
+npx sequelize-cli model:generate --name Exam --attributes title:string,description:text,difficulty_level:enum:{easy,medium,hard},estimated_time:integer,is_published:boolean,created_at:date,updated_at:date
+
+npx sequelize-cli model:generate --name UserProfile --attributes user_id:integer,target_score:integer,study_time_preference:integer,level:enum:{beginner,intermediate,advanced},created_at:date,updated_at:date
+npx sequelize-cli model:generate --name UserSetting --attributes user_id:integer,pomodoro_work_time:integer,pomodoro_break_time:integer,ui_theme:enum:{light,dark,system},study_music_id:integer,notification_settings:json,created_at:date,updated_at:date
+npx sequelize-cli model:generate --name Part --attributes exam_id:integer,part_number:integer,title:string,description:text,instruction:text,time_limit:integer,created_at:date,updated_at:date
+npx sequelize-cli model:generate --name Flashcard --attributes user_id:integer,vocabulary_id:integer,mastery_level:integer,next_review_date:date,review_count:integer,created_at:date,updated_at:date
+npx sequelize-cli model:generate --name RealtimeNotification --attributes user_id:string,title:string,content:text,is_read:boolean,notification_type:enum:{reminder,achievement,system,feedback},action_url:string,created_at:date
+npx sequelize-cli model:generate --name RealtimeStudySession --attributes user_id:string,start_time:date,is_active:boolean,activity_type:enum:{exam,flashcard,listening,reading,writing,speaking,break,idle},pomodoro_status:enum:{working,break,paused},time_remaining:integer,last_activity:date
+npx sequelize-cli model:generate --name UserProgress --attributes user_id:string,listening_score:integer,reading_score:integer,speaking_score:integer,writing_score:integer,total_study_time:integer,last_activity_date:date,updated_at:date
+npx sequelize-cli model:generate --name ApiUsage --attributes user_id:string,request_count:integer,date:date,created_at:date,updated_at:date
+
+npx sequelize-cli model:generate --name Question --attributes part_id:integer,question_number:integer,content:text,question_type:enum:{multiple_choice,fill_in_blank,matching,speaking,writing},image_url:string,created_at:date,updated_at:date
+npx sequelize-cli model:generate --name AudioFile --attributes part_id:integer,file_path:string,duration:integer,transcript:text,created_at:date
+npx sequelize-cli model:generate --name SpeakingWritingPrompt --attributes topic:string,skill_id:integer,description:text,difficulty_level:enum:{easy,medium,hard},created_at:date
+npx sequelize-cli model:generate --name UserExamAttempt --attributes user_id:integer,exam_id:integer,start_time:date,end_time:date,score:integer,status:enum:{in_progress,completed,abandoned},created_at:date
+npx sequelize-cli model:generate --name StudySession --attributes user_id:integer,start_time:date,end_time:date,duration:integer,activity_type:enum:{exam,flashcard,listening,reading,speaking,writing},activity_id:integer,created_at:date
+npx sequelize-cli model:generate --name UserSkill --attributes user_id:integer,skill_id:integer,type:enum:{strong,weak}
+
+npx sequelize-cli model:generate --name Answer --attributes question_id:integer,content:text,is_correct:boolean,explanation:text,created_at:date
+npx sequelize-cli model:generate --name Translation --attributes content_type:enum:{question,answer,instruction,transcript},content_id:integer,english_text:text,vietnamese_text:text,created_at:date,updated_at:date
+npx sequelize-cli model:generate --name UserAnswer --attributes user_exam_attempt_id:integer,question_id:integer,answer_id:integer,user_text_answer:text,is_correct:boolean,time_spent:integer,created_at:date
+npx sequelize-cli model:generate --name AiFeedback --attributes content_type:enum:{voice_recording,writing_submission,exam_attempt},content_id:integer,feedback_text:text,suggestions:text,strengths:text,weaknesses:text,created_at:date
+npx sequelize-cli model:generate --name SpeakingWritingSubmission --attributes user_id:integer,prompt_id:integer,content:text,file_path:string,duration:integer,ai_feedback_id:integer,created_at:date,updated_at:date
+npx sequelize-cli model:generate --name AiGeneratedContent --attributes content_type:enum:{question,part,exam,vocabulary},content_id:string,generated_text:text,prompt_used:text,created_at:date
+npx sequelize-cli model:generate --name Leaderboard --attributes user_id:integer,score:integer,period_type:enum:{weekly,monthly,all_time},period_start_date:date,rank:integer,updated_at:date

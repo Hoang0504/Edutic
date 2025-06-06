@@ -73,6 +73,8 @@ module.exports = (sequelize, DataTypes) => {
       created_at: DataTypes.DATE,
       updated_at: DataTypes.DATE,
       last_login: DataTypes.DATE,
+      verification_token: DataTypes.STRING,
+      verification_token_expires: DataTypes.DATE,
     },
     {
       sequelize,

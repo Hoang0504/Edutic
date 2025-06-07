@@ -16,20 +16,33 @@ if (config.use_env_variable) {
   sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
 
+console.log('Loading models from:', __dirname);
+
 fs
   .readdirSync(__dirname)
   .filter(file => {
-    return (
+    console.log('Checking file:', file);
+    const isValid = (
       file.indexOf('.') !== 0 &&
       file !== basename &&
       file.slice(-3) === '.js' &&
       file.indexOf('.test.js') === -1
     );
+    console.log('File valid:', isValid);
+    return isValid;
   })
   .forEach(file => {
-    const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
-    db[model.name] = model;
+    console.log('Loading model from file:', file);
+    try {
+      const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
+      console.log('Model loaded:', model.name);
+      db[model.name] = model;
+    } catch (error) {
+      console.error('Error loading model from', file, ':', error);
+    }
   });
+
+console.log('Loaded models:', Object.keys(db));
 
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {

@@ -1,8 +1,17 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import db from '@/models';
 import { serialize } from 'cookie';
+import { Sequelize } from '@/lib/db';
+import { UserModel } from '@/models/user';
+// const { Sequelize, DataTypes } = require('sequelize');
+
+// // Load models directly
+// const config = require('@/config/config.json')['development'];
+// const sequelize = new Sequelize(config.database, config.username, config.password, config);
+
+// // Load User model directly
+// const UserModel = require('@/models/user.js')(sequelize, DataTypes);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -16,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    const user = await (db as any).User.findOne({
+    const user = await UserModel.findOne({
       where: { email }
     });
 
@@ -25,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (!user.is_email_verified) {
-      return res.status(401).json({ message: 'Please verify your email first' });
+      return res.status(401).json({ message: 'Please verify your email before logging in' });
     }
 
     const isValidPassword = await bcrypt.compare(password, user.password_hash);

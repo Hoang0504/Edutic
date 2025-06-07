@@ -1,5 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import db from '@/models';
+import { Sequelize } from '@/lib/db';
+import { UserModel } from '@/models/user';
+const { Sequelize, DataTypes, Op } = require('sequelize');
+
+const config = require('@/config/config.json')['development'];
+const sequelize = new Sequelize(config.database, config.username, config.password, config);
+
+// // Load User model directly
+// const UserModel = require('@/models/user.js')(sequelize, DataTypes);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -14,12 +22,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Find user with matching token
-    const user = await (db as any).User.findOne({
+    const user = await UserModel.findOne({
       where: {
         verification_token: token,
         is_email_verified: false,
         verification_token_expires: {
-          [(db as any).Sequelize.Op.gt]: new Date() // Token not expired
+          [Op.gt]: new Date() // Token not expired
         }
       }
     });
@@ -27,7 +35,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!user) {
       return res.status(400).json({ message: 'Invalid or expired verification token' });
     }
-
 
     await user.update({
       is_email_verified: true,

@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Jun 06, 2025 at 12:27 PM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- Máy chủ: localhost:3306
+-- Thời gian đã tạo: Th6 07, 2025 lúc 01:40 PM
+-- Phiên bản máy phục vụ: 8.4.3
+-- Phiên bản PHP: 8.3.16
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -401,12 +401,16 @@ CREATE TABLE `users` (
   `auth_provider` enum('email','google') DEFAULT NULL,
   `auth_provider_id` varchar(255) DEFAULT NULL,
   `role` enum('student','teacher','admin') DEFAULT NULL,
+  `verification_token` varchar(255) NOT NULL,
+  `verification_token_expires` date NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   `last_login` datetime DEFAULT NULL,
   `verification_token` varchar(255) NOT NULL,
   `verification_token_expires` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `uuid` char(36) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -614,7 +618,8 @@ ALTER TABLE `userprogresses`
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `idx_users_uuid` (`uuid`);
 
 --
 -- Indexes for table `usersettings`

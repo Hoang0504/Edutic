@@ -1,9 +1,9 @@
-import type { Metadata } from 'next';
-import './globals.css';
+// src/app/layout.tsx
+import "./globals.css";
 
-export const metadata: Metadata = {
-  title: 'Edutic - TOEIC Learning Platform',
-  description: 'Learn TOEIC effectively with AI-powered features',
+export const metadata = {
+  title: "My TOEIC App",
+  description: "Luyện thi TOEIC hiệu quả",
 };
 
 export default function RootLayout({
@@ -12,10 +12,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
-        {children}
-      </body>
+    <html lang="vi">
+      <body className="bg-white text-gray-900">{children}</body>
     </html>
   );
 }

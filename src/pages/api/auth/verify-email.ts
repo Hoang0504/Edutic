@@ -1,13 +1,7 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { Sequelize } from '@/lib/db';
-import { UserModel } from '@/models/user';
-const { Sequelize, DataTypes, Op } = require('sequelize');
-
-const config = require('@/config/config.json')['development'];
-const sequelize = new Sequelize(config.database, config.username, config.password, config);
-
-// // Load User model directly
-// const UserModel = require('@/models/user.js')(sequelize, DataTypes);
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { Op } from 'sequelize';
+import { User } from '@/models/User';
+import { sequelize } from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -15,6 +9,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    // Ensure database connection
+    await sequelize.authenticate();
+
     const { token } = req.body;
 
     if (!token) {
@@ -22,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Find user with matching token
-    const user = await UserModel.findOne({
+    const user = await User.findOne({
       where: {
         verification_token: token,
         is_email_verified: false,
@@ -38,8 +35,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     await user.update({
       is_email_verified: true,
-      verification_token: null,
-      verification_token_expires: null
+      verification_token: undefined,
+      verification_token_expires: undefined
     });
 
     return res.status(200).json({ message: 'Email verified successfully' });

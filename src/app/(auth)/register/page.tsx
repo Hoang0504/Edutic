@@ -59,6 +59,14 @@ export default function RegisterPage() {
             hour: "2-digit",
             minute: "2-digit",
           }),
+          email_type: "registration",
+          subject: "Welcome to Edutic - Verify Your Account",
+          greeting: `Welcome to Edutic, ${name}!`,
+          main_message: "Thank you for creating an account with Edutic. To complete your registration and start your TOEIC learning journey, please verify your email address.",
+          action_text: "verify your account",
+          code_label: "Your verification code is:",
+          footer_message: "If you didn't create an account with Edutic, please ignore this email.",
+          additional_info: "This code will expire in 1 hour for security reasons."
         },
         process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
       );

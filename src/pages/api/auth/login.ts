@@ -1,17 +1,10 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiRequest, NextApiResponse } from 'next';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { serialize } from 'cookie';
-import { Sequelize } from '@/lib/db';
-import { UserModel } from '@/models/user';
-// const { Sequelize, DataTypes } = require('sequelize');
+import { User } from '@/models/User';
+import { sequelize } from '@/lib/db';
 
-// // Load models directly
-// const config = require('@/config/config.json')['development'];
-// const sequelize = new Sequelize(config.database, config.username, config.password, config);
-
-// // Load User model directly
-// const UserModel = require('@/models/user.js')(sequelize, DataTypes);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -19,13 +12,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    // Ensure database connection
+    await sequelize.authenticate();
+
     const { email, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    const user = await UserModel.findOne({
+    const user = await User.findOne({
       where: { email }
     });
 
@@ -49,7 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const token = jwt.sign(
       { 
         userId: user.id,
-        role: user.role 
+        role: user.role
       },
       process.env.JWT_SECRET!,
       { expiresIn: '7d' }

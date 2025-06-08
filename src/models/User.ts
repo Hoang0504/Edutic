@@ -41,7 +41,7 @@ export class User extends Model<User> {
   verification_token!: string;
 
   @Column(DataType.DATE)
-  verification_token_expires!: string;
+  verification_token_expires!: Date;
 
   @Column(DataType.DATE)
   created_at!: Date;
@@ -51,6 +51,9 @@ export class User extends Model<User> {
 
   @Column(DataType.DATE)
   last_login!: Date;
+  
+  @Column({ type: DataType.ENUM("user", "admin"), defaultValue: "user" })
+  role!: string;
 
   // @HasOne(() => UserProfile)
   // profile!: UserProfile;

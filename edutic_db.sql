@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: localhost:3306
--- Thời gian đã tạo: Th6 04, 2025 lúc 01:03 PM
+-- Thời gian đã tạo: Th6 07, 2025 lúc 01:40 PM
 -- Phiên bản máy phục vụ: 8.4.3
 -- Phiên bản PHP: 8.3.16
 
@@ -401,9 +401,12 @@ CREATE TABLE `users` (
   `auth_provider` enum('email','google') DEFAULT NULL,
   `auth_provider_id` varchar(255) DEFAULT NULL,
   `role` enum('student','teacher','admin') DEFAULT NULL,
+  `verification_token` varchar(255) NOT NULL,
+  `verification_token_expires` date NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
-  `last_login` datetime DEFAULT NULL
+  `last_login` datetime DEFAULT NULL,
+  `uuid` char(36) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -612,7 +615,8 @@ ALTER TABLE `userprogresses`
 -- Chỉ mục cho bảng `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `idx_users_uuid` (`uuid`);
 
 --
 -- Chỉ mục cho bảng `usersettings`

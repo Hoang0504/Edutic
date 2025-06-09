@@ -1,19 +1,28 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import AuthCard from '@/components/auth/AuthCard';
 import AuthInput from '@/components/auth/AuthInput';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+
+  useEffect(() => {
+    const message = searchParams?.get('message');
+    if (message) {
+      setSuccessMessage(message);
+    }
+  }, [searchParams]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -31,6 +40,7 @@ export default function LoginPage() {
 
     setIsLoading(true);
     setErrors({});
+    setSuccessMessage('');
 
     try {
       
@@ -46,13 +56,10 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        if (data.message === 'Please verify your email before logging in') {
-          setErrors({ submit: data.message + ' Check your email for verification code.' });
-        } else {
-          setErrors({ submit: data.message || 'Login failed' });
-        }
+        setErrors({ submit: data.message || 'Login failed' });
         return;
       }
+      
       router.push('/');
 
     } catch (error) {
@@ -73,6 +80,12 @@ export default function LoginPage() {
       title="Sign in to your account"
     >
       <form className="space-y-6" onSubmit={handleSubmit}>
+        {successMessage && (
+          <div className="text-green-600 text-sm bg-green-50 border border-green-200 rounded-md px-3 py-2">
+            {successMessage}
+          </div>
+        )}
+
         <AuthInput
           id="email"
           name="email"

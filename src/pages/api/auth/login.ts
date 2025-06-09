@@ -29,17 +29,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    if (!user.is_email_verified) {
-      return res.status(401).json({ message: 'Please verify your email before logging in' });
-    }
-
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
     if (!isValidPassword) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     await user.update({
-      last_login: new Date()
+      last_login: new Date(),
+      updated_at: new Date()
     });
 
     const token = jwt.sign(
@@ -66,7 +63,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role
+        role: user.role,
+        is_email_verified: user.is_email_verified
       }
     });
 

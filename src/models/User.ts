@@ -37,12 +37,6 @@ export class User extends Model<User> {
   @Column(DataType.STRING)
   auth_provider_id!: string;
 
-  @Column(DataType.STRING)
-  verification_token!: string;
-
-  @Column(DataType.DATE)
-  verification_token_expires!: Date;
-
   @Column(DataType.DATE)
   created_at!: Date;
 

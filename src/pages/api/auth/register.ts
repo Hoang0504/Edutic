@@ -25,15 +25,9 @@ export default async function handler(
     if (existingUser) {
       return res.status(400).json({ message: "Email already registered" });
     }
+    
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Generate verification token
-    const verificationToken = Math.floor(
-      100000 + Math.random() * 900000
-    ).toString();
-    const verificationTokenExpires = new Date();
-    verificationTokenExpires.setHours(verificationTokenExpires.getHours() + 24); // Token expires in 24 hours
 
     const user = await User.create({
       email,
@@ -41,13 +35,12 @@ export default async function handler(
       name,
       is_email_verified: false,
       auth_provider: "email",
-      verification_token: verificationToken,
-      verification_token_expires: verificationTokenExpires,
       role: "user",
+      created_at: new Date(),
+      updated_at: new Date(),
     } as any);
 
     console.log("User created successfully:", user.id);
-    console.log("Verification token:", verificationToken);
 
     return res.status(201).json({
       message: "Registration successful",
@@ -55,7 +48,6 @@ export default async function handler(
       email: user.email,
       name: user.name,
       role: user.role,
-      verificationToken: verificationToken,
     });
   } catch (error) {
     console.error("Registration error:", error);

@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import bcrypt from 'bcryptjs';
-import { Op } from 'sequelize';
 import { User } from '@/models/User';
 import { sequelize } from '@/lib/db';
 
@@ -16,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { action } = req.body;
 
     if (action === 'request') {
-      // Handle reset password request - send token via email
+      // Handle reset password request - generate token for frontend
       const { email } = req.body;
 
       if (!email) {
@@ -32,25 +31,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       }
 
-      // Generate reset token
+      // Generate reset token for frontend to use
       const resetToken = Math.floor(100000 + Math.random() * 900000).toString();
-      const resetTokenExpires = new Date();
-      resetTokenExpires.setHours(resetTokenExpires.getHours() + 24); // Token expires in 24 hours (same as register)
-
-      // Update user with reset token
-      await user.update({
-        verification_token: resetToken,
-        verification_token_expires: resetTokenExpires
-      });
 
       console.log('Reset token generated for user:', user.id);
       console.log('Reset token:', resetToken);
-      console.log('Token expires at:', resetTokenExpires);
-      
-      // Verify token was saved by re-fetching user
-      const updatedUser = await User.findOne({ where: { email } });
-      console.log('Verification: saved token in DB:', updatedUser?.verification_token);
-      console.log('Verification: saved expiry in DB:', updatedUser?.verification_token_expires);
 
       // Return success with token for client-side email sending
       return res.status(200).json({
@@ -61,14 +46,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
     } else if (action === 'reset') {
-      // Handle password reset with token
-      const { email, token, newPassword } = req.body;
+      // Handle password reset - just update password
+      const { email, newPassword } = req.body;
 
-      console.log('Reset password request received:', { email, token: token ? 'TOKEN_PROVIDED' : 'NO_TOKEN', newPassword: newPassword ? 'PASSWORD_PROVIDED' : 'NO_PASSWORD' });
+      console.log('Reset password request received:', { email, newPassword: newPassword ? 'PASSWORD_PROVIDED' : 'NO_PASSWORD' });
 
-      if (!email || !token || !newPassword) {
-        console.log('Missing required fields:', { email: !!email, token: !!token, newPassword: !!newPassword });
-        return res.status(400).json({ message: 'Email, token, and new password are required' });
+      if (!email || !newPassword) {
+        console.log('Missing required fields:', { email: !!email, newPassword: !!newPassword });
+        return res.status(400).json({ message: 'Email and new password are required' });
       }
 
       if (newPassword.length < 6) {
@@ -76,34 +61,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ message: 'Password must be at least 6 characters' });
       }
 
-      console.log('Looking for user with email:', email, 'and token:', token);
+      console.log('Looking for user with email:', email);
 
-      // Find user with matching email and valid token
+      // Find user with email
       const user = await User.findOne({
         where: {
-          email: email,
-          verification_token: token,
-          verification_token_expires: {
-            [Op.gt]: new Date() // Token not expired
-          }
+          email: email
         }
       });
 
       console.log('Database query result:', user ? 'USER_FOUND' : 'USER_NOT_FOUND');
 
       if (!user) {
-        console.log('User not found with provided token and email or token expired');
-        // Let's also check if user exists with different conditions
-        const userWithEmail = await User.findOne({ where: { email } });
-        if (userWithEmail) {
-          console.log('User exists but token mismatch. User token:', userWithEmail.verification_token, 'Provided token:', token);
-          console.log('Token expires at:', userWithEmail.verification_token_expires, 'Current time:', new Date());
-          console.log('Is token expired?', userWithEmail.verification_token_expires < new Date());
-          console.log('Token comparison:', userWithEmail.verification_token === token);
-        } else {
-          console.log('User with email not found at all');
-        }
-        return res.status(400).json({ message: 'Invalid or expired reset token' });
+        console.log('User not found with provided email');
+        return res.status(400).json({ message: 'User not found' });
       }
 
       console.log('User found, proceeding with password reset for user ID:', user.id);
@@ -112,11 +83,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-      // Update user password and clear reset token
+      // Update user password
       await user.update({
         password_hash: hashedPassword,
-        verification_token: undefined,
-        verification_token_expires: undefined
+        updated_at: new Date()
       });
 
       console.log('Password reset successfully for user:', user.id);

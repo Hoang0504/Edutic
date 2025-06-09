@@ -17,6 +17,10 @@ export default function RegisterPage() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [step, setStep] = useState<'register' | 'verify'>('register');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [generatedCode, setGeneratedCode] = useState('');
+  const [codeGenerationTime, setCodeGenerationTime] = useState<Date | null>(null);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -66,15 +70,15 @@ export default function RegisterPage() {
           action_text: "verify your account",
           code_label: "Your verification code is:",
           footer_message: "If you didn't create an account with Edutic, please ignore this email.",
-          additional_info: "This code will expire in 1 hour for security reasons."
+          additional_info: "This code will expire in 30 minutes for security reasons."
         },
         process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
       );
 
-      console.log(" Email sent successfully:", result);
+      console.log("Email sent successfully:", result);
       return true;
     } catch (error) {
-      console.error(" Failed to send verification email:", error);
+      console.error("Failed to send verification email:", error);
       return false;
     }
   };
@@ -87,6 +91,7 @@ export default function RegisterPage() {
     setErrors({});
 
     try {
+      // First, create user in database
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -104,31 +109,74 @@ export default function RegisterPage() {
         return;
       }
 
-      if (data.verificationToken) {
-        const emailSent = await sendVerificationEmail(
-          formData.email,
-          formData.name,
-          data.verificationToken
-        );
+      // Generate verification code and send email
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      setGeneratedCode(code);
+      setCodeGenerationTime(new Date());
 
-        if (emailSent) {
-          console.log("Verification email sent successfully");
-        } else {
-          console.log(
-            " Failed to send verification email, but registration was successful"
-          );
-        }
+      const emailSent = await sendVerificationEmail(
+        formData.email,
+        formData.name,
+        code
+      );
+
+      if (emailSent) {
+        console.log("Verification email sent successfully");
+        setStep('verify');
       } else {
-        console.log("⚠️ No verification token received from server");
+        setErrors({ submit: "Failed to send verification email. Please try again." });
       }
 
-      sessionStorage.setItem("registrationEmail", formData.email);
-      sessionStorage.setItem("registrationName", formData.name);
-
-      router.push("/verify-email");
     } catch (error) {
-      console.error(" Registration error:", error);
+      console.error("Registration error:", error);
       setErrors({ submit: "An error occurred. Please try again." });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerify = async () => {
+    if (!codeGenerationTime) {
+      setErrors({ verify: "No verification code generated" });
+      return;
+    }
+
+    const now = new Date();
+    const expirationTime = new Date(codeGenerationTime.getTime() + 30 * 60000); // Add 30 minutes
+
+    if (verificationCode !== generatedCode) {
+      setErrors({ verify: "Verification code is incorrect!" });
+      return;
+    }
+
+    if (now > expirationTime) {
+      setErrors({ verify: "Verification code has expired!" });
+      return;
+    }
+
+    setIsLoading(true);
+    setErrors({});
+
+    try {
+      // Verify email in database
+      const res = await fetch("/api/auth/verify-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrors({ verify: data.message });
+        return;
+      }
+
+      console.log("Email verified successfully");
+      router.push("/login?message=Registration successful! Please sign in.");
+    } catch (error) {
+      console.error("Verification error:", error);
+      setErrors({ verify: "An error occurred. Please try again." });
     } finally {
       setIsLoading(false);
     }
@@ -138,6 +186,100 @@ export default function RegisterPage() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  const handleResendCode = async () => {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedCode(code);
+    setCodeGenerationTime(new Date());
+    setVerificationCode('');
+    setErrors({});
+
+    const emailSent = await sendVerificationEmail(
+      formData.email,
+      formData.name,
+      code
+    );
+
+    if (!emailSent) {
+      setErrors({ verify: "Failed to send verification email. Please try again." });
+    }
+  };
+
+  if (step === 'verify') {
+    return (
+      <AuthCard
+        title="Verify your email"
+        subtitle={`We've sent a verification code to ${formData.email}`}
+      >
+        <div className="mb-6 p-4 bg-blue-50 rounded-md">
+          <div className="flex">
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-blue-800">
+                Check your email
+              </h3>
+              <div className="mt-2 text-sm text-blue-700">
+                <p>
+                  We've sent a 6-digit verification code to <strong>{formData.email}</strong>. 
+                  Please enter the code below to verify your account.
+                </p>
+                <p className="mt-1 text-xs">
+                  The code will expire in 30 minutes.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <AuthInput
+            id="verificationCode"
+            name="verificationCode"
+            type="text"
+            label="Verification code"
+            required
+            value={verificationCode}
+            onChange={(e) => setVerificationCode(e.target.value)}
+            error={errors.verify}
+            placeholder="Enter 6-digit code"
+            maxLength={6}
+          />
+
+          <div>
+            <button
+              type="button"
+              onClick={handleVerify}
+              disabled={isLoading || verificationCode.length !== 6}
+              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+                ${(isLoading || verificationCode.length !== 6) ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {isLoading ? 'Verifying...' : 'Verify Email'}
+            </button>
+          </div>
+
+          <div className="text-sm text-center space-y-2">
+            <div>
+              <button
+                type="button"
+                onClick={handleResendCode}
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
+                Resend verification code
+              </button>
+            </div>
+            <div>
+              <button
+                type="button"
+                onClick={() => setStep('register')}
+                className="font-medium text-gray-600 hover:text-gray-500"
+              >
+                Back to registration
+              </button>
+            </div>
+          </div>
+        </div>
+      </AuthCard>
+    );
+  }
 
   return (
     <AuthCard

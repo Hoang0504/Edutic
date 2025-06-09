@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { Op } from 'sequelize';
 import { User } from '@/models/User';
 import { sequelize } from '@/lib/db';
 
@@ -12,31 +11,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Ensure database connection
     await sequelize.authenticate();
 
-    const { token } = req.body;
+    const { email } = req.body;
 
-    if (!token) {
-      return res.status(400).json({ message: 'Verification token is required' });
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
     }
 
-    // Find user with matching token
+    // Find user with email and not verified
     const user = await User.findOne({
       where: {
-        verification_token: token,
-        is_email_verified: false,
-        verification_token_expires: {
-          [Op.gt]: new Date() // Token not expired
-        }
+        email: email,
+        is_email_verified: false
       }
     });
 
     if (!user) {
-      return res.status(400).json({ message: 'Invalid or expired verification token' });
+      return res.status(400).json({ message: 'User not found or already verified' });
     }
 
     await user.update({
       is_email_verified: true,
-      verification_token: undefined,
-      verification_token_expires: undefined
+      updated_at: new Date()
     });
 
     return res.status(200).json({ message: 'Email verified successfully' });

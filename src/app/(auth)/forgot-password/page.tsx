@@ -19,6 +19,8 @@ export default function ForgotPasswordPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [generatedCode, setGeneratedCode] = useState('');
+  const [codeGenerationTime, setCodeGenerationTime] = useState<Date | null>(null);
 
   const validateEmailForm = () => {
     const newErrors: Record<string, string> = {};
@@ -69,7 +71,7 @@ export default function ForgotPasswordPage() {
         action_text: "reset your password",
         code_label: "Your password reset code is:",
         footer_message: "If you didn't request a password reset, please ignore this email. Your password will remain unchanged.",
-        additional_info: "This code will expire in 1 hour for security reasons."
+        additional_info: "This code will expire in 30 minutes for security reasons."
       };
 
       await emailjs.send(
@@ -109,10 +111,15 @@ export default function ForgotPasswordPage() {
         return;
       }
 
-      // If we have a reset token, send the email
+      // If we have a reset token, send the email and store it
       if (data.resetToken) {
         try {
-          await sendResetEmail(data.resetToken, data.email, data.name);
+          // Generate our own code for frontend verification
+          const code = Math.floor(100000 + Math.random() * 900000).toString();
+          setGeneratedCode(code);
+          setCodeGenerationTime(new Date());
+          
+          await sendResetEmail(code, data.email, data.name);
           setMessage('Reset code has been sent to your email. Please check your inbox.');
           setStep('reset');
         } catch (emailError) {
@@ -134,6 +141,25 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     if (!validateResetForm()) return;
 
+    // Verify code on frontend first
+    if (!codeGenerationTime) {
+      setErrors({ submit: "No verification code generated" });
+      return;
+    }
+
+    const now = new Date();
+    const expirationTime = new Date(codeGenerationTime.getTime() + 30 * 60000); // Add 30 minutes
+
+    if (formData.token !== generatedCode) {
+      setErrors({ submit: "Verification code is incorrect!" });
+      return;
+    }
+
+    if (now > expirationTime) {
+      setErrors({ submit: "Verification code has expired!" });
+      return;
+    }
+
     setIsLoading(true);
     setErrors({});
 
@@ -144,7 +170,6 @@ export default function ForgotPasswordPage() {
         body: JSON.stringify({ 
           action: 'reset',
           email,
-          token: formData.token,
           newPassword: formData.password
         })
       });
@@ -158,7 +183,7 @@ export default function ForgotPasswordPage() {
 
       setMessage('Password reset successfully! Redirecting to login...');
       setTimeout(() => {
-        router.push('/login');
+        router.push('/login?message=Password reset successfully! Please sign in with your new password.');
       }, 2000);
 
     } catch (error) {
@@ -175,6 +200,34 @@ export default function ForgotPasswordPage() {
       setEmail(value);
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleResendCode = async () => {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedCode(code);
+    setCodeGenerationTime(new Date());
+    setFormData(prev => ({ ...prev, token: '' }));
+    setErrors({});
+
+    try {
+      // Get user info again for sending email
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'request', email })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.resetToken) {
+        await sendResetEmail(code, data.email, data.name);
+        setMessage('New reset code has been sent to your email.');
+      } else {
+        setErrors({ submit: 'Failed to resend code. Please try again.' });
+      }
+    } catch (error) {
+      setErrors({ submit: 'Failed to resend verification code. Please try again.' });
     }
   };
 
@@ -236,6 +289,9 @@ export default function ForgotPasswordPage() {
         <form className="space-y-6" onSubmit={handleResetSubmit}>
           <div className="text-sm text-gray-600 mb-4">
             Enter the 6-digit verification code sent to <span className="font-medium">{email}</span> and your new password.
+            <p className="mt-1 text-xs">
+              The code will expire in 30 minutes.
+            </p>
           </div>
 
           <AuthInput
@@ -297,18 +353,30 @@ export default function ForgotPasswordPage() {
               {isLoading ? 'Resetting Password...' : 'Reset Password'}
             </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setStep('email');
-                setFormData({ token: '', password: '', confirmPassword: '' });
-                setErrors({});
-                setMessage('');
-              }}
-              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Back to Email Entry
-            </button>
+            <div className="flex space-x-3">
+              <button
+                type="button"
+                onClick={handleResendCode}
+                className="flex-1 flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Resend Code
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => {
+                  setStep('email');
+                  setFormData({ token: '', password: '', confirmPassword: '' });
+                  setErrors({});
+                  setMessage('');
+                  setGeneratedCode('');
+                  setCodeGenerationTime(null);
+                }}
+                className="flex-1 flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Back to Email
+              </button>
+            </div>
           </div>
         </form>
       )}

@@ -12,6 +12,8 @@ import { AIFeedback } from "@/models/AIFeedback";
 import { ApiUsage } from "@/models/ApiUsage";
 import { Exam } from "@/models/Exam";
 import { Part } from "@/models/Part";
+import { ExamPart } from "@/models/ExamPart";
+import { UserAttemptPart } from "@/models/UserAttemptPart";
 import { Skill } from "@/models/Skill";
 import { SpeakingWritingPrompt } from "@/models/SpeakingWritingPrompt";
 import { SpeakingWritingSubmission } from "@/models/SpeakingWritingSubmission";
@@ -39,6 +41,7 @@ export const sequelize = new Sequelize({
     ApiUsage,
     AudioFile,
     Exam,
+    ExamPart,
     Feedback,
     Flashcard,
     LeaderBoard,
@@ -52,6 +55,7 @@ export const sequelize = new Sequelize({
     Translation,
     User,
     UserAnswer,
+    UserAttemptPart,
     UserExamAttempt,
     UserProfile,
     UserProgress,
@@ -105,17 +109,27 @@ AudioFile.belongsTo(Part, { foreignKey: "part_id" });
 UserExamAttempt.hasMany(UserAnswer, { foreignKey: "user_exam_attempt_id" });
 UserAnswer.belongsTo(UserExamAttempt, { foreignKey: "user_exam_attempt_id" });
 
+UserExamAttempt.hasMany(UserAttemptPart, { foreignKey: "user_exam_attempt_id" });
+UserAttemptPart.belongsTo(UserExamAttempt, { foreignKey: "user_exam_attempt_id" });
+
 Exam.hasMany(UserExamAttempt, { foreignKey: "exam_id" });
 UserExamAttempt.belongsTo(Exam, { foreignKey: "exam_id" });
+
+// Many-to-Many relationship between Exam and Part through ExamPart
+Exam.hasMany(ExamPart, { foreignKey: "exam_id" });
+ExamPart.belongsTo(Exam, { foreignKey: "exam_id" });
+
+Part.hasMany(ExamPart, { foreignKey: "part_id" });
+ExamPart.belongsTo(Part, { foreignKey: "part_id" });
+
+Part.hasMany(UserAttemptPart, { foreignKey: "part_id" });
+UserAttemptPart.belongsTo(Part, { foreignKey: "part_id" });
 
 UserSetting.hasOne(StudyMusic, { foreignKey: "user_id" });
 StudyMusic.belongsTo(UserSetting, {
   foreignKey: "user_id",
   as: "user_setting",
 });
-
-Part.hasMany(Exam, { foreignKey: "part_id" });
-Exam.belongsTo(Part, { foreignKey: "part_id" });
 
 Part.hasMany(Question, { foreignKey: "part_id" });
 Question.belongsTo(Part, { foreignKey: "part_id" });

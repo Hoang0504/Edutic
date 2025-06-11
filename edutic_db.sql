@@ -1,9 +1,9 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.2
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: localhost:3306
--- Thời gian đã tạo: Th6 07, 2025 lúc 01:40 PM
+-- Thời gian đã tạo: Th6 10, 2025 lúc 09:22 AM
 -- Phiên bản máy phục vụ: 8.4.3
 -- Phiên bản PHP: 8.3.16
 
@@ -18,381 +18,307 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `edutic_db`
+-- Cơ sở dữ liệu: `edutic_db`
 --
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `aifeedbacks`
+-- Cấu trúc bảng cho bảng `ai_feedbacks`
 --
 
-CREATE TABLE `aifeedbacks` (
-  `id` int(11) NOT NULL,
+CREATE TABLE `ai_feedbacks` (
+  `id` int NOT NULL,
   `content_type` enum('voice_recording','writing_submission','exam_attempt') DEFAULT NULL,
-  `content_id` int(11) DEFAULT NULL,
-  `feedback_text` text DEFAULT NULL,
-  `suggestions` text DEFAULT NULL,
-  `strengths` text DEFAULT NULL,
-  `weaknesses` text DEFAULT NULL,
+  `content_id` int DEFAULT NULL,
+  `feedback_text` text,
+  `suggestions` text,
+  `strengths` text,
+  `weaknesses` text,
   `created_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `aigeneratedcontents`
+-- Cấu trúc bảng cho bảng `ai_generated_contents`
 --
 
-CREATE TABLE `aigeneratedcontents` (
-  `id` int(11) NOT NULL,
+CREATE TABLE `ai_generated_contents` (
+  `id` int NOT NULL,
   `content_type` enum('question','part','exam','vocabulary') DEFAULT NULL,
   `content_id` varchar(255) DEFAULT NULL,
-  `generated_text` text DEFAULT NULL,
-  `prompt_used` text DEFAULT NULL,
+  `generated_text` text,
+  `prompt_used` text,
   `created_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `answers`
+-- Cấu trúc bảng cho bảng `answers`
 --
 
 CREATE TABLE `answers` (
-  `id` int(11) NOT NULL,
-  `question_id` int(11) NOT NULL,
-  `content` text DEFAULT NULL,
+  `id` int NOT NULL,
+  `question_id` int NOT NULL,
+  `content` text,
   `is_correct` tinyint(1) DEFAULT NULL,
-  `explanation` text DEFAULT NULL,
+  `explanation` text,
   `created_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `apiusages`
+-- Cấu trúc bảng cho bảng `api_usages`
 --
 
-CREATE TABLE `apiusages` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `request_count` int(11) DEFAULT NULL,
+CREATE TABLE `api_usages` (
+  `id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `request_count` int DEFAULT NULL,
   `date` datetime DEFAULT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `audiofiles`
+-- Cấu trúc bảng cho bảng `audio_files`
 --
 
-CREATE TABLE `audiofiles` (
-  `id` int(11) NOT NULL,
-  `part_id` int(11) NOT NULL,
+CREATE TABLE `audio_files` (
+  `id` int NOT NULL,
+  `part_id` int NOT NULL,
   `file_path` varchar(255) DEFAULT NULL,
-  `duration` int(11) DEFAULT NULL,
-  `transcript` text DEFAULT NULL,
+  `duration` int DEFAULT NULL,
+  `transcript` text,
   `created_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `exams`
+-- Cấu trúc bảng cho bảng `exams`
 --
 
 CREATE TABLE `exams` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `title` varchar(255) DEFAULT NULL,
-  `description` text DEFAULT NULL,
-  `difficulty_level` enum('easy','medium','hard') DEFAULT NULL,
-  `estimated_time` int(11) DEFAULT NULL,
+  `type` enum('random','full_test') NOT NULL DEFAULT 'full_test',
+  `description` text,
+  `estimated_time` int DEFAULT NULL,
   `is_published` tinyint(1) DEFAULT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `flashcards`
+-- Cấu trúc bảng cho bảng `exam_parts`
+--
+
+CREATE TABLE `exam_parts` (
+  `id` int NOT NULL,
+  `exam_id` int NOT NULL,
+  `part_id` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `feedbacks`
+--
+
+CREATE TABLE `feedbacks` (
+  `id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `content` varchar(300) NOT NULL,
+  `rating` tinyint(1) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `flashcards`
 --
 
 CREATE TABLE `flashcards` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `vocabulary_id` int(11) NOT NULL,
-  `mastery_level` int(11) DEFAULT NULL,
+  `id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `vocabulary_id` int NOT NULL,
+  `mastery_level` int DEFAULT NULL,
   `next_review_date` datetime DEFAULT NULL,
-  `review_count` int(11) DEFAULT NULL,
-  `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `review_count` int DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
+
+--
+-- Đang đổ dữ liệu cho bảng `flashcards`
+--
+
+INSERT INTO `flashcards` (`id`, `user_id`, `vocabulary_id`, `mastery_level`, `next_review_date`, `review_count`, `created_at`, `updated_at`) VALUES
+(3, 1, 3, 1, '2025-06-09 23:00:03', 0, '2025-06-08 15:29:30', '2025-06-08 15:29:30');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `leaderboards`
+-- Cấu trúc bảng cho bảng `leader_boards`
 --
 
-CREATE TABLE `leaderboards` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `score` int(11) DEFAULT NULL,
+CREATE TABLE `leader_boards` (
+  `id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `score` int DEFAULT NULL,
   `period_type` enum('weekly','monthly','all_time') DEFAULT NULL,
   `period_start_date` datetime DEFAULT NULL,
-  `rank` int(11) DEFAULT NULL,
+  `rank` int DEFAULT NULL,
   `updated_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `parts`
+-- Cấu trúc bảng cho bảng `parts`
 --
 
 CREATE TABLE `parts` (
-  `id` int(11) NOT NULL,
-  `exam_id` int(11) NOT NULL,
-  `part_number` int(11) DEFAULT NULL,
+  `id` int NOT NULL,
+  `exam_id` int NOT NULL,
+  `part_number` int DEFAULT NULL,
   `title` varchar(255) DEFAULT NULL,
-  `description` text DEFAULT NULL,
-  `instruction` text DEFAULT NULL,
-  `time_limit` int(11) DEFAULT NULL,
+  `description` text,
+  `instruction` text,
+  `difficulty_level` enum('easy','medium','hard') NOT NULL,
+  `time_limit` int DEFAULT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `questions`
+-- Cấu trúc bảng cho bảng `questions`
 --
 
 CREATE TABLE `questions` (
-  `id` int(11) NOT NULL,
-  `part_id` int(11) NOT NULL,
-  `question_number` int(11) DEFAULT NULL,
-  `content` text DEFAULT NULL,
+  `id` int NOT NULL,
+  `part_id` int NOT NULL,
+  `question_number` int DEFAULT NULL,
+  `content` text,
   `question_type` enum('multiple_choice','fill_in_blank','matching','speaking','writing') DEFAULT NULL,
   `image_url` varchar(255) DEFAULT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `sequelizemeta`
---
-
-CREATE TABLE `sequelizemeta` (
-  `name` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
---
--- Dumping data for table `sequelizemeta`
---
-
-INSERT INTO `sequelizemeta` (`name`) VALUES
-('20250604081912-create-user.js'),
-('20250604081956-create-skill.js'),
-('20250604082046-create-study-music.js'),
-('20250604082124-create-vocabulary.js'),
-('20250604082200-create-exam.js'),
-('20250604082325-create-user-profile.js'),
-('20250604083906-create-user-setting.js'),
-('20250604084654-create-part.js'),
-('20250604084957-create-flashcard.js'),
-('20250604090326-create-user-progress.js'),
-('20250604091249-create-api-usage.js'),
-('20250604091703-create-question.js'),
-('20250604091945-create-audio-file.js'),
-('20250604092141-create-speaking-writing-prompt.js'),
-('20250604092559-create-user-exam-attempt.js'),
-('20250604093121-create-study-session.js'),
-('20250604104939-create-user-skill.js'),
-('20250604105414-create-answer.js'),
-('20250604110833-create-translation.js'),
-('20250604110927-create-user-answer.js'),
-('20250604112637-create-ai-feedback.js'),
-('20250604112711-create-speaking-writing-submission.js'),
-('20250604113156-create-ai-generated-content.js'),
-('20250604113233-create-leaderboard.js');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `skills`
+-- Cấu trúc bảng cho bảng `skills`
 --
 
 CREATE TABLE `skills` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `name` varchar(255) DEFAULT NULL,
-  `description` text DEFAULT NULL,
+  `description` text,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `speakingwritingprompts`
+-- Cấu trúc bảng cho bảng `speaking_writing_prompts`
 --
 
-CREATE TABLE `speakingwritingprompts` (
-  `id` int(11) NOT NULL,
+CREATE TABLE `speaking_writing_prompts` (
+  `id` int NOT NULL,
   `topic` varchar(255) DEFAULT NULL,
-  `skill_id` int(11) NOT NULL,
-  `description` text DEFAULT NULL,
+  `skill_id` int NOT NULL,
+  `description` text,
   `difficulty_level` enum('easy','medium','hard') DEFAULT NULL,
   `created_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `speakingwritingsubmissions`
+-- Cấu trúc bảng cho bảng `speaking_writing_submissions`
 --
 
-CREATE TABLE `speakingwritingsubmissions` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `prompt_id` int(11) NOT NULL,
-  `content` text DEFAULT NULL,
+CREATE TABLE `speaking_writing_submissions` (
+  `id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `prompt_id` int NOT NULL,
+  `content` text,
   `file_path` varchar(255) DEFAULT NULL,
-  `duration` int(11) DEFAULT NULL,
-  `ai_feedback_id` int(11) DEFAULT NULL,
+  `duration` int DEFAULT NULL,
+  `ai_feedback_id` int DEFAULT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `studymusics`
+-- Cấu trúc bảng cho bảng `study_musics`
 --
 
-CREATE TABLE `studymusics` (
-  `id` int(11) NOT NULL,
+CREATE TABLE `study_musics` (
+  `id` int NOT NULL,
   `title` varchar(255) DEFAULT NULL,
-  `duration` int(11) DEFAULT NULL,
+  `duration` int DEFAULT NULL,
   `file_url` varchar(255) DEFAULT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `studysessions`
+-- Cấu trúc bảng cho bảng `study_sessions`
 --
 
-CREATE TABLE `studysessions` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
+CREATE TABLE `study_sessions` (
+  `id` int NOT NULL,
+  `user_id` int NOT NULL,
   `start_time` datetime DEFAULT NULL,
   `end_time` datetime DEFAULT NULL,
-  `duration` int(11) DEFAULT NULL,
+  `duration` int DEFAULT NULL,
   `activity_type` enum('exam','flashcard','listening','reading','speaking','writing') DEFAULT NULL,
   `created_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `translations`
+-- Cấu trúc bảng cho bảng `translations`
 --
 
 CREATE TABLE `translations` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `content_type` enum('question','answer','instruction','transcript') DEFAULT NULL,
-  `content_id` int(11) DEFAULT NULL,
-  `english_text` text DEFAULT NULL,
-  `vietnamese_text` text DEFAULT NULL,
+  `content_id` int DEFAULT NULL,
+  `english_text` text,
+  `vietnamese_text` text,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `useranswers`
---
-
-CREATE TABLE `useranswers` (
-  `id` int(11) NOT NULL,
-  `user_exam_attempt_id` int(11) NOT NULL,
-  `question_id` int(11) NOT NULL,
-  `answer_id` int(11) DEFAULT NULL,
-  `user_text_answer` text DEFAULT NULL,
-  `is_correct` tinyint(1) DEFAULT NULL,
-  `time_spent` int(11) DEFAULT NULL,
-  `created_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `userexamattempts`
---
-
-CREATE TABLE `userexamattempts` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `exam_id` int(11) NOT NULL,
-  `start_time` datetime DEFAULT NULL,
-  `end_time` datetime DEFAULT NULL,
-  `score` int(11) DEFAULT NULL,
-  `status` enum('in_progress','completed','abandoned') DEFAULT NULL,
-  `created_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `userprofiles`
---
-
-CREATE TABLE `userprofiles` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `target_score` int(11) DEFAULT NULL,
-  `study_time_preference` int(11) DEFAULT NULL,
-  `level` enum('beginner','intermediate','advanced') DEFAULT NULL,
-  `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `userprogresses`
---
-
-CREATE TABLE `userprogresses` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `listening_score` int(11) DEFAULT NULL,
-  `reading_score` int(11) DEFAULT NULL,
-  `speaking_score` int(11) DEFAULT NULL,
-  `writing_score` int(11) DEFAULT NULL,
-  `total_study_time` int(11) DEFAULT NULL,
-  `last_activity_date` datetime DEFAULT NULL,
-  `updated_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `users`
+-- Cấu trúc bảng cho bảng `users`
 --
 
 CREATE TABLE `users` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `email` varchar(255) DEFAULT NULL,
   `password_hash` varchar(255) DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
@@ -400,114 +326,220 @@ CREATE TABLE `users` (
   `is_email_verified` tinyint(1) DEFAULT NULL,
   `auth_provider` enum('email','google') DEFAULT NULL,
   `auth_provider_id` varchar(255) DEFAULT NULL,
-  `role` enum('student','teacher','admin') DEFAULT NULL,
-  `verification_token` varchar(255) NOT NULL,
-  `verification_token_expires` date NOT NULL,
+  `role` enum('student','admin') CHARACTER SET utf8mb4  DEFAULT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   `last_login` datetime DEFAULT NULL,
-  `verification_token` varchar(255) NOT NULL,
-  `verification_token_expires` date NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
   `uuid` char(36) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
+
+--
+-- Đang đổ dữ liệu cho bảng `users`
+--
+
+INSERT INTO `users` (`id`, `email`, `password_hash`, `name`, `avatar`, `is_email_verified`, `auth_provider`, `auth_provider_id`, `role`, `created_at`, `updated_at`, `last_login`, `uuid`) VALUES
+(1, NULL, NULL, 'hoang', NULL, NULL, NULL, NULL, NULL, '2025-06-08 01:55:14', '2025-06-08 01:55:14', NULL, 'ugejkghbkjg94393');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `usersettings`
---
-
-CREATE TABLE `usersettings` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `pomodoro_work_time` int(11) DEFAULT NULL,
-  `pomodoro_break_time` int(11) DEFAULT NULL,
-  `ui_theme` enum('light','dark','system') DEFAULT NULL,
-  `study_music_id` int(11) DEFAULT NULL,
-  `notification_settings` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`notification_settings`)),
-  `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `userskills`
+-- Cấu trúc bảng cho bảng `userskills`
 --
 
 CREATE TABLE `userskills` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `skill_id` int(11) NOT NULL,
+  `id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `skill_id` int NOT NULL,
   `type` enum('strong','weak') DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `vocabularies`
+-- Cấu trúc bảng cho bảng `user_answers`
+--
+
+CREATE TABLE `user_answers` (
+  `id` int NOT NULL,
+  `user_exam_attempt_id` int NOT NULL,
+  `question_id` int NOT NULL,
+  `answer_id` int DEFAULT NULL,
+  `user_text_answer` text,
+  `is_correct` tinyint(1) DEFAULT NULL,
+  `time_spent` int DEFAULT NULL,
+  `created_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `user_attempt_parts`
+--
+
+CREATE TABLE `user_attempt_parts` (
+  `id` int NOT NULL,
+  `user_exam_attempt_id` int NOT NULL,
+  `part_id` int NOT NULL,
+  `order_index` int DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `user_exam_attempts`
+--
+
+CREATE TABLE `user_exam_attempts` (
+  `id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `exam_id` int NOT NULL,
+  `start_time` datetime DEFAULT NULL,
+  `end_time` datetime DEFAULT NULL,
+  `score` int DEFAULT NULL,
+  `status` enum('in_progress','completed','abandoned') DEFAULT NULL,
+  `created_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `user_profiles`
+--
+
+CREATE TABLE `user_profiles` (
+  `id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `target_score` int DEFAULT NULL,
+  `study_time_preference` int DEFAULT NULL,
+  `level` enum('beginner','intermediate','advanced') DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `user_progresses`
+--
+
+CREATE TABLE `user_progresses` (
+  `id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `listening_score` int DEFAULT NULL,
+  `reading_score` int DEFAULT NULL,
+  `speaking_score` int DEFAULT NULL,
+  `writing_score` int DEFAULT NULL,
+  `total_study_time` int DEFAULT NULL,
+  `last_activity_date` datetime DEFAULT NULL,
+  `updated_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `user_settings`
+--
+
+CREATE TABLE `user_settings` (
+  `id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `pomodoro_work_time` int DEFAULT NULL,
+  `pomodoro_break_time` int DEFAULT NULL,
+  `ui_theme` enum('light','dark','system') DEFAULT NULL,
+  `study_music_id` int DEFAULT NULL,
+  `notification_settings` json DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `vocabularies`
 --
 
 CREATE TABLE `vocabularies` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `word` varchar(255) DEFAULT NULL,
   `image_url` varchar(255) DEFAULT NULL,
   `pronunciation` varchar(255) DEFAULT NULL,
   `speech_audio_url` varchar(255) DEFAULT NULL,
-  `meaning` text DEFAULT NULL,
-  `example` text DEFAULT NULL,
+  `meaning` text,
+  `example` text,
   `context` varchar(255) DEFAULT NULL,
   `status` enum('pending','approved','rejected') DEFAULT NULL,
-  `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
 --
--- Indexes for dumped tables
+-- Đang đổ dữ liệu cho bảng `vocabularies`
+--
+
+INSERT INTO `vocabularies` (`id`, `word`, `image_url`, `pronunciation`, `speech_audio_url`, `meaning`, `example`, `context`, `status`, `created_at`, `updated_at`) VALUES
+(3, 'efficient', NULL, NULL, NULL, NULL, 'She designed an efficient workflow that eliminated unnecessary steps and reduced errors.', NULL, 'pending', '2025-06-08 15:29:30', '2025-06-08 15:29:30');
+
+--
+-- Chỉ mục cho các bảng đã đổ
 --
 
 --
--- Indexes for table `aifeedbacks`
+-- Chỉ mục cho bảng `ai_feedbacks`
 --
-ALTER TABLE `aifeedbacks`
+ALTER TABLE `ai_feedbacks`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `aigeneratedcontents`
+-- Chỉ mục cho bảng `ai_generated_contents`
 --
-ALTER TABLE `aigeneratedcontents`
+ALTER TABLE `ai_generated_contents`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `answers`
+-- Chỉ mục cho bảng `answers`
 --
 ALTER TABLE `answers`
   ADD PRIMARY KEY (`id`),
   ADD KEY `question_id` (`question_id`);
 
 --
--- Indexes for table `apiusages`
+-- Chỉ mục cho bảng `api_usages`
 --
-ALTER TABLE `apiusages`
+ALTER TABLE `api_usages`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`);
 
 --
--- Indexes for table `audiofiles`
+-- Chỉ mục cho bảng `audio_files`
 --
-ALTER TABLE `audiofiles`
+ALTER TABLE `audio_files`
   ADD PRIMARY KEY (`id`),
   ADD KEY `part_id` (`part_id`);
 
 --
--- Indexes for table `exams`
+-- Chỉ mục cho bảng `exams`
 --
 ALTER TABLE `exams`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `flashcards`
+-- Chỉ mục cho bảng `exam_parts`
+--
+ALTER TABLE `exam_parts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `exam_id` (`exam_id`),
+  ADD KEY `part_id` (`part_id`);
+
+--
+-- Chỉ mục cho bảng `feedbacks`
+--
+ALTER TABLE `feedbacks`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Chỉ mục cho bảng `flashcards`
 --
 ALTER TABLE `flashcards`
   ADD PRIMARY KEY (`id`),
@@ -515,122 +547,76 @@ ALTER TABLE `flashcards`
   ADD KEY `vocabulary_id` (`vocabulary_id`);
 
 --
--- Indexes for table `leaderboards`
+-- Chỉ mục cho bảng `leader_boards`
 --
-ALTER TABLE `leaderboards`
+ALTER TABLE `leader_boards`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`);
 
 --
--- Indexes for table `parts`
+-- Chỉ mục cho bảng `parts`
 --
 ALTER TABLE `parts`
   ADD PRIMARY KEY (`id`),
   ADD KEY `exam_id` (`exam_id`);
 
 --
--- Indexes for table `questions`
+-- Chỉ mục cho bảng `questions`
 --
 ALTER TABLE `questions`
   ADD PRIMARY KEY (`id`),
   ADD KEY `part_id` (`part_id`);
 
 --
--- Indexes for table `sequelizemeta`
---
-ALTER TABLE `sequelizemeta`
-  ADD PRIMARY KEY (`name`),
-  ADD UNIQUE KEY `name` (`name`);
-
---
--- Indexes for table `skills`
+-- Chỉ mục cho bảng `skills`
 --
 ALTER TABLE `skills`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `speakingwritingprompts`
+-- Chỉ mục cho bảng `speaking_writing_prompts`
 --
-ALTER TABLE `speakingwritingprompts`
+ALTER TABLE `speaking_writing_prompts`
   ADD PRIMARY KEY (`id`),
   ADD KEY `skill_id` (`skill_id`);
 
 --
--- Indexes for table `speakingwritingsubmissions`
+-- Chỉ mục cho bảng `speaking_writing_submissions`
 --
-ALTER TABLE `speakingwritingsubmissions`
+ALTER TABLE `speaking_writing_submissions`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`),
   ADD KEY `prompt_id` (`prompt_id`),
   ADD KEY `ai_feedback_id` (`ai_feedback_id`);
 
 --
--- Indexes for table `studymusics`
+-- Chỉ mục cho bảng `study_musics`
 --
-ALTER TABLE `studymusics`
+ALTER TABLE `study_musics`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `studysessions`
+-- Chỉ mục cho bảng `study_sessions`
 --
-ALTER TABLE `studysessions`
+ALTER TABLE `study_sessions`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`);
 
 --
--- Indexes for table `translations`
+-- Chỉ mục cho bảng `translations`
 --
 ALTER TABLE `translations`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `useranswers`
---
-ALTER TABLE `useranswers`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_exam_attempt_id` (`user_exam_attempt_id`),
-  ADD KEY `question_id` (`question_id`),
-  ADD KEY `answer_id` (`answer_id`);
-
---
--- Indexes for table `userexamattempts`
---
-ALTER TABLE `userexamattempts`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `exam_id` (`exam_id`);
-
---
--- Indexes for table `userprofiles`
---
-ALTER TABLE `userprofiles`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`);
-
---
--- Indexes for table `userprogresses`
---
-ALTER TABLE `userprogresses`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`);
-
---
--- Indexes for table `users`
+-- Chỉ mục cho bảng `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `idx_users_uuid` (`uuid`);
 
 --
--- Indexes for table `usersettings`
---
-ALTER TABLE `usersettings`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `study_music_id` (`study_music_id`);
-
---
--- Indexes for table `userskills`
+-- Chỉ mục cho bảng `userskills`
 --
 ALTER TABLE `userskills`
   ADD PRIMARY KEY (`id`),
@@ -638,266 +624,351 @@ ALTER TABLE `userskills`
   ADD KEY `skill_id` (`skill_id`);
 
 --
--- Indexes for table `vocabularies`
+-- Chỉ mục cho bảng `user_answers`
+--
+ALTER TABLE `user_answers`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_exam_attempt_id` (`user_exam_attempt_id`),
+  ADD KEY `question_id` (`question_id`),
+  ADD KEY `answer_id` (`answer_id`);
+
+--
+-- Chỉ mục cho bảng `user_attempt_parts`
+--
+ALTER TABLE `user_attempt_parts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_exam_attempt_id` (`user_exam_attempt_id`),
+  ADD KEY `part_id` (`part_id`);
+
+--
+-- Chỉ mục cho bảng `user_exam_attempts`
+--
+ALTER TABLE `user_exam_attempts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `exam_id` (`exam_id`);
+
+--
+-- Chỉ mục cho bảng `user_profiles`
+--
+ALTER TABLE `user_profiles`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Chỉ mục cho bảng `user_progresses`
+--
+ALTER TABLE `user_progresses`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Chỉ mục cho bảng `user_settings`
+--
+ALTER TABLE `user_settings`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `study_music_id` (`study_music_id`);
+
+--
+-- Chỉ mục cho bảng `vocabularies`
 --
 ALTER TABLE `vocabularies`
   ADD PRIMARY KEY (`id`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- AUTO_INCREMENT cho các bảng đã đổ
 --
 
 --
--- AUTO_INCREMENT for table `aifeedbacks`
+-- AUTO_INCREMENT cho bảng `ai_feedbacks`
 --
-ALTER TABLE `aifeedbacks`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `ai_feedbacks`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `aigeneratedcontents`
+-- AUTO_INCREMENT cho bảng `ai_generated_contents`
 --
-ALTER TABLE `aigeneratedcontents`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `ai_generated_contents`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `answers`
+-- AUTO_INCREMENT cho bảng `answers`
 --
 ALTER TABLE `answers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `apiusages`
+-- AUTO_INCREMENT cho bảng `api_usages`
 --
-ALTER TABLE `apiusages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `api_usages`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `audiofiles`
+-- AUTO_INCREMENT cho bảng `audio_files`
 --
-ALTER TABLE `audiofiles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `audio_files`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `exams`
+-- AUTO_INCREMENT cho bảng `exams`
 --
 ALTER TABLE `exams`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `flashcards`
+-- AUTO_INCREMENT cho bảng `exam_parts`
+--
+ALTER TABLE `exam_parts`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT cho bảng `feedbacks`
+--
+ALTER TABLE `feedbacks`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT cho bảng `flashcards`
 --
 ALTER TABLE `flashcards`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
--- AUTO_INCREMENT for table `leaderboards`
+-- AUTO_INCREMENT cho bảng `leader_boards`
 --
-ALTER TABLE `leaderboards`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `leader_boards`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `parts`
+-- AUTO_INCREMENT cho bảng `parts`
 --
 ALTER TABLE `parts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `questions`
+-- AUTO_INCREMENT cho bảng `questions`
 --
 ALTER TABLE `questions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `skills`
+-- AUTO_INCREMENT cho bảng `skills`
 --
 ALTER TABLE `skills`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `speakingwritingprompts`
+-- AUTO_INCREMENT cho bảng `speaking_writing_prompts`
 --
-ALTER TABLE `speakingwritingprompts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `speaking_writing_prompts`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `speakingwritingsubmissions`
+-- AUTO_INCREMENT cho bảng `speaking_writing_submissions`
 --
-ALTER TABLE `speakingwritingsubmissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `speaking_writing_submissions`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `studymusics`
+-- AUTO_INCREMENT cho bảng `study_musics`
 --
-ALTER TABLE `studymusics`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `study_musics`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `studysessions`
+-- AUTO_INCREMENT cho bảng `study_sessions`
 --
-ALTER TABLE `studysessions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `study_sessions`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `translations`
+-- AUTO_INCREMENT cho bảng `translations`
 --
 ALTER TABLE `translations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `useranswers`
---
-ALTER TABLE `useranswers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `userexamattempts`
---
-ALTER TABLE `userexamattempts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `userprofiles`
---
-ALTER TABLE `userprofiles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `userprogresses`
---
-ALTER TABLE `userprogresses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `users`
+-- AUTO_INCREMENT cho bảng `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT for table `usersettings`
---
-ALTER TABLE `usersettings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `userskills`
+-- AUTO_INCREMENT cho bảng `userskills`
 --
 ALTER TABLE `userskills`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `vocabularies`
+-- AUTO_INCREMENT cho bảng `user_answers`
+--
+ALTER TABLE `user_answers`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT cho bảng `user_attempt_parts`
+--
+ALTER TABLE `user_attempt_parts`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT cho bảng `user_exam_attempts`
+--
+ALTER TABLE `user_exam_attempts`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT cho bảng `user_profiles`
+--
+ALTER TABLE `user_profiles`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT cho bảng `user_progresses`
+--
+ALTER TABLE `user_progresses`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT cho bảng `user_settings`
+--
+ALTER TABLE `user_settings`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT cho bảng `vocabularies`
 --
 ALTER TABLE `vocabularies`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- Constraints for dumped tables
+-- Ràng buộc đối với các bảng kết xuất
 --
 
 --
--- Constraints for table `answers`
+-- Ràng buộc cho bảng `answers`
 --
 ALTER TABLE `answers`
   ADD CONSTRAINT `answers_ibfk_1` FOREIGN KEY (`question_id`) REFERENCES `questions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `apiusages`
+-- Ràng buộc cho bảng `api_usages`
 --
-ALTER TABLE `apiusages`
-  ADD CONSTRAINT `apiusages_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `api_usages`
+  ADD CONSTRAINT `api_usages_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `audiofiles`
+-- Ràng buộc cho bảng `audio_files`
 --
-ALTER TABLE `audiofiles`
-  ADD CONSTRAINT `audiofiles_ibfk_1` FOREIGN KEY (`part_id`) REFERENCES `parts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `audio_files`
+  ADD CONSTRAINT `audio_files_ibfk_1` FOREIGN KEY (`part_id`) REFERENCES `parts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `flashcards`
+-- Ràng buộc cho bảng `exam_parts`
+--
+ALTER TABLE `exam_parts`
+  ADD CONSTRAINT `exam_parts_ibfk_1` FOREIGN KEY (`exam_id`) REFERENCES `exams` (`id`),
+  ADD CONSTRAINT `exam_parts_ibfk_2` FOREIGN KEY (`part_id`) REFERENCES `parts` (`id`);
+
+--
+-- Ràng buộc cho bảng `feedbacks`
+--
+ALTER TABLE `feedbacks`
+  ADD CONSTRAINT `feedbacks_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+--
+-- Ràng buộc cho bảng `flashcards`
 --
 ALTER TABLE `flashcards`
   ADD CONSTRAINT `flashcards_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `flashcards_ibfk_2` FOREIGN KEY (`vocabulary_id`) REFERENCES `vocabularies` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `leaderboards`
+-- Ràng buộc cho bảng `leader_boards`
 --
-ALTER TABLE `leaderboards`
-  ADD CONSTRAINT `leaderboards_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `leader_boards`
+  ADD CONSTRAINT `leader_boards_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `parts`
+-- Ràng buộc cho bảng `parts`
 --
 ALTER TABLE `parts`
   ADD CONSTRAINT `parts_ibfk_1` FOREIGN KEY (`exam_id`) REFERENCES `exams` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `questions`
+-- Ràng buộc cho bảng `questions`
 --
 ALTER TABLE `questions`
   ADD CONSTRAINT `questions_ibfk_1` FOREIGN KEY (`part_id`) REFERENCES `parts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `speakingwritingprompts`
+-- Ràng buộc cho bảng `speaking_writing_prompts`
 --
-ALTER TABLE `speakingwritingprompts`
-  ADD CONSTRAINT `speakingwritingprompts_ibfk_1` FOREIGN KEY (`skill_id`) REFERENCES `skills` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `speaking_writing_prompts`
+  ADD CONSTRAINT `speaking_writing_prompts_ibfk_1` FOREIGN KEY (`skill_id`) REFERENCES `skills` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `speakingwritingsubmissions`
+-- Ràng buộc cho bảng `speaking_writing_submissions`
 --
-ALTER TABLE `speakingwritingsubmissions`
-  ADD CONSTRAINT `speakingwritingsubmissions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `speakingwritingsubmissions_ibfk_2` FOREIGN KEY (`prompt_id`) REFERENCES `speakingwritingprompts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `speakingwritingsubmissions_ibfk_3` FOREIGN KEY (`ai_feedback_id`) REFERENCES `aifeedbacks` (`id`) ON DELETE SET NULL ON UPDATE SET NULL;
+ALTER TABLE `speaking_writing_submissions`
+  ADD CONSTRAINT `speaking_writing_submissions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `speaking_writing_submissions_ibfk_2` FOREIGN KEY (`prompt_id`) REFERENCES `speaking_writing_prompts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `speaking_writing_submissions_ibfk_3` FOREIGN KEY (`ai_feedback_id`) REFERENCES `ai_feedbacks` (`id`) ON DELETE SET NULL ON UPDATE SET NULL;
 
 --
--- Constraints for table `studysessions`
+-- Ràng buộc cho bảng `study_sessions`
 --
-ALTER TABLE `studysessions`
-  ADD CONSTRAINT `studysessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `study_sessions`
+  ADD CONSTRAINT `study_sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `useranswers`
---
-ALTER TABLE `useranswers`
-  ADD CONSTRAINT `useranswers_ibfk_1` FOREIGN KEY (`user_exam_attempt_id`) REFERENCES `userexamattempts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `useranswers_ibfk_2` FOREIGN KEY (`question_id`) REFERENCES `questions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `useranswers_ibfk_3` FOREIGN KEY (`answer_id`) REFERENCES `answers` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
---
--- Constraints for table `userexamattempts`
---
-ALTER TABLE `userexamattempts`
-  ADD CONSTRAINT `userexamattempts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `userexamattempts_ibfk_2` FOREIGN KEY (`exam_id`) REFERENCES `exams` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Constraints for table `userprofiles`
---
-ALTER TABLE `userprofiles`
-  ADD CONSTRAINT `userprofiles_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Constraints for table `userprogresses`
---
-ALTER TABLE `userprogresses`
-  ADD CONSTRAINT `userprogresses_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Constraints for table `usersettings`
---
-ALTER TABLE `usersettings`
-  ADD CONSTRAINT `usersettings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `usersettings_ibfk_2` FOREIGN KEY (`study_music_id`) REFERENCES `studymusics` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
---
--- Constraints for table `userskills`
+-- Ràng buộc cho bảng `userskills`
 --
 ALTER TABLE `userskills`
   ADD CONSTRAINT `userskills_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `userskills_ibfk_2` FOREIGN KEY (`skill_id`) REFERENCES `skills` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Ràng buộc cho bảng `user_answers`
+--
+ALTER TABLE `user_answers`
+  ADD CONSTRAINT `user_answers_ibfk_1` FOREIGN KEY (`user_exam_attempt_id`) REFERENCES `user_exam_attempts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `user_answers_ibfk_2` FOREIGN KEY (`question_id`) REFERENCES `questions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `user_answers_ibfk_3` FOREIGN KEY (`answer_id`) REFERENCES `answers` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Ràng buộc cho bảng `user_attempt_parts`
+--
+ALTER TABLE `user_attempt_parts`
+  ADD CONSTRAINT `user_attempt_parts_ibfk_1` FOREIGN KEY (`user_exam_attempt_id`) REFERENCES `user_exam_attempts` (`id`),
+  ADD CONSTRAINT `user_attempt_parts_ibfk_2` FOREIGN KEY (`part_id`) REFERENCES `parts` (`id`);
+
+--
+-- Ràng buộc cho bảng `user_exam_attempts`
+--
+ALTER TABLE `user_exam_attempts`
+  ADD CONSTRAINT `user_exam_attempts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `user_exam_attempts_ibfk_2` FOREIGN KEY (`exam_id`) REFERENCES `exams` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Ràng buộc cho bảng `user_profiles`
+--
+ALTER TABLE `user_profiles`
+  ADD CONSTRAINT `user_profiles_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Ràng buộc cho bảng `user_progresses`
+--
+ALTER TABLE `user_progresses`
+  ADD CONSTRAINT `user_progresses_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Ràng buộc cho bảng `user_settings`
+--
+ALTER TABLE `user_settings`
+  ADD CONSTRAINT `user_settings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `user_settings_ibfk_2` FOREIGN KEY (`study_music_id`) REFERENCES `study_musics` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

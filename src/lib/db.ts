@@ -61,80 +61,107 @@ export const sequelize = new Sequelize({
   logging: false,
 });
 
-User.hasOne(UserProfile, { foreignKey: "user_id" });
-UserProfile.belongsTo(User, { foreignKey: "user_id" });
+// User.hasOne(UserProfile, { foreignKey: "user_id" });
+// UserProfile.belongsTo(User, { foreignKey: "user_id" });
 
-User.hasOne(UserSetting, { foreignKey: "user_id" });
-UserSetting.belongsTo(User, { foreignKey: "user_id" });
+// User.hasOne(UserSetting, { foreignKey: "user_id" });
+// UserSetting.belongsTo(User, { foreignKey: "user_id" });
 
-User.hasMany(SpeakingWritingSubmission, {
-  foreignKey: "user_id",
-  as: "speaking_writing_submissions",
-});
-SpeakingWritingSubmission.belongsTo(User, {
-  foreignKey: "user_id",
-});
+// User.hasMany(SpeakingWritingSubmission, {
+//   foreignKey: "user_id",
+//   as: "speaking_writing_submissions",
+// });
+// SpeakingWritingSubmission.belongsTo(User, {
+//   foreignKey: "user_id",
+// });
 
-User.hasMany(LeaderBoard, { foreignKey: "user_id" });
-LeaderBoard.belongsTo(User, { foreignKey: "user_id" });
+// User.hasMany(LeaderBoard, { foreignKey: "user_id" });
+// LeaderBoard.belongsTo(User, { foreignKey: "user_id" });
 
-User.hasMany(Flashcard, { foreignKey: "user_id" });
-Flashcard.belongsTo(User, { foreignKey: "user_id" });
+// User.hasMany(Flashcard, { foreignKey: "user_id" });
+// Flashcard.belongsTo(User, { foreignKey: "user_id" });
 
-User.hasMany(Feedback, { foreignKey: "user_id" });
-Feedback.belongsTo(User, { foreignKey: "user_id" });
+// User.hasMany(Feedback, { foreignKey: "user_id" });
+// Feedback.belongsTo(User, { foreignKey: "user_id" });
 
-User.hasMany(UserExamAttempt, { foreignKey: "user_id" });
-UserExamAttempt.belongsTo(User, { foreignKey: "user_id" });
+// User.hasMany(UserExamAttempt, { foreignKey: "user_id" });
+// UserExamAttempt.belongsTo(User, { foreignKey: "user_id" });
 
-User.hasOne(UserProgress, { foreignKey: "user_id" });
-UserProgress.belongsTo(User, { foreignKey: "user_id" });
+// User.hasOne(UserProgress, { foreignKey: "user_id" });
+// UserProgress.belongsTo(User, { foreignKey: "user_id" });
 
-User.hasOne(ApiUsage, { foreignKey: "user_id" });
-ApiUsage.belongsTo(User, { foreignKey: "user_id" });
+// User.hasOne(ApiUsage, { foreignKey: "user_id" });
+// ApiUsage.belongsTo(User, { foreignKey: "user_id" });
 
-Question.hasMany(Answer, { foreignKey: "question_id" });
-Answer.belongsTo(Question, { foreignKey: "question_id" });
+// Question.hasMany(Answer, { foreignKey: "question_id" });
+// Answer.belongsTo(Question, { foreignKey: "question_id" });
 
-Answer.hasMany(UserAnswer, { foreignKey: "answer_id" });
-UserAnswer.belongsTo(Answer, { foreignKey: "answer_id" });
+// Answer.hasMany(UserAnswer, { foreignKey: "answer_id" });
+// UserAnswer.belongsTo(Answer, { foreignKey: "answer_id" });
 
-Part.hasMany(AudioFile, { foreignKey: "part_id" });
-AudioFile.belongsTo(Part, { foreignKey: "part_id" });
+// Part.hasMany(AudioFile, { foreignKey: "part_id" });
+// AudioFile.belongsTo(Part, { foreignKey: "part_id" });
 
-UserExamAttempt.hasMany(UserAnswer, { foreignKey: "user_exam_attempt_id" });
-UserAnswer.belongsTo(UserExamAttempt, { foreignKey: "user_exam_attempt_id" });
+// UserExamAttempt.hasMany(UserAnswer, { foreignKey: "user_exam_attempt_id" });
+// UserAnswer.belongsTo(UserExamAttempt, { foreignKey: "user_exam_attempt_id" });
 
-Exam.hasMany(UserExamAttempt, { foreignKey: "exam_id" });
-UserExamAttempt.belongsTo(Exam, { foreignKey: "exam_id" });
+// Exam.hasMany(UserExamAttempt, { foreignKey: "exam_id" });
+// UserExamAttempt.belongsTo(Exam, { foreignKey: "exam_id" });
 
-UserSetting.hasOne(StudyMusic, { foreignKey: "user_id" });
-StudyMusic.belongsTo(UserSetting, {
-  foreignKey: "user_id",
-  as: "user_setting",
-});
+// UserSetting.hasOne(StudyMusic, { foreignKey: "user_id" });
+// StudyMusic.belongsTo(UserSetting, {
+//   foreignKey: "user_id",
+//   as: "user_setting",
+// });
 
-Part.hasMany(Exam, { foreignKey: "part_id" });
-Exam.belongsTo(Part, { foreignKey: "part_id" });
+// Part.hasMany(Exam, { foreignKey: "part_id" });
+// Exam.belongsTo(Part, { foreignKey: "part_id" });
 
-Part.hasMany(Question, { foreignKey: "part_id" });
-Question.belongsTo(Part, { foreignKey: "part_id" });
+// Part.hasMany(Question, { foreignKey: "part_id" });
+// Question.belongsTo(Part, { foreignKey: "part_id" });
 
-Vocabulary.hasMany(Flashcard, { foreignKey: "vocabulary_id" });
-Flashcard.belongsTo(Vocabulary, { foreignKey: "vocabulary_id" });
+// Vocabulary.hasMany(Flashcard, { foreignKey: "vocabulary_id" });
+// Flashcard.belongsTo(Vocabulary, { foreignKey: "vocabulary_id" });
 
-Question.hasMany(UserAnswer, { foreignKey: "question_id" });
-UserAnswer.belongsTo(Question, { foreignKey: "question_id" });
+// Question.hasMany(UserAnswer, { foreignKey: "question_id" });
+// UserAnswer.belongsTo(Question, { foreignKey: "question_id" });
 
-SpeakingWritingPrompt.hasMany(SpeakingWritingSubmission, {
-  foreignKey: "prompt_id",
-});
-SpeakingWritingSubmission.belongsTo(SpeakingWritingPrompt, {
-  foreignKey: "prompt_id",
-});
+// SpeakingWritingPrompt.hasMany(SpeakingWritingSubmission, {
+//   foreignKey: "prompt_id",
+// });
+// SpeakingWritingSubmission.belongsTo(SpeakingWritingPrompt, {
+//   foreignKey: "prompt_id",
+// });
 
-Skill.hasMany(SpeakingWritingPrompt, { foreignKey: "skill_id" });
-SpeakingWritingPrompt.belongsTo(Skill, { foreignKey: "skill_id" });
+// Skill.hasMany(SpeakingWritingPrompt, { foreignKey: "skill_id" });
+// SpeakingWritingPrompt.belongsTo(Skill, { foreignKey: "skill_id" });
 
-AIGeneratedContent.belongsTo(User, { foreignKey: "user_id" });
-User.hasMany(AIGeneratedContent, { foreignKey: "user_id" });
+// AIGeneratedContent.belongsTo(User, { foreignKey: "user_id" });
+// User.hasMany(AIGeneratedContent, { foreignKey: "user_id" });
+
+export {
+  AIFeedback,
+  AIGeneratedContent,
+  Answer,
+  ApiUsage,
+  AudioFile,
+  Exam,
+  Feedback,
+  Flashcard,
+  LeaderBoard,
+  Part,
+  Question,
+  Skill,
+  SpeakingWritingPrompt,
+  SpeakingWritingSubmission,
+  StudyMusic,
+  StudySession,
+  Translation,
+  User,
+  UserAnswer,
+  UserExamAttempt,
+  UserProfile,
+  UserProgress,
+  UserSetting,
+  Vocabulary,
+};

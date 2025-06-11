@@ -6,9 +6,10 @@ import {
   DataType,
   PrimaryKey,
   AutoIncrement,
-  // HasMany,
+  HasMany,
 } from "sequelize-typescript";
-// import { Flashcard } from "./Flashcard";
+
+import { Flashcard } from "./Flashcard";
 
 interface VocabularyCreationAttributes {
   word: string;
@@ -63,6 +64,6 @@ export class Vocabulary extends Model<
   @Column(DataType.DATE)
   updated_at!: Date;
 
-  // @HasMany(() => Flashcard)
-  // flashcards?: Flashcard[];
+  @HasMany(() => Flashcard)
+  flashcards?: Flashcard[];
 }

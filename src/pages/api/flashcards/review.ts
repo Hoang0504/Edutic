@@ -2,9 +2,9 @@
 
 import { NextApiRequest, NextApiResponse } from "next";
 // import { verifyToken } from '@/lib/jwt';
-import { Flashcard } from "@/models/Flashcard";
-import { Vocabulary } from "@/models/Vocabulary";
+import { Flashcard, Vocabulary } from "@/lib/db";
 import dayjs from "dayjs";
+import { Op } from "sequelize";
 
 export default async function handler(
   req: NextApiRequest,
@@ -13,6 +13,10 @@ export default async function handler(
   if (req.method !== "GET") {
     return res.status(405).json({ message: "Phương thức không được hỗ trợ" });
   }
+
+  const group = parseInt(req.query.group as string) || 1;
+  const limit = 10;
+  const offset = (group - 1) * limit;
 
   //   const authHeader = req.headers.authorization;
   //   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -32,7 +36,7 @@ export default async function handler(
       where: {
         user_id: decoded.id,
         next_review_date: {
-          lte: dayjs().toDate(),
+          [Op.lte]: dayjs().startOf("day").toDate(),
         },
       },
       include: [
@@ -42,7 +46,16 @@ export default async function handler(
           as: "vocabulary",
         },
       ],
+      order: [["next_review_date", "ASC"]],
+      limit, // Giới hạn số lượng flashcards trả về
+      offset, // Bỏ qua số lượng flashcards đã có trong các nhóm trước
     });
+
+    if (!flashcards || flashcards.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "Không có thẻ flash nào cần ôn tập" });
+    }
 
     const result = flashcards.map((f) => ({
       id: f.id,

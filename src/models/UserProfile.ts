@@ -5,7 +5,7 @@ import {
   DataType,
   ForeignKey,
   PrimaryKey,
-  // BelongsTo,
+  BelongsTo,
 } from "sequelize-typescript";
 import { User } from "./User";
 
@@ -15,9 +15,6 @@ export class UserProfile extends Model<UserProfile> {
   @ForeignKey(() => User)
   @Column(DataType.INTEGER)
   user_id!: number;
-
-  @Column(DataType.INTEGER)
-  target_score!: number;
 
   @Column(DataType.INTEGER)
   study_time_preference!: number;
@@ -34,6 +31,6 @@ export class UserProfile extends Model<UserProfile> {
   @Column(DataType.DATE)
   updated_at!: Date;
 
-  // @BelongsTo(() => User)
-  // user!: User;
+  @BelongsTo(() => User)
+  user!: User;
 }

@@ -6,8 +6,9 @@ import {
   PrimaryKey,
   AutoIncrement,
   ForeignKey,
-  // BelongsTo,
+  BelongsTo,
 } from "sequelize-typescript";
+
 import { User } from "./User";
 import { Vocabulary } from "./Vocabulary";
 
@@ -51,9 +52,9 @@ export class Flashcard extends Model<Flashcard, FlashcardCreationAttributes> {
   @Column(DataType.DATE)
   updated_at!: Date;
 
-  // @BelongsTo(() => User)
-  // user!: User;
+  @BelongsTo(() => User)
+  user!: User;
 
-  // @BelongsTo(() => Vocabulary)
-  // vocabulary!: Vocabulary;
+  @BelongsTo(() => Vocabulary)
+  vocabulary!: Vocabulary;
 }

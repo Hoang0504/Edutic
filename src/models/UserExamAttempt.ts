@@ -12,6 +12,7 @@ import {
 import { User } from "./User";
 import { Exam } from "./Exam";
 import { UserAnswer } from "./UserAnswer";
+import { UserAttemptPart } from "./UserAttemptPart";
 
 @Table({ tableName: "user_exam_attempts", timestamps: false })
 export class UserExamAttempt extends Model<UserExamAttempt> {
@@ -54,4 +55,7 @@ export class UserExamAttempt extends Model<UserExamAttempt> {
 
   @HasMany(() => UserAnswer)
   answers!: UserAnswer[];
+
+  @HasMany(() => UserAttemptPart)
+  attemptParts!: UserAttemptPart[];
 }

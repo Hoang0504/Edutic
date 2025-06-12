@@ -7,7 +7,8 @@ import {
   AutoIncrement,
   HasMany,
 } from "sequelize-typescript";
-import { Part } from "./Part";
+import { UserExamAttempt } from "./UserExamAttempt";
+import { ExamPart } from "./ExamPart";
 
 @Table({ tableName: "exams", timestamps: false })
 export class Exam extends Model<Exam> {
@@ -19,14 +20,15 @@ export class Exam extends Model<Exam> {
   @Column({ type: DataType.STRING, allowNull: false })
   title!: string;
 
+  @Column({
+    type: DataType.ENUM("random", "full_test"),
+    allowNull: false,
+    defaultValue: "full_test",
+  })
+  type!: string;
+
   @Column(DataType.TEXT)
   description!: string;
-
-  @Column({
-    type: DataType.ENUM("easy", "medium", "hard"),
-    defaultValue: "medium",
-  })
-  difficulty_level!: string;
 
   @Column(DataType.INTEGER)
   estimated_time!: number;
@@ -40,6 +42,9 @@ export class Exam extends Model<Exam> {
   @Column(DataType.DATE)
   updated_at!: Date;
 
-  @HasMany(() => Part)
-  parts!: Part[];
+  @HasMany(() => UserExamAttempt)
+  userExamAttempts!: UserExamAttempt[];
+
+  @HasMany(() => ExamPart)
+  examParts!: ExamPart[];
 }

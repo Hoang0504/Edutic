@@ -5,10 +5,12 @@ import {
   DataType,
   PrimaryKey,
   AutoIncrement,
-  ForeignKey,
-  BelongsTo,
+  HasMany,
 } from "sequelize-typescript";
-import { Exam } from "./Exam";
+import { Question } from "./Question";
+import { AudioFile } from "./AudioFile";
+import { ExamPart } from "./ExamPart";
+import { UserAttemptPart } from "./UserAttemptPart";
 
 @Table({ tableName: "parts", timestamps: false })
 export class Part extends Model<Part> {
@@ -16,10 +18,6 @@ export class Part extends Model<Part> {
   @AutoIncrement
   @Column(DataType.INTEGER)
   id!: number;
-
-  @ForeignKey(() => Exam)
-  @Column({ type: DataType.INTEGER, allowNull: false })
-  exam_id!: number;
 
   @Column({ type: DataType.INTEGER, allowNull: false })
   part_number!: number;
@@ -33,6 +31,13 @@ export class Part extends Model<Part> {
   @Column(DataType.TEXT)
   instruction!: string;
 
+  @Column({
+    type: DataType.ENUM("easy", "medium", "hard"),
+    allowNull: false,
+    defaultValue: "medium",
+  })
+  difficulty_level!: string;
+
   @Column(DataType.INTEGER)
   time_limit!: number;
 
@@ -42,6 +47,15 @@ export class Part extends Model<Part> {
   @Column(DataType.DATE)
   updated_at!: Date;
 
-  @BelongsTo(() => Exam)
-  exam!: Exam;
+  @HasMany(() => Question)
+  questions!: Question[];
+
+  @HasMany(() => AudioFile)
+  audioFiles!: AudioFile[];
+
+  @HasMany(() => ExamPart)
+  examParts!: ExamPart[];
+
+  @HasMany(() => UserAttemptPart)
+  userAttemptParts!: UserAttemptPart[];
 }

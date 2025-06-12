@@ -37,12 +37,6 @@ export class User extends Model<User> {
   @Column(DataType.STRING)
   auth_provider_id!: string;
 
-  @Column(DataType.STRING)
-  verification_token!: string;
-
-  @Column(DataType.DATE)
-  verification_token_expires!: string;
-
   @Column(DataType.DATE)
   created_at!: Date;
 
@@ -51,6 +45,9 @@ export class User extends Model<User> {
 
   @Column(DataType.DATE)
   last_login!: Date;
+  
+  @Column({ type: DataType.ENUM("user", "admin"), defaultValue: "user" })
+  role!: string;
 
   // @HasOne(() => UserProfile)
   // profile!: UserProfile;

@@ -12,6 +12,8 @@ import { AIFeedback } from "@/models/AIFeedback";
 import { ApiUsage } from "@/models/ApiUsage";
 import { Exam } from "@/models/Exam";
 import { Part } from "@/models/Part";
+import { ExamPart } from "@/models/ExamPart";
+import { UserAttemptPart } from "@/models/UserAttemptPart";
 import { Skill } from "@/models/Skill";
 import { SpeakingWritingPrompt } from "@/models/SpeakingWritingPrompt";
 import { SpeakingWritingSubmission } from "@/models/SpeakingWritingSubmission";
@@ -39,6 +41,7 @@ export const sequelize = new Sequelize({
     ApiUsage,
     AudioFile,
     Exam,
+    ExamPart,
     Feedback,
     Flashcard,
     LeaderBoard,
@@ -52,6 +55,7 @@ export const sequelize = new Sequelize({
     Translation,
     User,
     UserAnswer,
+    UserAttemptPart,
     UserExamAttempt,
     UserProfile,
     UserProgress,

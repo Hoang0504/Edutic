@@ -1,4 +1,4 @@
-
+'use client'
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface Admin {
@@ -11,7 +11,6 @@ interface AdminContextProps {
   setAdmin: (admin: Admin | null) => void;
   handleLogoutAdmin: () => boolean;
 }
-
 const AdminContext = createContext<AdminContextProps | undefined>(undefined);
 
 export const AdminProvider = ({ children }: { children: ReactNode }) => {

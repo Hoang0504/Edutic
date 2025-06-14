@@ -2,6 +2,9 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import AddUserPage from '@/components/admin/add/AddUser';
+import EditUserPage from '@/components/admin/edit/EditUser';
+
 
 // Định nghĩa kiểu cho user
 interface User {
@@ -16,9 +19,8 @@ const UserAdmin = () => {
   const [filterName, setFilterName] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
-  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isEditUserModalVisible, setIsEditUserModalVisible] = useState(false);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
-  const [isDeletedModalVisible, setIsDeletedModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   // Mock data
@@ -26,11 +28,6 @@ const UserAdmin = () => {
     { id: 1, email: 'user1@example.com', avatar: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', role: 'Admin' },
     { id: 2, email: 'user2@example.com', avatar: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', role: 'User' },
     { id: 3, email: 'user3@example.com', avatar: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', role: 'Moderator' },
-  ];
-
-  const deletedUsers: User[] = [
-    { id: 4, email: 'deleted1@example.com',avatar: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', role: 'User' },
-    { id: 5, email: 'deleted2@example.com',avatar: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', role: 'Admin' },
   ];
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,18 +47,17 @@ const UserAdmin = () => {
 
   const handleModalCancel = () => {
     setIsAddModalVisible(false);
-    setIsEditModalVisible(false);
+    setIsEditUserModalVisible(false);
     setIsDetailModalVisible(false);
-    setIsDeletedModalVisible(false);
   };
 
   const handleLogoutAdmin = () => {
     router.push('/admin/login');
   };
 
-  const handleEdit = (user: User) => {
+  const handleEditUser = (user: User) => {
     setSelectedUser(user);
-    setIsEditModalVisible(true);
+    setIsEditUserModalVisible(true);
   };
 
   const handleDetail = (user: User) => {
@@ -69,9 +65,25 @@ const UserAdmin = () => {
     setIsDetailModalVisible(true);
   };
 
-  const showDeletedUsersModal = () => {
-    setIsDeletedModalVisible(true);
+  const handleAddUser = (e: React.FormEvent, formData: { email: string; role: string; avatarFile?: File }) => {
+    e.preventDefault();
+    console.log('Add User submitted', formData);
+    if (formData.avatarFile) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        console.log('Avatar base64:', reader.result);
+      };
+      reader.readAsDataURL(formData.avatarFile);
+    }
+    setIsAddModalVisible(false);
   };
+
+
+const handleUpdateUser = (e: React.FormEvent, formData: { email: string; role: string; avatar: string; avatarFile?: File }) => {
+  e.preventDefault();
+  console.log('Update User submitted', formData, formData.avatarFile); // Xử lý avatarFile nếu cần
+  setIsEditUserModalVisible(false);
+};
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -84,23 +96,6 @@ const UserAdmin = () => {
         </button>
         <h1 className="text-2xl font-semibold mx-auto">User Management</h1>
         <div className="flex space-x-2">
-          <button
-            className="flex items-center bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-            onClick={showDeletedUsersModal}
-          >
-            <svg
-              className="w-5 h-5 mr-1"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fillRule="evenodd"
-                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
           <button
             className="flex items-center bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
             onClick={handleLogoutAdmin}
@@ -163,9 +158,9 @@ const UserAdmin = () => {
                     <td className="p-2 border flex space-x-2">
                       <button
                         className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
-                        onClick={() => handleEdit(user)}
+                        onClick={() => handleEditUser(user)}
                       >
-                        Edit
+                        Edit 
                       </button>
                       <button
                         className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
@@ -208,30 +203,20 @@ const UserAdmin = () => {
       <div className="modal">
         <div className={isAddModalVisible ? 'modal-content' : 'hidden'}>
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
-              <h2 className="text-xl font-semibold mb-4">Add User</h2>
-              <div>Add User Form Placeholder</div>
-              <button
-                className="mt-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                onClick={handleModalCancel}
-              >
-                Close
-              </button>
+            <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-6 w-1/3 relative">
+              <AddUserPage onSubmit={handleAddUser} onCancel={handleModalCancel} />
             </div>
           </div>
         </div>
 
-        <div className={isEditModalVisible ? 'modal-content' : 'hidden'}>
+        <div className={isEditUserModalVisible ? 'modal-content' : 'hidden'}>
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
-              <h2 className="text-xl font-semibold mb-4">Edit User</h2>
-              <div>Edit User Form for {selectedUser?.email}</div>
-              <button
-                className="mt-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                onClick={handleModalCancel}
-              >
-                Close
-              </button>
+            <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-6 w-1/3 relative">
+              <EditUserPage
+                onSubmit={handleUpdateUser}
+                onCancel={handleModalCancel}
+                initialData={selectedUser ? { email: selectedUser.email, role: selectedUser.role, avatar: selectedUser.avatar } : undefined}
+              />
             </div>
           </div>
         </div>
@@ -252,43 +237,6 @@ const UserAdmin = () => {
                   <h3 className="text-xl font-semibold">{selectedUser.email}</h3>
                   <p>Role: {selectedUser.role}</p>
                 </div>
-              )}
-              <button
-                className="mt-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                onClick={handleModalCancel}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className={isDeletedModalVisible ? 'modal-content' : 'hidden'}>
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
-              <h2 className="text-xl font-semibold mb-4">Deleted Users</h2>
-              {deletedUsers.length > 0 ? (
-                deletedUsers.map((user) => (
-                  <div key={user.id} className="p-4 border-b">
-                    <p><strong>ID:</strong> {user.id}</p>
-                    <p><strong>Email:</strong> {user.email}</p>
-                    <p><strong>Role:</strong> {user.role}</p>
-                    <button
-                      className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 mr-2"
-                      onClick={() => {}}
-                    >
-                      Restore
-                    </button>
-                    <button
-                      className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                      onClick={() => {}}
-                    >
-                      Delete Permanently
-                    </button>
-                  </div>
-                ))
-              ) : (
-                <p>No deleted users found.</p>
               )}
               <button
                 className="mt-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"

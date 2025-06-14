@@ -1,40 +1,42 @@
 'use client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-// import Image from 'next/image';
+import AddExamPage from '@/components/admin/add/AddExam';
+import EditExamPage from '@/components/admin/edit/EditExam';
+
 
 // Định nghĩa kiểu cho exam
 interface Exam {
   id: number;
   title: string;
-  type: string;
+  level: string;
   description: string;
-  is_published: boolean;
+  published: string;
 }
 
 const Exams = () => {
   const router = useRouter();
-  const [filterName, setFilterName] = useState('');
+  const [filterTitle, setFilterTitle] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
-  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isEditExamModalVisible, setIsEditExamModalVisible] = useState(false);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
 
   // Mock data
   const mockData: Exam[] = [
-    { id: 1, title: 'Math Exam 2025', type: 'Multiple Choice', description: 'Basic math test', is_published: true },
-    { id: 2, title: 'Science Exam', type: 'Essay', description: 'Science concepts', is_published: false },
-    { id: 3, title: 'History Quiz', type: 'True/False', description: 'Historical events', is_published: true },
+    { id: 1, title: 'Exam 1', level: 'Easy', description: 'Description 1', published: 'Yes' },
+    { id: 2, title: 'Exam 2', level: 'Medium', description: 'Description 2', published: 'No' },
+    { id: 3, title: 'Exam 3', level: 'Hard', description: 'Description 3', published: 'Yes' },
   ];
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilterName(e.target.value);
+    setFilterTitle(e.target.value);
     setCurrentPage(1);
   };
 
   const filteredExams = mockData.filter((exam: Exam) => {
-    const searchLower = filterName.toLowerCase();
+    const searchLower = filterTitle.toLowerCase();
     const titleLower = exam.title.toLowerCase();
     return titleLower.includes(searchLower);
   });
@@ -45,7 +47,7 @@ const Exams = () => {
 
   const handleModalCancel = () => {
     setIsAddModalVisible(false);
-    setIsEditModalVisible(false);
+    setIsEditExamModalVisible(false);
     setIsDetailModalVisible(false);
   };
 
@@ -53,9 +55,9 @@ const Exams = () => {
     router.push('/admin/login');
   };
 
-  const handleEdit = (exam: Exam) => {
+  const handleEditExam = (exam: Exam) => {
     setSelectedExam(exam);
-    setIsEditModalVisible(true);
+    setIsEditExamModalVisible(true);
   };
 
   const handleDetail = (exam: Exam) => {
@@ -63,12 +65,27 @@ const Exams = () => {
     setIsDetailModalVisible(true);
   };
 
+const handleAddExam = (e: React.FormEvent, formData: { title: string; level: string; description: string; published: string }) => {
+  e.preventDefault();
+  console.log('Add Exam submitted', formData); // Debug
+  setIsAddModalVisible(false);
+};
+
+const handleUpdateExam = (e: React.FormEvent) => {
+  e.preventDefault();
+  console.log('Update Exam submitted'); // Debug
+  setIsEditExamModalVisible(false);
+};
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="bg-[#006494] text-white flex justify-between items-center p-4">
         <button
           className="flex items-center bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          onClick={() => setIsAddModalVisible(true)}
+          onClick={() => {
+            console.log('Add Exam button clicked'); // Debug
+            setIsAddModalVisible(true);
+          }}
         >
           <span className="mr-2">+</span> Add Exam
         </button>
@@ -100,7 +117,7 @@ const Exams = () => {
           <input
             type="text"
             placeholder="Search for exam by title"
-            value={filterName}
+            value={filterTitle}
             onChange={handleFilterChange}
             className="w-full p-2 border rounded mb-4"
           />
@@ -111,7 +128,7 @@ const Exams = () => {
                 <tr className="bg-gray-200">
                   <th className="p-2 border">Id</th>
                   <th className="p-2 border">Title</th>
-                  <th className="p-2 border">Type</th>
+                  <th className="p-2 border">Level</th>
                   <th className="p-2 border">Description</th>
                   <th className="p-2 border">Published</th>
                   <th className="p-2 border">Action</th>
@@ -122,13 +139,13 @@ const Exams = () => {
                   <tr key={exam.id} className="border-t">
                     <td className="p-2 border">{exam.id}</td>
                     <td className="p-2 border">{exam.title}</td>
-                    <td className="p-2 border">{exam.type}</td>
+                    <td className="p-2 border">{exam.level}</td>
                     <td className="p-2 border">{exam.description}</td>
-                    <td className="p-2 border">{exam.is_published ? 'Yes' : 'No'}</td>
+                    <td className="p-2 border">{exam.published}</td>
                     <td className="p-2 border flex space-x-2">
                       <button
                         className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
-                        onClick={() => handleEdit(exam)}
+                        onClick={() => handleEditExam(exam)}
                       >
                         Edit
                       </button>
@@ -173,30 +190,20 @@ const Exams = () => {
       <div className="modal">
         <div className={isAddModalVisible ? 'modal-content' : 'hidden'}>
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
-              <h2 className="text-xl font-semibold mb-4">Add Exam</h2>
-              <div>Add Exam Form Placeholder</div>
-              <button
-                className="mt-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                onClick={handleModalCancel}
-              >
-                Close
-              </button>
+            <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-6 w-1/3 relative">
+              <AddExamPage onSubmit={handleAddExam} onCancel={handleModalCancel} />
             </div>
           </div>
         </div>
 
-        <div className={isEditModalVisible ? 'modal-content' : 'hidden'}>
+        <div className={isEditExamModalVisible ? 'modal-content' : 'hidden'}>
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
-              <h2 className="text-xl font-semibold mb-4">Edit Exam</h2>
-              <div>Edit Exam Form for {selectedExam?.title}</div>
-              <button
-                className="mt-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                onClick={handleModalCancel}
-              >
-                Close
-              </button>
+            <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-6 w-1/3 relative">
+              <EditExamPage
+  onSubmit={handleUpdateExam}
+  onCancel={handleModalCancel}
+  initialData={selectedExam || undefined}
+/>
             </div>
           </div>
         </div>
@@ -208,9 +215,9 @@ const Exams = () => {
               {selectedExam && (
                 <div className="text-center">
                   <h3 className="text-xl font-semibold">{selectedExam.title}</h3>
-                  <p>Type: {selectedExam.type}</p>
+                  <p>Level: {selectedExam.level}</p>
                   <p>Description: {selectedExam.description}</p>
-                  <p>Published: {selectedExam.is_published ? 'Yes' : 'No'}</p>
+                  <p>Published: {selectedExam.published}</p>
                 </div>
               )}
               <button

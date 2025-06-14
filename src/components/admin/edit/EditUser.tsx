@@ -1,67 +1,130 @@
 'use client';
-import React from 'react';
-import AdminLayout from '@/components/layout/AdminLayout';
-import { PencilIcon } from '@heroicons/react/24/outline';
+import React, { useState } from 'react';
+import { PencilIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import Image from 'next/image'; // Import Image từ next/image
 
-const EditUserPage = () => {
+interface EditUserProps {
+  onSubmit: (e: React.FormEvent, formData: { email: string; role: string; avatar: string; avatarFile?: File }) => void; // Cập nhật type onSubmit
+  onCancel: () => void;
+  initialData?: { email: string; role: string; avatar: string };
+}
+
+const EditUserPage = ({ onSubmit, onCancel, initialData }: EditUserProps) => {
+  const [formData, setFormData] = useState({
+    email: initialData?.email || 'nguyenvana@example.com',
+    role: initialData?.role || 'Employee',
+    avatar: initialData?.avatar || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
+  });
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(initialData?.avatar || null); // Lưu URL preview của ảnh
+ const [avatarFile, setAvatarFile] = useState<File | undefined>(undefined);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(e, { ...formData, avatarFile }); // Truyền avatarFile vào onSubmit để sử dụng
+    console.log('Form submitted with avatarFile:', avatarFile); // Đảm bảo avatarFile được đọc
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+        setFormData((prev) => ({ ...prev, avatar: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
-    <AdminLayout>
-      <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
-        <h2 className="text-2xl font-semibold flex items-center mb-6">
-          <PencilIcon className="h-6 w-6 mr-2 text-primary" />
-           EditUser
-        </h2>
-        <form className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Name
-            </label>
+    <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-6 relative">
+      <button
+        className="absolute top-2 right-2 text-red-600 hover:text-red-800"
+        onClick={onCancel}
+      >
+        <XMarkIcon className="h-6 w-6" />
+      </button>
+      <h2 className="text-2xl font-semibold flex items-center mb-6">
+        <PencilIcon className="h-6 w-6 mr-2 text-blue-600" />
+        Edit User
+      </h2>
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Email
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+            placeholder="Nhập email"
+          />
+        </div>
+        <div>
+          <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Role
+          </label>
+          <select
+            id="role"
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+          >
+            <option value="Employee">Employee</option>
+            <option value="Admin">Admin</option>
+          </select>
+        </div>
+        <div>
+          <label htmlFor="avatar" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Avatar
+          </label>
+          <div className="mt-1 flex items-center space-x-4">
             <input
-              type="text"
-              id="name"
-              name="name"
-              defaultValue="Nguyen Van A" // Giá trị mặc định (có thể thay đổi)
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-              placeholder="Nhập tên"
+              type="file"
+              id="avatar"
+              name="avatar"
+              accept="image/*"
+              onChange={handleAvatarChange}
+              className="hidden"
             />
-          </div>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              defaultValue="nguyenvana@example.com" // Giá trị mặc định
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-              placeholder="Nhập email"
-            />
-          </div>
-          <div>
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Role
-            </label>
-            <select
-              id="role"
-              name="role"
-              defaultValue="Employee" // Giá trị mặc định
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+            <button
+              type="button"
+              onClick={() => document.getElementById('avatar')?.click()}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
-              <option value="Employee">Employee</option>
-              <option value="Admin">Admin</option>
-            </select>
+              Upload Avatar
+            </button>
+            {avatarPreview && (
+              <Image
+                src={avatarPreview}
+                alt="Avatar Preview"
+                width={64} // Đặt kích thước cố định
+                height={64} // Đặt kích thước cố định
+                className="object-cover rounded-full"
+              />
+            )}
           </div>
+        </div>
+        <div className="flex justify-center">
           <button
             type="submit"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
           >
             <PencilIcon className="h-5 w-5 mr-2" />
             Update User
           </button>
-        </form>
-      </div>
-    </AdminLayout>
+        </div>
+      </form>
+    </div>
   );
 };
 

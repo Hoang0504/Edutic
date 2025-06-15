@@ -11,6 +11,7 @@ import {
 } from "sequelize-typescript";
 import { Part } from "./Part";
 import { Answer } from "./Answer";
+import { QuestionGroup } from "./QuestionGroup";
 
 @Table({ tableName: "questions", timestamps: false })
 export class Question extends Model<Question> {
@@ -22,6 +23,10 @@ export class Question extends Model<Question> {
   @ForeignKey(() => Part)
   @Column({ type: DataType.INTEGER, allowNull: false })
   part_id!: number;
+
+  @ForeignKey(() => QuestionGroup)
+  @Column({ type: DataType.INTEGER, allowNull: false })
+  group_id!: number;
 
   @Column({ type: DataType.INTEGER, allowNull: false })
   question_number!: number;

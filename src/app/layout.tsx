@@ -1,4 +1,5 @@
-// src/app/layout.tsx
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 import "./globals.css";
 
 export const metadata = {
@@ -6,14 +7,25 @@ export const metadata = {
   description: "Luyện thi TOEIC hiệu quả",
 };
 
-export default function RootLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const user = {
+    name: "null",
+    // avatar: '/path/to/avatar.jpg'
+  };
+
   return (
     <html lang="vi">
-      <body className="bg-white text-gray-900">{children}</body>
+      <body>
+        <div className="min-h-screen bg-gray-50 flex flex-col">
+          <Header user={user} />
+          <main className="flex-1 py-6">{children}</main>
+          <Footer />
+        </div>
+      </body>
     </html>
   );
 }

@@ -5,9 +5,9 @@ import {
   DataType,
   PrimaryKey,
   AutoIncrement,
-  // HasOne,
+  HasOne,
 } from "sequelize-typescript";
-// import { UserProfile } from "./UserProfile";
+import { UserProfile } from "./UserProfile";
 
 @Table({ tableName: "users", timestamps: false })
 export class User extends Model<User> {
@@ -45,10 +45,10 @@ export class User extends Model<User> {
 
   @Column(DataType.DATE)
   last_login!: Date;
-  
+
   @Column({ type: DataType.ENUM("user", "admin"), defaultValue: "user" })
   role!: string;
 
-  // @HasOne(() => UserProfile)
-  // profile!: UserProfile;
+  @HasOne(() => UserProfile)
+  profile!: UserProfile;
 }

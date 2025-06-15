@@ -21,8 +21,8 @@ export class Translation extends Model {
   @Column(DataType.INTEGER)
   content_id!: number;
 
-  @Column(DataType.TEXT)
-  english_text!: string;
+  // @Column(DataType.TEXT)
+  // english_text!: string;
 
   @Column(DataType.TEXT)
   vietnamese_text!: string;

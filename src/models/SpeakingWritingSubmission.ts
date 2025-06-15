@@ -40,6 +40,9 @@ export class SpeakingWritingSubmission extends Model<SpeakingWritingSubmission> 
   @Column(DataType.INTEGER)
   ai_feedback_id!: number;
 
+  @Column(DataType.INTEGER)
+  score!: number;
+
   @Column(DataType.DATE)
   created_at!: Date;
 

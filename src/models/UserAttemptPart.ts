@@ -29,6 +29,9 @@ export class UserAttemptPart extends Model<UserAttemptPart> {
   @Column(DataType.INTEGER)
   order_index!: number;
 
+  @Column(DataType.INTEGER)
+  score!: number;
+
   @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
   created_at!: Date;
 
@@ -37,4 +40,4 @@ export class UserAttemptPart extends Model<UserAttemptPart> {
 
   @BelongsTo(() => Part)
   part!: Part;
-} 
+}

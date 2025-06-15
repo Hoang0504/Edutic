@@ -20,6 +20,9 @@ export class Exam extends Model<Exam> {
   @Column({ type: DataType.STRING, allowNull: false })
   title!: string;
 
+  @Column(DataType.INTEGER)
+  year_of_release!: number;
+
   @Column({
     type: DataType.ENUM("random", "full_test"),
     allowNull: false,

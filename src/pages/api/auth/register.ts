@@ -1,14 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcryptjs";
-import { User } from "@/models/User";
+import { User } from "@/lib/db";
 import { sequelize } from "@/lib/db";
 import { withErrorHandler } from "@/lib/withErrorHandler";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
-    return res.status(405).json({ 
-      success: false, 
-      data: { message: "Method not allowed" } 
+    return res.status(405).json({
+      success: false,
+      data: { message: "Method not allowed" },
     });
   }
 
@@ -17,20 +17,20 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { email, password, name } = req.body;
 
   if (!email || !password || !name) {
-    return res.status(400).json({ 
-      success: false, 
-      data: { message: "Missing required fields" } 
+    return res.status(400).json({
+      success: false,
+      data: { message: "Missing required fields" },
     });
   }
 
   const existingUser = await User.findOne({ where: { email } });
   if (existingUser) {
-    return res.status(400).json({ 
-      success: false, 
-      data: { message: "Email already registered" } 
+    return res.status(400).json({
+      success: false,
+      data: { message: "Email already registered" },
     });
   }
-  
+
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -56,9 +56,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         email: user.email,
         name: user.name,
         role: user.role,
-      }
-    }
+      },
+    },
   });
 }
 
-export default withErrorHandler(handler, "Có lỗi xảy ra trong quá trình đăng ký");
+export default withErrorHandler(
+  handler,
+  "Có lỗi xảy ra trong quá trình đăng ký"
+);

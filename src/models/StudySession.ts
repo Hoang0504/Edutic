@@ -9,9 +9,29 @@ import {
   BelongsTo,
 } from "sequelize-typescript";
 import { User } from "./User";
+import type { User as UserType } from "./User";
+
+interface StudySessionCreationAttributes {
+  id?: number;
+  user_id: number;
+  start_time: Date;
+  end_time: Date;
+  duration: number;
+  activity_type:
+    | "exam"
+    | "flashcard"
+    | "listening"
+    | "reading"
+    | "speaking"
+    | "writing";
+  created_at?: Date;
+}
 
 @Table({ tableName: "study_sessions", timestamps: false })
-export class StudySession extends Model<StudySession> {
+export class StudySession extends Model<
+  StudySession,
+  StudySessionCreationAttributes
+> {
   @PrimaryKey
   @AutoIncrement
   @Column(DataType.INTEGER)
@@ -43,12 +63,9 @@ export class StudySession extends Model<StudySession> {
   })
   activity_type!: string;
 
-  @Column(DataType.INTEGER)
-  activity_id!: number;
-
   @Column(DataType.DATE)
   created_at!: Date;
 
-  @BelongsTo(() => User)
-  user!: User;
+  @BelongsTo(() => require("./User").User)
+  user!: UserType;
 }

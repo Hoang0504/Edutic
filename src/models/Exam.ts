@@ -7,11 +7,23 @@ import {
   AutoIncrement,
   HasMany,
 } from "sequelize-typescript";
-import { UserExamAttempt } from "./UserExamAttempt";
-import { ExamPart } from "./ExamPart";
+import type { UserExamAttempt as UserExamAttemptType } from "./UserExamAttempt";
+import type { ExamPart as ExamPartType } from "./ExamPart";
+
+interface ExamCreationAttributes {
+  id?: number; // Optional (auto-increment)
+  title: string; // Bắt buộc (allowNull: false)
+  year_of_release: number; // Bắt buộc (DataType.INTEGER mặc định not null)
+  type?: "random" | "full_test"; // Optional (có defaultValue)
+  description: string; // Bắt buộc (DataType.TEXT mặc định not null)
+  estimated_time: number; // Bắt buộc
+  is_published?: boolean; // Optional (có defaultValue)
+  created_at?: Date; // Optional (có thể tự động tạo)
+  updated_at?: Date; // Optional (có thể tự động tạo)
+}
 
 @Table({ tableName: "exams", timestamps: false })
-export class Exam extends Model<Exam> {
+export class Exam extends Model<Exam, ExamCreationAttributes> {
   @PrimaryKey
   @AutoIncrement
   @Column(DataType.INTEGER)
@@ -45,9 +57,9 @@ export class Exam extends Model<Exam> {
   @Column(DataType.DATE)
   updated_at!: Date;
 
-  @HasMany(() => UserExamAttempt)
-  userExamAttempts!: UserExamAttempt[];
+  @HasMany(() => require("./UserExamAttempt").UserExamAttempt)
+  userExamAttempts!: UserExamAttemptType[];
 
-  @HasMany(() => ExamPart)
-  examParts!: ExamPart[];
+  @HasMany(() => require("./ExamPart").ExamPart)
+  examParts!: ExamPartType[];
 }

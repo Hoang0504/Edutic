@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcryptjs";
-import { User } from "@/lib/db";
-import { sequelize } from "@/lib/db";
+import { User } from "@/models/User";
+import sequelize from "@/lib/db";
 import { withErrorHandler } from "@/lib/withErrorHandler";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -40,7 +40,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     name,
     is_email_verified: false,
     auth_provider: "email",
-    role: "user",
+    role: "student", // Default role
+    uuid: crypto.randomUUID(),
     created_at: new Date(),
     updated_at: new Date(),
   } as any);

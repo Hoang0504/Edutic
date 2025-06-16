@@ -12,12 +12,24 @@ import {
 } from "sequelize-typescript";
 import { User } from "./User";
 import { Skill } from "./Skill";
+import type { User as UserType } from "./User";
+import type { Skill as SkillType } from "./Skill";
+
+interface UserStudyPreferenceCreationAttributes {
+  user_id: number;
+  skill_id: number;
+  daily_minutes: number;
+  updated_at?: Date;
+}
 
 @Table({
   tableName: "user_study_preferences",
   timestamps: false,
 })
-export class UserStudyPreference extends Model<UserStudyPreference> {
+export class UserStudyPreference extends Model<
+  UserStudyPreference,
+  UserStudyPreferenceCreationAttributes
+> {
   @PrimaryKey
   @ForeignKey(() => User)
   @Column({
@@ -48,9 +60,9 @@ export class UserStudyPreference extends Model<UserStudyPreference> {
   })
   updated_at!: Date;
 
-  @BelongsTo(() => User)
-  user!: User;
+  @BelongsTo(() => require("./User").User)
+  user!: UserType;
 
-  @BelongsTo(() => Skill)
-  skill!: Skill;
+  @BelongsTo(() => require("./Skill").Skill)
+  skill!: SkillType;
 }

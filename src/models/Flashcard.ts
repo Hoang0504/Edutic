@@ -10,7 +10,9 @@ import {
 } from "sequelize-typescript";
 
 import { User } from "./User";
+import type { User as UserType } from "./User";
 import { Vocabulary } from "./Vocabulary";
+import type { Vocabulary as VocabularyType } from "./Vocabulary";
 
 interface FlashcardCreationAttributes {
   user_id: number;
@@ -52,9 +54,9 @@ export class Flashcard extends Model<Flashcard, FlashcardCreationAttributes> {
   @Column(DataType.DATE)
   updated_at!: Date;
 
-  @BelongsTo(() => User)
-  user!: User;
+  @BelongsTo(() => require("./User").User)
+  user!: UserType;
 
-  @BelongsTo(() => Vocabulary)
-  vocabulary!: Vocabulary;
+  @BelongsTo(() => require("./Vocabulary").Vocabulary)
+  vocabulary!: VocabularyType;
 }

@@ -10,9 +10,23 @@ import {
 } from "sequelize-typescript";
 import { UserExamAttempt } from "./UserExamAttempt";
 import { Part } from "./Part";
+import type { UserExamAttempt as UserExamAttemptType } from "./UserExamAttempt";
+import type { Part as PartType } from "./Part";
+
+interface UserAttemptPartCreationAttributes {
+  id?: number;
+  user_exam_attempt_id: number;
+  part_id: number;
+  order_index: number;
+  score: number;
+  created_at?: Date; // Optional due to defaultValue
+}
 
 @Table({ tableName: "user_attempt_parts", timestamps: false })
-export class UserAttemptPart extends Model<UserAttemptPart> {
+export class UserAttemptPart extends Model<
+  UserAttemptPart,
+  UserAttemptPartCreationAttributes
+> {
   @PrimaryKey
   @AutoIncrement
   @Column(DataType.INTEGER)
@@ -35,9 +49,9 @@ export class UserAttemptPart extends Model<UserAttemptPart> {
   @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
   created_at!: Date;
 
-  @BelongsTo(() => UserExamAttempt)
-  userExamAttempt!: UserExamAttempt;
+  @BelongsTo(() => require("./UserExamAttempt").UserExamAttempt)
+  userExamAttempt!: UserExamAttemptType;
 
-  @BelongsTo(() => Part)
-  part!: Part;
+  @BelongsTo(() => require("./Part").Part)
+  part!: PartType;
 }

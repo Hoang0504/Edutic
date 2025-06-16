@@ -10,14 +10,26 @@ import {
   CreatedAt,
   HasMany,
 } from "sequelize-typescript";
-import { Part } from "./Part"; // Giả sử bạn có model Part đã định nghĩa
-import { Question } from "./Question";
+import { Part } from "./Part";
+import type { Part as PartType } from "./Part";
+import type { Question as QuestionType } from "./Question";
+
+interface QuestionGroupCreationAttributes {
+  id?: number;
+  part_id: number;
+  image_url?: string | null;
+  content?: string | null;
+  created_at?: Date;
+}
 
 @Table({
   tableName: "question_groups",
   timestamps: false,
 })
-export class QuestionGroup extends Model<QuestionGroup> {
+export class QuestionGroup extends Model<
+  QuestionGroup,
+  QuestionGroupCreationAttributes
+> {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
@@ -52,9 +64,9 @@ export class QuestionGroup extends Model<QuestionGroup> {
   })
   created_at!: Date;
 
-  @BelongsTo(() => Part)
-  part!: Part;
+  @BelongsTo(() => require("./Part").Part)
+  part!: PartType;
 
-  @HasMany(() => Question)
-  questions!: Question[];
+  @HasMany(() => require("./Question").Question)
+  questions!: QuestionType[];
 }

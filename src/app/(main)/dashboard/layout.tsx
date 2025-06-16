@@ -1,5 +1,6 @@
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import RightSideBar from '@/components/layout/RightSideBar';
 
 export default function DashboardLayout({
   children,
@@ -18,6 +19,7 @@ export default function DashboardLayout({
         {children}
       </main>
       <Footer />
+      <RightSideBar />
     </div>
   );
 }

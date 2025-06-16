@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: localhost:3306
--- Thời gian đã tạo: Th6 14, 2025 lúc 03:28 PM
+-- Thời gian đã tạo: Th6 16, 2025 lúc 04:05 PM
 -- Phiên bản máy phục vụ: 8.4.3
 -- Phiên bản PHP: 8.3.16
 
@@ -107,6 +107,7 @@ CREATE TABLE `audio_files` (
 CREATE TABLE `exams` (
   `id` int NOT NULL,
   `title` varchar(255) DEFAULT NULL,
+  `year_of_release` int NOT NULL,
   `type` enum('random','full_test') NOT NULL DEFAULT 'full_test',
   `description` text,
   `estimated_time` int DEFAULT NULL,
@@ -124,7 +125,8 @@ CREATE TABLE `exams` (
 CREATE TABLE `exam_parts` (
   `id` int NOT NULL,
   `exam_id` int NOT NULL,
-  `part_id` int NOT NULL
+  `part_id` int NOT NULL,
+  `order_index` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -209,11 +211,26 @@ CREATE TABLE `questions` (
   `id` int NOT NULL,
   `part_id` int NOT NULL,
   `question_number` int DEFAULT NULL,
+  `group_id` int NOT NULL,
   `content` text,
   `question_type` enum('multiple_choice','fill_in_blank','matching','speaking','writing') DEFAULT NULL,
   `image_url` varchar(255) DEFAULT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `question_groups`
+--
+
+CREATE TABLE `question_groups` (
+  `id` int NOT NULL,
+  `part_id` int NOT NULL,
+  `image_url` varchar(255) DEFAULT NULL,
+  `content` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -240,7 +257,7 @@ CREATE TABLE `speaking_writing_prompts` (
   `id` int NOT NULL,
   `topic` varchar(255) DEFAULT NULL,
   `skill_id` int NOT NULL,
-  `description` text,
+  `question` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
   `difficulty_level` enum('easy','medium','hard') DEFAULT NULL,
   `created_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -305,7 +322,6 @@ CREATE TABLE `translations` (
   `id` int NOT NULL,
   `content_type` enum('question','answer','instruction','transcript') DEFAULT NULL,
   `content_id` int DEFAULT NULL,
-  `english_text` text,
   `vietnamese_text` text,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
@@ -338,20 +354,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `email`, `password_hash`, `name`, `avatar`, `is_email_verified`, `auth_provider`, `auth_provider_id`, `role`, `created_at`, `updated_at`, `last_login`, `uuid`) VALUES
-(1, NULL, NULL, 'hoang', NULL, NULL, NULL, NULL, NULL, '2025-06-08 01:55:14', '2025-06-08 01:55:14', NULL, 'ugejkghbkjg94393');
-
--- --------------------------------------------------------
-
---
--- Cấu trúc bảng cho bảng `userskills`
---
-
-CREATE TABLE `userskills` (
-  `id` int NOT NULL,
-  `user_id` int NOT NULL,
-  `skill_id` int NOT NULL,
-  `type` enum('strong','weak') DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+(1, NULL, NULL, 'hoang', NULL, NULL, NULL, NULL, NULL, '2025-06-08 01:55:14', '2025-06-08 01:55:14', NULL, 'ugejkghbkjg94393'),
+(2, 'hoang@gmail.com', '$2b$10$8dYLg8xGhvGj6S23QKeUVu/iG6Z4u7n5X2OseI9z1.2GPaYVF9C4a', 'hoang', NULL, 0, 'email', NULL, 'student', '2025-06-16 22:37:36', '2025-06-16 22:37:36', NULL, 'c282a6be-20c2-4ec1-a90c-0f4b28538879');
 
 -- --------------------------------------------------------
 
@@ -366,7 +370,6 @@ CREATE TABLE `user_answers` (
   `answer_id` int DEFAULT NULL,
   `user_text_answer` text,
   `is_correct` tinyint(1) DEFAULT NULL,
-  `time_spent` int DEFAULT NULL,
   `created_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -589,6 +592,14 @@ ALTER TABLE `parts`
 --
 ALTER TABLE `questions`
   ADD PRIMARY KEY (`id`),
+  ADD KEY `part_id` (`part_id`),
+  ADD KEY `group_id` (`group_id`);
+
+--
+-- Chỉ mục cho bảng `question_groups`
+--
+ALTER TABLE `question_groups`
+  ADD PRIMARY KEY (`id`),
   ADD KEY `part_id` (`part_id`);
 
 --
@@ -638,14 +649,6 @@ ALTER TABLE `translations`
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `idx_users_uuid` (`uuid`);
-
---
--- Chỉ mục cho bảng `userskills`
---
-ALTER TABLE `userskills`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `skill_id` (`skill_id`);
 
 --
 -- Chỉ mục cho bảng `user_answers`
@@ -791,6 +794,12 @@ ALTER TABLE `questions`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT cho bảng `question_groups`
+--
+ALTER TABLE `question_groups`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT cho bảng `skills`
 --
 ALTER TABLE `skills`
@@ -830,13 +839,7 @@ ALTER TABLE `translations`
 -- AUTO_INCREMENT cho bảng `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT cho bảng `userskills`
---
-ALTER TABLE `userskills`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT cho bảng `user_answers`
@@ -932,7 +935,14 @@ ALTER TABLE `leader_boards`
 -- Ràng buộc cho bảng `questions`
 --
 ALTER TABLE `questions`
-  ADD CONSTRAINT `questions_ibfk_1` FOREIGN KEY (`part_id`) REFERENCES `parts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `questions_ibfk_1` FOREIGN KEY (`part_id`) REFERENCES `parts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `questions_ibfk_2` FOREIGN KEY (`group_id`) REFERENCES `question_groups` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+--
+-- Ràng buộc cho bảng `question_groups`
+--
+ALTER TABLE `question_groups`
+  ADD CONSTRAINT `question_groups_ibfk_1` FOREIGN KEY (`part_id`) REFERENCES `parts` (`id`);
 
 --
 -- Ràng buộc cho bảng `speaking_writing_prompts`
@@ -953,13 +963,6 @@ ALTER TABLE `speaking_writing_submissions`
 --
 ALTER TABLE `study_sessions`
   ADD CONSTRAINT `study_sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Ràng buộc cho bảng `userskills`
---
-ALTER TABLE `userskills`
-  ADD CONSTRAINT `userskills_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `userskills_ibfk_2` FOREIGN KEY (`skill_id`) REFERENCES `skills` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Ràng buộc cho bảng `user_answers`

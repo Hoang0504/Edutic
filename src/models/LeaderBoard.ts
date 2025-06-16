@@ -7,11 +7,26 @@ import {
   PrimaryKey,
   AutoIncrement,
   ForeignKey,
+  BelongsTo,
 } from "sequelize-typescript";
 import { User } from "./User";
+import type { User as UserType } from "./User";
+
+interface LeaderBoardCreationAttributes {
+  id?: number;
+  user_id: number;
+  score: number;
+  period_type: "weekly" | "monthly" | "all_time";
+  period_start_date: Date;
+  rank: number;
+  updated_at?: Date;
+}
 
 @Table({ tableName: "leaderboard", timestamps: false })
-export class LeaderBoard extends Model {
+export class LeaderBoard extends Model<
+  LeaderBoard,
+  LeaderBoardCreationAttributes
+> {
   @PrimaryKey
   @AutoIncrement
   @Column
@@ -35,4 +50,7 @@ export class LeaderBoard extends Model {
 
   @Column(DataType.DATE)
   updated_at!: Date;
+
+  @BelongsTo(() => require("./User").User)
+  user!: UserType;
 }

@@ -8,8 +8,20 @@ import {
   AutoIncrement,
 } from "sequelize-typescript";
 
+interface TranslationCreationAttributes {
+  id?: number;
+  content_type: "question" | "answer" | "instruction" | "transcript";
+  content_id: number;
+  vietnamese_text: string;
+  created_at?: Date;
+  updated_at?: Date;
+}
+
 @Table({ tableName: "translations", timestamps: false })
-export class Translation extends Model {
+export class Translation extends Model<
+  Translation,
+  TranslationCreationAttributes
+> {
   @PrimaryKey
   @AutoIncrement
   @Column
@@ -21,8 +33,8 @@ export class Translation extends Model {
   @Column(DataType.INTEGER)
   content_id!: number;
 
-  @Column(DataType.TEXT)
-  english_text!: string;
+  // @Column(DataType.TEXT)
+  // english_text!: string;
 
   @Column(DataType.TEXT)
   vietnamese_text!: string;

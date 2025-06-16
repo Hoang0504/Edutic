@@ -15,11 +15,14 @@ export function withErrorHandler(
     } catch (error: Error | unknown) {
       console.error("API Error:", error);
       res.status(500).json({
-        message: errorMessage || "Có lỗi xảy ra trong quá trình xử lý.",
-        error:
-          process.env.NODE_ENV === "development" && error instanceof Error
-            ? error.message
-            : undefined,
+        success: false,
+        data: {
+          message: errorMessage || "Có lỗi xảy ra trong quá trình xử lý.",
+          error:
+            process.env.NODE_ENV === "development" && error instanceof Error
+              ? error.message
+              : undefined,
+        }
       });
     }
   };

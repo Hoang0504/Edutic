@@ -9,10 +9,19 @@ import {
   BelongsTo,
 } from "sequelize-typescript";
 import { Exam } from "./Exam";
+import type { Exam as ExamType } from "./Exam";
 import { Part } from "./Part";
+import type { Part as PartType } from "./Part";
+
+interface ExamPartCreationAttributes {
+  id?: number; // Optional (auto-increment)
+  exam_id: number; // Bắt buộc (allowNull: false)
+  part_id: number; // Bắt buộc (allowNull: false)
+  order_index: number; // Bắt buộc (DataType.INTEGER mặc định not null)
+}
 
 @Table({ tableName: "exam_parts", timestamps: false })
-export class ExamPart extends Model<ExamPart> {
+export class ExamPart extends Model<ExamPart, ExamPartCreationAttributes> {
   @PrimaryKey
   @AutoIncrement
   @Column(DataType.INTEGER)
@@ -29,9 +38,9 @@ export class ExamPart extends Model<ExamPart> {
   @Column(DataType.INTEGER)
   order_index!: number;
 
-  @BelongsTo(() => Exam)
-  exam!: Exam;
+  @BelongsTo(() => require("./Exam").Exam)
+  exam!: ExamType;
 
-  @BelongsTo(() => Part)
-  part!: Part;
-} 
+  @BelongsTo(() => require("./Part").Part)
+  part!: PartType;
+}

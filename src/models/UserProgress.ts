@@ -9,9 +9,25 @@ import {
   BelongsTo,
 } from "sequelize-typescript";
 import { User } from "./User";
+import type { User as UserType } from "./User";
+
+interface UserProgressCreationAttributes {
+  id: string;
+  user_id: string;
+  listening_score?: number;
+  reading_score?: number;
+  speaking_score?: number;
+  writing_score?: number;
+  total_study_time?: number;
+  last_activity_date?: Date | null; // Can be null
+  updated_at?: Date;
+}
 
 @Table({ tableName: "user_progress", timestamps: false })
-export class UserProgress extends Model<UserProgress> {
+export class UserProgress extends Model<
+  UserProgress,
+  UserProgressCreationAttributes
+> {
   @PrimaryKey
   @Column(DataType.STRING)
   id!: string;
@@ -42,6 +58,6 @@ export class UserProgress extends Model<UserProgress> {
   @Column(DataType.DATE)
   updated_at!: Date;
 
-  @BelongsTo(() => User)
-  user!: User;
+  @BelongsTo(() => require("./User").User)
+  user!: UserType;
 }

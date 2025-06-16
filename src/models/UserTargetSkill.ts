@@ -9,9 +9,20 @@ import {
 } from "sequelize-typescript";
 import { User } from "./User";
 import { Skill } from "./Skill";
+import type { User as UserType } from "./User";
+import type { Skill as SkillType } from "./Skill";
+
+interface UserTargetSkillCreationAttributes {
+  user_id: number;
+  skill_id: number;
+  target_score: number;
+}
 
 @Table({ tableName: "user_target_skills", timestamps: false })
-export class UserTargetSkill extends Model<UserTargetSkill> {
+export class UserTargetSkill extends Model<
+  UserTargetSkill,
+  UserTargetSkillCreationAttributes
+> {
   @ForeignKey(() => User)
   @PrimaryKey
   @Column(DataType.INTEGER)
@@ -26,8 +37,8 @@ export class UserTargetSkill extends Model<UserTargetSkill> {
   target_score!: number;
 
   @BelongsTo(() => User)
-  user!: User;
+  user!: UserType;
 
   @BelongsTo(() => Skill)
-  skill!: Skill;
+  skill!: SkillType;
 }

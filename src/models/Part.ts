@@ -7,13 +7,25 @@ import {
   AutoIncrement,
   HasMany,
 } from "sequelize-typescript";
-import { Question } from "./Question";
-import { AudioFile } from "./AudioFile";
-import { ExamPart } from "./ExamPart";
-import { UserAttemptPart } from "./UserAttemptPart";
+import type { Question as QuestionType } from "./Question";
+import type { AudioFile as AudioFileType } from "./AudioFile";
+import type { ExamPart as ExamPartType } from "./ExamPart";
+import type { UserAttemptPart as UserAttemptPartType } from "./UserAttemptPart";
+
+interface PartCreationAttributes {
+  id?: number;
+  part_number: number;
+  title: string;
+  description?: string | null; // Chỉ mỗi trường này có thể null
+  instruction: string;
+  difficulty_level?: "easy" | "medium" | "hard";
+  time_limit: number;
+  created_at?: Date;
+  updated_at?: Date;
+}
 
 @Table({ tableName: "parts", timestamps: false })
-export class Part extends Model<Part> {
+export class Part extends Model<Part, PartCreationAttributes> {
   @PrimaryKey
   @AutoIncrement
   @Column(DataType.INTEGER)
@@ -47,15 +59,15 @@ export class Part extends Model<Part> {
   @Column(DataType.DATE)
   updated_at!: Date;
 
-  @HasMany(() => Question)
-  questions!: Question[];
+  @HasMany(() => require("./Question").Question)
+  questions!: QuestionType[];
 
-  @HasMany(() => AudioFile)
-  audioFiles!: AudioFile[];
+  @HasMany(() => require("./AudioFile").AudioFile)
+  audioFiles!: AudioFileType[];
 
-  @HasMany(() => ExamPart)
-  examParts!: ExamPart[];
+  @HasMany(() => require("./ExamPart").ExamPart)
+  examParts!: ExamPartType[];
 
-  @HasMany(() => UserAttemptPart)
-  userAttemptParts!: UserAttemptPart[];
+  @HasMany(() => require("./UserAttemptPart").UserAttemptPart)
+  userAttemptParts!: UserAttemptPartType[];
 }

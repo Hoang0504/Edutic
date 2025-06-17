@@ -1,5 +1,6 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import RightSideBar from "@/components/layout/RightSideBar";
 import "./globals.css";
 
 export const metadata = {
@@ -24,6 +25,7 @@ export default function DashboardLayout({
           <Header user={user} />
           <main className="flex-1 py-6">{children}</main>
           <Footer />
+          <RightSideBar />
         </div>
       </body>
     </html>

@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import AddUserPage from '@/components/admin/add/AddUser';
 import EditUserPage from '@/components/admin/edit/EditUser';
-import UserProfile from '@/components/admin/UserProfile';
 
 
 // Định nghĩa kiểu cho user
@@ -21,7 +20,7 @@ const UserAdmin = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isEditUserModalVisible, setIsEditUserModalVisible] = useState(false);
-  const [isProfileVisible, setIsProfileVisible] = useState(false);
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   // Mock data
@@ -49,7 +48,7 @@ const UserAdmin = () => {
   const handleModalCancel = () => {
     setIsAddModalVisible(false);
     setIsEditUserModalVisible(false);
-    setIsProfileVisible(false);
+    setIsDetailModalVisible(false);
   };
 
   const handleLogoutAdmin = () => {
@@ -61,9 +60,9 @@ const UserAdmin = () => {
     setIsEditUserModalVisible(true);
   };
 
-  const handleRowClick = (user: User) => {
+  const handleDetail = (user: User) => {
     setSelectedUser(user);
-    setIsProfileVisible(true);
+    setIsDetailModalVisible(true);
   };
 
   const handleAddUser = (e: React.FormEvent, formData: { email: string; role: string; avatarFile?: File }) => {
@@ -141,11 +140,7 @@ const handleUpdateUser = (e: React.FormEvent, formData: { email: string; role: s
               </thead>
               <tbody>
                 {paginatedUsers.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="border-t cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleRowClick(user)}
-                  >
+                  <tr key={user.id} className="border-t">
                     <td className="p-2 border">{user.id}</td>
                     <td className="p-2 border">{user.email}</td>
                     <td className="p-2 border">
@@ -166,6 +161,12 @@ const handleUpdateUser = (e: React.FormEvent, formData: { email: string; role: s
                         onClick={() => handleEditUser(user)}
                       >
                         Edit 
+                      </button>
+                      <button
+                        className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+                        onClick={() => handleDetail(user)}
+                      >
+                        Detail
                       </button>
                       <button
                         className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
@@ -197,7 +198,6 @@ const handleUpdateUser = (e: React.FormEvent, formData: { email: string; role: s
             </div>
           </div>
         </div>
-        {isProfileVisible && selectedUser && <UserProfile user={selectedUser} onClose={() => setIsProfileVisible(false)} />}
       </main>
 
       <div className="modal">
@@ -217,6 +217,33 @@ const handleUpdateUser = (e: React.FormEvent, formData: { email: string; role: s
                 onCancel={handleModalCancel}
                 initialData={selectedUser ? { email: selectedUser.email, role: selectedUser.role, avatar: selectedUser.avatar } : undefined}
               />
+            </div>
+          </div>
+        </div>
+
+        <div className={isDetailModalVisible ? 'modal-content' : 'hidden'}>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+              <h2 className="text-xl font-semibold mb-4">User Details</h2>
+              {selectedUser && (
+                <div className="text-center">
+                  <Image
+                    src={selectedUser.avatar}
+                    alt={selectedUser.email}
+                    width={100}
+                    height={100}
+                    className="rounded-full mx-auto mb-4"
+                  />
+                  <h3 className="text-xl font-semibold">{selectedUser.email}</h3>
+                  <p>Role: {selectedUser.role}</p>
+                </div>
+              )}
+              <button
+                className="mt-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                onClick={handleModalCancel}
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

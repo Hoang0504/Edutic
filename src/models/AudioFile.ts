@@ -7,11 +7,22 @@ import {
   PrimaryKey,
   AutoIncrement,
   ForeignKey,
+  BelongsTo,
 } from "sequelize-typescript";
 import { Part } from "./Part";
+import type { Part as PartType } from "./Part";
+
+interface AudioFileCreationAttributes {
+  id?: number; // Optional vì là auto-increment
+  part_id: number; // Bắt buộc (không có allowNull: false nhưng là foreign key)
+  file_path: string; // Bắt buộc (DataType.STRING mặc định not null)
+  duration: number; // Bắt buộc
+  transcript: string; // Bắt buộc (DataType.TEXT mặc định not null)
+  created_at?: Date; // Optional vì có thể tự động tạo
+}
 
 @Table({ tableName: "audio_files", timestamps: false })
-export class AudioFile extends Model {
+export class AudioFile extends Model<AudioFile, AudioFileCreationAttributes> {
   @PrimaryKey
   @AutoIncrement
   @Column
@@ -32,4 +43,7 @@ export class AudioFile extends Model {
 
   @Column(DataType.DATE)
   created_at!: Date;
+
+  @BelongsTo(() => require("./Part").Part)
+  question!: PartType;
 }

@@ -7,11 +7,26 @@ import {
   AutoIncrement,
   ForeignKey,
   BelongsTo,
+  HasMany,
 } from "sequelize-typescript";
 import { Skill } from "./Skill";
+import type { Skill as SkillType } from "./Skill";
+import type { SpeakingWritingSubmission as SpeakingWritingSubmissionType } from "./SpeakingWritingSubmission";
+
+interface SpeakingWritingPromptCreationAttributes {
+  id?: number;
+  topic: string;
+  skill_id: number;
+  question: string;
+  difficulty_level?: "easy" | "medium" | "hard";
+  created_at?: Date;
+}
 
 @Table({ tableName: "speaking_writing_prompts", timestamps: false })
-export class SpeakingWritingPrompt extends Model<SpeakingWritingPrompt> {
+export class SpeakingWritingPrompt extends Model<
+  SpeakingWritingPrompt,
+  SpeakingWritingPromptCreationAttributes
+> {
   @PrimaryKey
   @AutoIncrement
   @Column(DataType.INTEGER)
@@ -25,7 +40,7 @@ export class SpeakingWritingPrompt extends Model<SpeakingWritingPrompt> {
   skill_id!: number;
 
   @Column(DataType.TEXT)
-  description!: string;
+  question!: string;
 
   @Column({
     type: DataType.ENUM("easy", "medium", "hard"),
@@ -36,6 +51,11 @@ export class SpeakingWritingPrompt extends Model<SpeakingWritingPrompt> {
   @Column(DataType.DATE)
   created_at!: Date;
 
-  @BelongsTo(() => Skill)
-  skill!: Skill;
+  @BelongsTo(() => require("./Skill").Skill)
+  skill!: SkillType;
+
+  @HasMany(
+    () => require("./SpeakingWritingSubmission").SpeakingWritingSubmission
+  )
+  speaking_writing_submissions!: SpeakingWritingSubmissionType[];
 }

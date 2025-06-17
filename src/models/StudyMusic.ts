@@ -5,10 +5,24 @@ import {
   DataType,
   PrimaryKey,
   AutoIncrement,
+  HasOne,
 } from "sequelize-typescript";
+import type { UserSetting as UserSettingType } from "./UserSetting";
+
+interface StudyMusicCreationAttributes {
+  id?: number;
+  title: string;
+  duration: number;
+  file_url: string;
+  created_at?: Date;
+  updated_at?: Date;
+}
 
 @Table({ tableName: "study_music", timestamps: false })
-export class StudyMusic extends Model<StudyMusic> {
+export class StudyMusic extends Model<
+  StudyMusic,
+  StudyMusicCreationAttributes
+> {
   @PrimaryKey
   @AutoIncrement
   @Column(DataType.INTEGER)
@@ -28,4 +42,7 @@ export class StudyMusic extends Model<StudyMusic> {
 
   @Column(DataType.DATE)
   updated_at!: Date;
+
+  @HasOne(() => require("./UserSetting").UserSetting)
+  user_setting!: UserSettingType;
 }

@@ -10,31 +10,10 @@ import {
   HasMany,
 } from "sequelize-typescript";
 import { Part } from "./Part";
-import { QuestionGroup } from "./QuestionGroup";
-import type { Part as PartType } from "./Part";
-import type { Answer as AnswerType } from "./Answer";
-import type { QuestionGroup as QuestionGroupType } from "./QuestionGroup";
-import type { UserAnswer as UserAnswerType } from "./UserAnswer";
-
-interface QuestionCreationAttributes {
-  id?: number;
-  part_id: number;
-  group_id: number;
-  question_number: number;
-  content: string;
-  question_type:
-    | "multiple_choice"
-    | "fill_in_blank"
-    | "matching"
-    | "speaking"
-    | "writing";
-  image_url: string;
-  created_at?: Date;
-  updated_at?: Date;
-}
+import { Answer } from "./Answer";
 
 @Table({ tableName: "questions", timestamps: false })
-export class Question extends Model<Question, QuestionCreationAttributes> {
+export class Question extends Model<Question> {
   @PrimaryKey
   @AutoIncrement
   @Column(DataType.INTEGER)
@@ -43,10 +22,6 @@ export class Question extends Model<Question, QuestionCreationAttributes> {
   @ForeignKey(() => Part)
   @Column({ type: DataType.INTEGER, allowNull: false })
   part_id!: number;
-
-  @ForeignKey(() => QuestionGroup)
-  @Column({ type: DataType.INTEGER, allowNull: false })
-  group_id!: number;
 
   @Column({ type: DataType.INTEGER, allowNull: false })
   question_number!: number;
@@ -75,15 +50,9 @@ export class Question extends Model<Question, QuestionCreationAttributes> {
   @Column(DataType.DATE)
   updated_at!: Date;
 
-  @BelongsTo(() => require("./Part").Part)
-  part!: PartType;
+  @BelongsTo(() => Part)
+  part!: Part;
 
-  @BelongsTo(() => require("./QuestionGroup").QuestionGroup)
-  group!: QuestionGroupType;
-
-  @HasMany(() => require("./Answer").Answer)
-  answers!: AnswerType[];
-
-  @HasMany(() => require("./UserAnswer").UserAnswer)
-  user_answers!: UserAnswerType[];
+  @HasMany(() => Answer)
+  answers!: Answer[];
 }

@@ -5,21 +5,10 @@ import {
   DataType,
   PrimaryKey,
   AutoIncrement,
-  HasMany,
 } from "sequelize-typescript";
-import type { UserTargetSkill as UserTargetSkillType } from "./UserTargetSkill";
-import type { SpeakingWritingPrompt as SpeakingWritingPromptType } from "./SpeakingWritingPrompt";
-
-interface SkillCreationAttributes {
-  id?: number;
-  name: string;
-  description?: string | null; // Only this field can be null
-  created_at?: Date;
-  updated_at?: Date;
-}
 
 @Table({ tableName: "skills", timestamps: false })
-export class Skill extends Model<Skill, SkillCreationAttributes> {
+export class Skill extends Model<Skill> {
   @PrimaryKey
   @AutoIncrement
   @Column(DataType.INTEGER)
@@ -36,10 +25,4 @@ export class Skill extends Model<Skill, SkillCreationAttributes> {
 
   @Column(DataType.DATE)
   updated_at!: Date;
-
-  @HasMany(() => require("./UserTargetSkill").UserTargetSkill)
-  user_target_skills!: UserTargetSkillType[];
-
-  @HasMany(() => require("./SpeakingWritingPrompt").SpeakingWritingPrompt)
-  speaking_writing_prompts!: SpeakingWritingPromptType[];
 }

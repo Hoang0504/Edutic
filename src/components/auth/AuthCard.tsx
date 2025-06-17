@@ -1,5 +1,6 @@
-"use client";
-import React from "react";
+
+'use client';
+import React from 'react';
 
 interface AuthCardProps {
   children: React.ReactNode;
@@ -16,7 +17,9 @@ const AuthCard: React.FC<AuthCardProps> = ({ children, title, subtitle }) => {
             {title}
           </h2>
           {subtitle && (
-            <p className="mt-2 text-center text-sm text-gray-600">{subtitle}</p>
+            <p className="mt-2 text-center text-sm text-gray-600">
+              {subtitle}
+            </p>
           )}
         </div>
         <div className="mt-8 space-y-6 bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
@@ -27,4 +30,4 @@ const AuthCard: React.FC<AuthCardProps> = ({ children, title, subtitle }) => {
   );
 };
 
-export default AuthCard;
+export default AuthCard; 

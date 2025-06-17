@@ -6,24 +6,12 @@ import {
   PrimaryKey,
   AutoIncrement,
   ForeignKey,
-  BelongsTo,
-  HasMany,
+  // BelongsTo,
 } from "sequelize-typescript";
 import { Question } from "./Question";
-import type { Question as QuestionType } from "./Question";
-import type { UserAnswer as UserAnswerType } from "./UserAnswer";
-
-interface AnswerCreationAttributes {
-  id?: number; // Optional vì là auto-increment
-  question_id: number;
-  content: string;
-  is_correct?: boolean; // Có defaultValue nên optional
-  explanation?: string | null; // Chỉ mỗi trường này được phép null
-  created_at?: Date; // Optional vì có thể tự động tạo
-}
 
 @Table({ tableName: "answers", timestamps: false })
-export class Answer extends Model<Answer, AnswerCreationAttributes> {
+export class Answer extends Model<Answer> {
   @PrimaryKey
   @AutoIncrement
   @Column(DataType.INTEGER)
@@ -45,9 +33,6 @@ export class Answer extends Model<Answer, AnswerCreationAttributes> {
   @Column(DataType.DATE)
   created_at!: Date;
 
-  @BelongsTo(() => require("./Question").Question)
-  question!: QuestionType;
-
-  @HasMany(() => require("./UserAnswer").UserAnswer)
-  user_answers!: UserAnswerType[];
+  // @BelongsTo(() => Question)
+  // question!: Question;
 }

@@ -11,25 +11,9 @@ import {
 import { UserExamAttempt } from "./UserExamAttempt";
 import { Question } from "./Question";
 import { Answer } from "./Answer";
-import type { UserExamAttempt as UserExamAttemptType } from "./UserExamAttempt";
-import type { Question as QuestionType } from "./Question";
-import type { Answer as AnswerType } from "./Answer";
-
-interface UserAnswerCreationAttributes {
-  id?: number;
-  user_exam_attempt_id: number;
-  question_id: number;
-  answer_id: number;
-  user_text_answer: string;
-  is_correct: boolean;
-  created_at?: Date;
-}
 
 @Table({ tableName: "user_answers", timestamps: false })
-export class UserAnswer extends Model<
-  UserAnswer,
-  UserAnswerCreationAttributes
-> {
+export class UserAnswer extends Model<UserAnswer> {
   @PrimaryKey
   @AutoIncrement
   @Column(DataType.INTEGER)
@@ -53,15 +37,18 @@ export class UserAnswer extends Model<
   @Column(DataType.BOOLEAN)
   is_correct!: boolean;
 
+  @Column(DataType.INTEGER)
+  time_spent!: number;
+
   @Column(DataType.DATE)
   created_at!: Date;
 
-  @BelongsTo(() => require("./UserExamAttempt").UserExamAttempt)
-  attempt!: UserExamAttemptType;
+  @BelongsTo(() => UserExamAttempt)
+  attempt!: UserExamAttempt;
 
-  @BelongsTo(() => require("./Question").Question)
-  question!: QuestionType;
+  @BelongsTo(() => Question)
+  question!: Question;
 
-  @BelongsTo(() => require("./Answer").Answer)
-  answer!: AnswerType;
+  @BelongsTo(() => Answer)
+  answer!: Answer;
 }

@@ -8,21 +8,9 @@ import {
   BelongsTo,
 } from "sequelize-typescript";
 import { User } from "./User";
-import type { User as UserType } from "./User";
-
-interface UserProfileCreationAttributes {
-  user_id: number;
-  study_time_preference?: number | null; // Can be null
-  level?: "beginner" | "intermediate" | "advanced";
-  created_at?: Date;
-  updated_at?: Date;
-}
 
 @Table({ tableName: "user_profiles", timestamps: false })
-export class UserProfile extends Model<
-  UserProfile,
-  UserProfileCreationAttributes
-> {
+export class UserProfile extends Model<UserProfile> {
   @PrimaryKey
   @ForeignKey(() => User)
   @Column(DataType.INTEGER)
@@ -43,6 +31,6 @@ export class UserProfile extends Model<
   @Column(DataType.DATE)
   updated_at!: Date;
 
-  @BelongsTo(() => require("./User").User)
-  user!: UserType;
+  @BelongsTo(() => User)
+  user!: User;
 }

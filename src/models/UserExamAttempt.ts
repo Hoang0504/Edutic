@@ -11,27 +11,11 @@ import {
 } from "sequelize-typescript";
 import { User } from "./User";
 import { Exam } from "./Exam";
-import type { User as UserType } from "./User";
-import type { Exam as ExamType } from "./Exam";
-import type { UserAnswer as UserAnswerType } from "./UserAnswer";
-import type { UserAttemptPart as UserAttemptPartType } from "./UserAttemptPart";
-
-interface UserExamAttemptCreationAttributes {
-  id?: number;
-  user_id: number;
-  exam_id: number;
-  start_time: Date;
-  end_time?: Date | null; // Can be null
-  score?: number | null; // Can be null
-  status?: "in_progress" | "completed" | "abandoned";
-  created_at?: Date;
-}
+import { UserAnswer } from "./UserAnswer";
+import { UserAttemptPart } from "./UserAttemptPart";
 
 @Table({ tableName: "user_exam_attempts", timestamps: false })
-export class UserExamAttempt extends Model<
-  UserExamAttempt,
-  UserExamAttemptCreationAttributes
-> {
+export class UserExamAttempt extends Model<UserExamAttempt> {
   @PrimaryKey
   @AutoIncrement
   @Column(DataType.INTEGER)
@@ -63,15 +47,15 @@ export class UserExamAttempt extends Model<
   @Column(DataType.DATE)
   created_at!: Date;
 
-  @BelongsTo(() => require("./User").User)
-  user!: UserType;
+  @BelongsTo(() => User)
+  user!: User;
 
-  @BelongsTo(() => require("./Exam").Exam)
-  exam!: ExamType;
+  @BelongsTo(() => Exam)
+  exam!: Exam;
 
-  @HasMany(() => require("./UserAnswer").UserAnswer)
-  answers!: UserAnswerType[];
+  @HasMany(() => UserAnswer)
+  answers!: UserAnswer[];
 
-  @HasMany(() => require("./UserAttemptPart").UserAttemptPart)
-  attemptParts!: UserAttemptPartType[];
+  @HasMany(() => UserAttemptPart)
+  attemptParts!: UserAttemptPart[];
 }

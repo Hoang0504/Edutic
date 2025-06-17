@@ -6,21 +6,12 @@ import {
   PrimaryKey,
   AutoIncrement,
   ForeignKey,
-  BelongsTo,
+  // BelongsTo,
 } from "sequelize-typescript";
 import { User } from "./User";
-import type { User as UserType } from "./User";
-
-interface FeedbackCreationAttributes {
-  id?: number;
-  user_id: number;
-  content: string;
-  rating: number;
-  created_at?: Date;
-}
 
 @Table({ tableName: "feedbacks", timestamps: false })
-export class Feedback extends Model<Feedback, FeedbackCreationAttributes> {
+export class Feedback extends Model {
   @PrimaryKey
   @AutoIncrement
   @Column
@@ -30,6 +21,9 @@ export class Feedback extends Model<Feedback, FeedbackCreationAttributes> {
   @Column
   user_id!: number;
 
+  // @BelongsTo(() => User)
+  // user?: User;
+
   @Column(DataType.STRING)
   content!: string;
 
@@ -38,7 +32,4 @@ export class Feedback extends Model<Feedback, FeedbackCreationAttributes> {
 
   @Column(DataType.DATE)
   created_at!: Date;
-
-  @BelongsTo(() => require("./User").User)
-  user?: UserType;
 }

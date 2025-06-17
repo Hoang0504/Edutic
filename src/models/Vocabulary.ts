@@ -9,7 +9,7 @@ import {
   HasMany,
 } from "sequelize-typescript";
 
-import type { Flashcard as FlashcardType } from "./Flashcard";
+import { Flashcard } from "./Flashcard";
 
 interface VocabularyCreationAttributes {
   word: string;
@@ -64,6 +64,6 @@ export class Vocabulary extends Model<
   @Column(DataType.DATE)
   updated_at!: Date;
 
-  @HasMany(() => require("./Flashcard").Flashcard)
-  flashcards?: FlashcardType[];
+  @HasMany(() => Flashcard)
+  flashcards?: Flashcard[];
 }

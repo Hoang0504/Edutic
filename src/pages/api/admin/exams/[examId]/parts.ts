@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import multer from "multer";
 import { withErrorHandler } from "@/lib/withErrorHandler";
+import { addPartToExam } from "@/lib/examService";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -35,6 +36,23 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     });
   }
 
+  // Parse examId - handle both integer and string format
+  let numericExamId: number;
+  if (examId.startsWith('exam_')) {
+    // Extract the numeric part from "exam_1234567"
+    numericExamId = parseInt(examId.replace('exam_', ''));
+  } else {
+    // Direct integer parsing
+    numericExamId = parseInt(examId);
+  }
+
+  if (isNaN(numericExamId)) {
+    return res.status(400).json({
+      success: false,
+      data: { message: "Invalid examId format" }
+    });
+  }
+
   try {
     // Parse form data using multer for audio files and question images
     await new Promise<void>((resolve, reject) => {
@@ -54,21 +72,15 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const audioFile = files.audioFile?.[0];
     const questionImages = files.questionImages || [];
 
-    // Log received data for testing
+    // Log received data for debugging
     console.log("=== PART SUBMISSION DATA ===");
-    console.log("Exam ID:", examId);
+    console.log("Exam ID:", examId, "-> Numeric:", numericExamId);
     console.log("Part data:", {
       title: partData.title,
       part_number: partData.part_number,
       questions_count: partData.questions?.length || 0,
       translations_count: partData.translations?.length || 0
     });
-    console.log("Audio file:", audioFile ? {
-      originalname: audioFile.originalname,
-      size: audioFile.size,
-      mimetype: audioFile.mimetype
-    } : 'None');
-    console.log("Question images count:", questionImages.length);
 
     // Validate required fields
     if (!partData.title || !partData.part_number || !partData.questions) {
@@ -101,8 +113,13 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     // Validate based on exam type
     if (isPracticeType) {
-      // For practice types (speaking/writing), questions don't need answers
       console.log("Detected practice type - no answer validation required");
+      
+      // For practice types, set default empty answers
+      partData.questions = partData.questions.map((q: any) => ({
+        ...q,
+        answers: q.answers || []
+      }));
     } else {
       // For full TOEIC, validate each question has answers
       for (const question of partData.questions) {
@@ -151,34 +168,49 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       }
     }
 
-    // TODO: Process and save to database
-    // 1. Save exam part data
-    // 2. Save audio file if exists
-    // 3. Save question images if exist
-    // 4. Save questions and answers
-    // 5. Save translations
+    // Set default values for missing fields
+    const processedPartData = {
+      title: partData.title,
+      part_number: partData.part_number,
+      difficulty_level: partData.difficulty_level || 'medium',
+      instruction: partData.instruction || '',
+      time_limit: partData.time_limit || 20,
+      questions: partData.questions,
+      translations: partData.translations || []
+    };
 
-    // For now, just return success with summary
+    // Add part to exam in database
+    const result = await addPartToExam(
+      numericExamId,
+      processedPartData,
+      audioFile,
+      questionImages
+    );
+
     return res.status(200).json({
       success: true,
       data: {
-        message: `Đã nhận dữ liệu Part ${partData.part_number} thành công`,
+        message: `Part ${partData.part_number} đã được thêm thành công`,
+        partId: result.partId,
         examType: isPracticeType ? 'practice' : 'toeic',
-        summary: {
-          examId: examId,
-          partNumber: partData.part_number,
-          partTitle: partData.title,
-          questionsCount: partData.questions.length,
-          translationsCount: partData.translations?.length || 0,
-          hasAudio: !!audioFile,
-          questionImagesCount: questionImages.length,
-          totalAnswers: partData.questions.reduce((total: number, q: any) => total + (q.answers?.length || 0), 0)
-        }
+        summary: result.summary
       }
     });
 
   } catch (error) {
     console.error("Part submission error:", error);
+    
+    // Return more specific error messages
+    if (error instanceof Error) {
+      return res.status(500).json({
+        success: false,
+        data: { 
+          message: "Lỗi khi lưu part vào database",
+          error: error.message 
+        }
+      });
+    }
+    
     return res.status(500).json({
       success: false,
       data: { message: "Lỗi xử lý dữ liệu part" }

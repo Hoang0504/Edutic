@@ -4,15 +4,15 @@ import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { CloudArrowUpIcon, ArrowLeftIcon, CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import AdminLayout from '@/components/layout/AdminLayout';
-import DownloadTemplate from './DownloadTemplate';
-import PartEditor from './PartEditor';
+import DownloadTemplate from '@/components/admin/import/DownloadTemplate';
+import PartEditor from '@/components/admin/import/PartEditor';
 import { useExcelProcessor } from '@/hooks/useExcelProcessor';
 import { ExamImportData, PartTabType, EXAM_TYPE_CONFIGS } from '@/types/exam';
 
 const ExamImportPage: React.FC = () => {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { processExcelFile, isProcessing } = useExcelProcessor();
+  const { processExcelFile, submitExamToDatabase, isProcessing, isSubmitting } = useExcelProcessor();
 
   // State management
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -20,7 +20,8 @@ const ExamImportPage: React.FC = () => {
   const [activePartTab, setActivePartTab] = useState<number>(1);
   const [submittingParts, setSubmittingParts] = useState<Set<number>>(new Set());
   const [submittedParts, setSubmittedParts] = useState<Set<number>>(new Set());
-  const [currentExamId, setCurrentExamId] = useState<string | null>(null);
+  const [currentExamId, setCurrentExamId] = useState<number | null>(null);
+  const [importSuccess, setImportSuccess] = useState<{examId: number, summary: any} | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Handle Excel file selection
@@ -39,6 +40,7 @@ const ExamImportPage: React.FC = () => {
     setExamData(null);
     setSubmittedParts(new Set());
     setCurrentExamId(null);
+    setImportSuccess(null);
 
     // Process the Excel file
     const result = await processExcelFile(file);
@@ -51,8 +53,6 @@ const ExamImportPage: React.FC = () => {
         setActivePartTab(availableParts[0]);
       }
       
-      // Generate examId for this session
-      setCurrentExamId(`exam_${Date.now()}`);
     } else {
       setError(result.error || 'Lỗi xử lý file Excel');
     }
@@ -77,10 +77,10 @@ const ExamImportPage: React.FC = () => {
     return examData.answers.filter(a => questionNumbers.includes(a.question_number));
   };
 
-  // Handle part submission
+  // Handle part submission (for TOEIC multi-part exams)
   const handlePartSubmission = async (partData: any, audioFile?: File, questionImages?: File[]) => {
     if (!currentExamId) {
-      setError('Thiếu exam ID');
+      setError('Cần tạo exam trước khi gửi part');
       return;
     }
 
@@ -151,8 +151,69 @@ const ExamImportPage: React.FC = () => {
     return typeInfo?.needsPartDivision || false;
   };
 
+  // Handle practice submission (for speaking/writing practice)
+  const handlePracticeSubmission = async () => {
+    if (!examData) return;
+
+    setError(null);
+
+    try {
+      const result = await submitExamToDatabase(examData);
+      
+      if (result.success && result.data) {
+        setImportSuccess({
+          examId: result.data.examId,
+          summary: result.data.summary
+        });
+      } else {
+        setError(result.error || 'Lỗi khi lưu vào database');
+      }
+    } catch (error) {
+      console.error('Practice submission error:', error);
+      setError('Lỗi kết nối với server');
+    }
+  };
+
   // Render content based on current state
   const renderContent = () => {
+    if (importSuccess) {
+      return (
+        <div className="text-center py-8">
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+            <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h3 className="mt-2 text-sm font-medium text-gray-900">Import thành công!</h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Exam ID: {importSuccess.examId}
+          </p>
+          <div className="mt-4 bg-gray-50 rounded-lg p-4 text-sm text-left">
+            <h4 className="font-medium text-gray-900 mb-2">Thống kê:</h4>
+            <ul className="space-y-1 text-gray-600">
+              <li>• {importSuccess.summary.partsCount} parts</li>
+              <li>• {importSuccess.summary.questionsCount} questions</li>
+              <li>• {importSuccess.summary.answersCount} answers</li>
+            </ul>
+          </div>
+          <button
+            onClick={() => {
+              setSelectedFile(null);
+              setExamData(null);
+              setImportSuccess(null);
+              setCurrentExamId(null);
+              if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+              }
+            }}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+          >
+            Import exam khác
+          </button>
+        </div>
+      );
+    }
+
     if (!selectedFile) {
       return (
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
@@ -197,17 +258,16 @@ const ExamImportPage: React.FC = () => {
       );
     }
 
-    // Show different UI based on exam type
-    return needsPartDivision() ? <PartTabsContent /> : <SimpleTopicsContent />;
+    // Show content for all exam types
+    return <ExamContent />;
   };
 
-  // Simple content for practice types (no part division)
-  const SimpleTopicsContent = () => {
+  // Main content for all exam types
+  const ExamContent = () => {
     if (!examData) return null;
 
     const examTypeInfo = getExamTypeInfo();
     const questions = examData.questions;
-    const answers = examData.answers;
 
     return (
       <div className="space-y-6">
@@ -216,216 +276,127 @@ const ExamImportPage: React.FC = () => {
           <h3 className="font-medium text-blue-900">{examData.exam.title}</h3>
           <p className="text-blue-700 text-sm mt-1">{examData.exam.description}</p>
           <div className="mt-2 flex items-center space-x-4 text-sm text-blue-600">
+            <span>Loại: {examTypeInfo?.description || examData.exam.exam_type}</span>
             <span>Độ khó: {examData.exam.difficulty}</span>
             <span>Thời gian: {examData.exam.estimated_time} phút</span>
-            {examTypeInfo && <span className="font-medium">{examTypeInfo.description}</span>}
           </div>
         </div>
 
-        {/* Topics List */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-gray-900">
-              {examData.exam.exam_type === 'speaking_practice' ? '🗣️ Speaking Topics' : '✍️ Writing Topics'}
-            </h3>
-            <span className="text-sm text-gray-500">{questions.length} topics</span>
-          </div>
+        {/* Content based on exam type */}
+        {examData.exam.exam_type === 'full_toeic' ? (
+          <FullToeicContent />
+        ) : (
+          <PracticeContent />
+        )}
+      </div>
+    );
+  };
 
-          <div className="space-y-4">
-            {questions.map((question, index) => (
-              <div key={question.question_number} className="border border-gray-200 rounded-lg p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900">
-                      Topic {question.question_number}
-                    </h4>
-                    <p className="text-gray-700 mt-1">{question.content}</p>
-                    {question.vietnamese_translation && (
-                      <p className="text-gray-600 text-sm mt-2 italic">
-                        {question.vietnamese_translation}
-                      </p>
-                    )}
-                  </div>
-                  <span className="ml-4 px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
-                    {examData.exam.exam_type === 'speaking_practice' ? 'Speaking' : 'Writing'}
-                  </span>
+  // Practice content (speaking/writing)
+  const PracticeContent = () => {
+    if (!examData) return null;
+    
+    const questions = examData.questions;
+
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-medium text-gray-900">
+            {examData.exam.exam_type === 'speaking_practice' ? '🗣️ Speaking Topics' : '✍️ Writing Topics'}
+          </h3>
+          <span className="text-sm text-gray-500">{questions.length} topics</span>
+        </div>
+
+        <div className="space-y-4">
+          {questions.map((question, index) => (
+            <div key={question.question_number} className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <h4 className="font-medium text-gray-900">
+                    Topic {question.question_number}
+                  </h4>
+                  <p className="text-gray-700 mt-1">{question.content}</p>
+                  {question.vietnamese_translation && (
+                    <p className="text-gray-600 text-sm mt-2 italic">
+                      {question.vietnamese_translation}
+                    </p>
+                  )}
                 </div>
+                <span className="ml-4 px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                  {examData.exam.exam_type === 'speaking_practice' ? 'Speaking' : 'Writing'}
+                </span>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
+        </div>
 
-          {/* Submit Button for Practice Types */}
-          <div className="mt-6 flex justify-center">
-            <button
-              onClick={() => handlePracticeSubmission()}
-              disabled={submittingParts.size > 0}
-              className={`px-8 py-3 rounded-md font-medium ${
-                submittingParts.size > 0
-                  ? 'bg-gray-400 text-white cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
-            >
-              {submittingParts.size > 0 ? 'Đang gửi...' : `Gửi ${questions.length} Topics`}
-            </button>
-          </div>
+        {/* Submit Button */}
+        <div className="mt-6 flex justify-center">
+          <button
+            onClick={handlePracticeSubmission}
+            disabled={isSubmitting}
+            className={`px-8 py-3 rounded-md font-medium ${
+              isSubmitting
+                ? 'bg-gray-400 text-white cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
+          >
+            {isSubmitting ? 'Đang lưu vào database...' : `Lưu ${questions.length} Topics vào Database`}
+          </button>
         </div>
       </div>
     );
   };
 
-  // Handle practice submission (for speaking/writing practice)
-  const handlePracticeSubmission = async () => {
-    if (!examData || !currentExamId) return;
-
-    setSubmittingParts(prev => new Set(prev).add(1));
-    setError(null);
-
-    try {
-      // Prepare practice data
-      const practiceData = {
-        title: examData.exam.title,
-        part_number: 1,
-        difficulty_level: examData.exam.difficulty,
-        instruction: examData.exam.description,
-        time_limit: examData.exam.estimated_time,
-        questions: examData.questions.map(question => ({
-          question: question.content,
-          vietnamese_translation: question.vietnamese_translation,
-          answers: [] // No answers for practice types
-        })),
-        translations: examData.questions.map(question => ({
-          question_id: question.question_number,
-          vietnamese_text: question.vietnamese_translation || ''
-        })).filter(t => t.vietnamese_text.trim())
-      };
-
-      // Submit to API
-      const formData = new FormData();
-      formData.append('partData', JSON.stringify(practiceData));
-
-      const response = await fetch(`/api/admin/exams/${currentExamId}/parts`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        setSubmittedParts(prev => new Set(prev).add(1));
-        alert(`Đã gửi ${examData.questions.length} topics thành công!`);
-      } else {
-        setError(result.data?.message || 'Lỗi khi gửi topics');
-      }
-
-    } catch (error) {
-      console.error('Practice submission error:', error);
-      setError('Lỗi kết nối với server');
-    } finally {
-      setSubmittingParts(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(1);
-        return newSet;
-      });
-    }
-  };
-
-  // Part tabs content
-  const PartTabsContent = () => {
+  // TOEIC content
+  const FullToeicContent = () => {
     if (!examData) return null;
 
-    const availableParts = getAvailableParts(examData);
-    const examTypeInfo = getExamTypeInfo();
-    const currentPart = examData.parts.find(p => p.part_number === activePartTab);
-    
-    if (!currentPart) return null;
-
-    const questionsForPart = getQuestionsForPart(activePartTab);
-    const answersForPart = getAnswersForPart(activePartTab);
+    const questions = examData.questions;
+    const answers = examData.answers;
 
     return (
-      <div className="space-y-6">
-        {/* Exam Info Summary */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="font-medium text-blue-900">{examData.exam.title}</h3>
-          <p className="text-blue-700 text-sm mt-1">{examData.exam.description}</p>
-          <div className="mt-2 flex items-center space-x-4 text-sm text-blue-600">
-            <span>Độ khó: {examData.exam.difficulty}</span>
-            <span>Thời gian: {examData.exam.estimated_time} phút</span>
-            {examTypeInfo && <span className="font-medium">{examTypeInfo.description}</span>}
-          </div>
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-medium text-gray-900">📝 TOEIC Test Content</h3>
+          <span className="text-sm text-gray-500">
+            {questions.length} questions, {answers.length} answers
+          </span>
         </div>
 
-        {/* Part Navigation Tabs */}
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8">
-            {availableParts.map(partNumber => {
-              const isActive = partNumber === activePartTab;
-              const isSubmitted = submittedParts.has(partNumber);
-              const isSubmitting = submittingParts.has(partNumber);
-              
-              return (
-                <button
-                  key={partNumber}
-                  onClick={() => setActivePartTab(partNumber)}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
-                    isActive
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <span>Part {partNumber}</span>
-                  {isSubmitted && <CheckIcon className="h-4 w-4 text-green-600" />}
-                  {isSubmitting && (
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
-                  )}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-
-        {/* Part Editor */}
-        <PartEditor
-          part={currentPart}
-          questions={questionsForPart}
-          answers={answersForPart}
-          onPartUpdate={(partData) => {
-            // Handle part data updates if needed
-          }}
-          onSubmitPart={handlePartSubmission}
-          isSubmitting={submittingParts.has(activePartTab)}
-        />
-
-        {/* Progress Summary */}
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <h4 className="font-medium text-gray-900 mb-2">Tiến độ gửi Parts</h4>
-          <div className="grid grid-cols-7 gap-2">
-            {availableParts.map(partNumber => {
-              const isSubmitted = submittedParts.has(partNumber);
-              const isSubmitting = submittingParts.has(partNumber);
-              
-              return (
-                <div
-                  key={partNumber}
-                  className={`p-2 rounded text-center text-sm font-medium ${
-                    isSubmitted
-                      ? 'bg-green-100 text-green-800'
-                      : isSubmitting
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-gray-100 text-gray-600'
-                  }`}
-                >
-                  Part {partNumber}
-                  {isSubmitted && ' ✓'}
-                  {isSubmitting && ' ...'}
+        {/* Stats by part */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          {examData.parts.map(part => {
+            const partQuestions = questions.filter(q => q.part_number === part.part_number);
+            const partAnswers = answers.filter(a => 
+              partQuestions.some(q => q.question_number === a.question_number)
+            );
+            
+            return (
+              <div key={part.part_number} className="bg-gray-50 p-3 rounded-lg">
+                <h4 className="font-medium text-gray-900">Part {part.part_number}</h4>
+                <p className="text-sm text-gray-600">{part.title}</p>
+                <div className="mt-1 text-xs text-gray-500">
+                  {partQuestions.length} questions, {partAnswers.length} answers
                 </div>
-              );
-            })}
-          </div>
-          
-          <div className="mt-3 text-sm text-gray-600">
-            Đã gửi: {submittedParts.size}/{availableParts.length} parts
-          </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Submit Button */}
+        <div className="flex justify-center">
+          <button
+            onClick={handlePracticeSubmission}
+            disabled={isSubmitting}
+            className={`px-8 py-3 rounded-md font-medium ${
+              isSubmitting
+                ? 'bg-gray-400 text-white cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
+          >
+            {isSubmitting ? 'Đang lưu vào database...' : 'Lưu TOEIC Test vào Database'}
+          </button>
         </div>
       </div>
     );
@@ -438,7 +409,7 @@ const ExamImportPage: React.FC = () => {
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Nhập đề thi từ Excel</h1>
-            <p className="text-gray-600">Upload Excel, chỉnh sửa và gửi từng Part riêng lẻ</p>
+            <p className="text-gray-600">Upload Excel và import trực tiếp vào database</p>
           </div>
           <button
             onClick={() => router.push('/admin/exams')}
@@ -449,9 +420,9 @@ const ExamImportPage: React.FC = () => {
           </button>
         </div>
 
-        {/* File Upload Section */}
+        {/* Main Content */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">1. Tải file Excel</h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">Upload & Import Excel</h2>
           
           {/* Download Template */}
           <DownloadTemplate />
@@ -479,7 +450,7 @@ const ExamImportPage: React.FC = () => {
               <h4 className="font-medium text-blue-800 mb-2">🗣️ Speaking Practice</h4>
               <ul className="text-blue-700 text-sm space-y-1">
                 <li>• Chỉ cần topics/câu hỏi thực hành</li>
-                <li>• Không cần đáp án hoặc chia parts</li>
+                <li>• Không cần đáp án</li>
                 <li>• Thời gian linh hoạt (10-30 phút)</li>
                 <li>• Bản dịch tiếng Việt tùy chọn</li>
               </ul>
@@ -490,32 +461,27 @@ const ExamImportPage: React.FC = () => {
               <h4 className="font-medium text-green-800 mb-2">✍️ Writing Practice</h4>
               <ul className="text-green-700 text-sm space-y-1">
                 <li>• Chỉ cần topics/đề bài thực hành</li>
-                <li>• Không cần đáp án hoặc chia parts</li>
+                <li>• Không cần đáp án</li>
                 <li>• Thời gian linh hoạt (30-90 phút)</li>
                 <li>• Bản dịch tiếng Việt tùy chọn</li>
               </ul>
             </div>
 
-            {/* Full TOEIC */}
+            {/* TOEIC Full Test */}
             <div className="bg-purple-50 border border-purple-200 rounded p-3">
-              <h4 className="font-medium text-purple-800 mb-2">📝 Full TOEIC Test</h4>
+              <h4 className="font-medium text-purple-800 mb-2">📝 TOEIC Test</h4>
               <ul className="text-purple-700 text-sm space-y-1">
-                <li>• Đề thi TOEIC chuẩn ETS (200 câu)</li>
-                <li>• Chia đúng 7 parts: 1-6, 7-31, 32-70...</li>
-                <li>• Parts 1-4 cần file audio</li>
-                <li>• Mỗi câu có 4 đáp án A,B,C,D</li>
+                <li>• Cần đầy đủ 4 sheets: Exams, Parts, Questions, Answers</li>
+                <li>• Mỗi câu hỏi cần có đáp án</li>
+                <li>• Thời gian chuẩn (120 phút)</li>
+                <li>• Hỗ trợ bản dịch tiếng Việt</li>
               </ul>
             </div>
           </div>
 
           <div className="text-yellow-700 text-sm">
-            <p className="mb-2"><strong>Quy trình chung:</strong></p>
-            <ol className="list-decimal list-inside space-y-1 ml-4">
-              <li>Tải template Excel phù hợp với loại đề thi</li>
-              <li>Điền thông tin vào file Excel</li>
-              <li>Upload file và xem trước dữ liệu</li>
-              <li>Chỉnh sửa và gửi dữ liệu lên server</li>
-            </ol>
+            <p><strong>Lưu ý:</strong> Chọn đúng file Excel template tương ứng với loại đề thi bạn muốn tạo. 
+            Hệ thống sẽ tự động nhận diện loại đề thi dựa trên tên file và cấu trúc dữ liệu.</p>
           </div>
         </div>
       </div>

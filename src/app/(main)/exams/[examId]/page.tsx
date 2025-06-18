@@ -173,7 +173,17 @@ export default function ExamDetailPage() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-gray-900">{exam.title}</h1>
-            {getStatusBadge(exam.status)}
+            <div className="flex items-center gap-3">
+              {exam.status === 'completed' && (
+                <Link 
+                  href={`/exams/${examId}/results`}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                >
+                  Xem đáp án
+                </Link>
+              )}
+              {getStatusBadge(exam.status)}
+            </div>
           </div>
           
           {/* Exam Stats */}
@@ -217,14 +227,9 @@ export default function ExamDetailPage() {
         {/* Action Buttons */}
         <div className="flex gap-4 justify-center">
           {exam.status === 'completed' ? (
-            <>
-              <button className="px-6 py-3 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors font-medium border border-green-200">
-                Bắt đầu làm lại
-              </button>
-              <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                Xem chi tiết
-              </button>
-            </>
+            <button className="px-6 py-3 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors font-medium border border-green-200">
+              Bắt đầu làm lại
+            </button>
           ) : (
             <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
               Bắt đầu làm

@@ -3,7 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { CloudArrowUpIcon, ArrowLeftIcon, CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import AdminLayout from '@/components/layout/AdminLayout';
+import AdminLayout from '@/app/admin/layout/AdminLayout';
 import TabGroup from './TabGroup';
 import TablePreview, { 
   examColumns, 

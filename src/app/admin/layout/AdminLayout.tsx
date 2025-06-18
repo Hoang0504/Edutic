@@ -2,8 +2,8 @@
 import React, { ReactNode, useState } from 'react';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import { Squares2X2Icon } from '@heroicons/react/24/outline';
-import UserAdmin from '../admin/UserAdmin';
-import Exams from '../admin/Exams';
+import UserAdmin from '../../../components/admin/UserAdmin';
+import Exams from '../../../components/admin/Exams';
 
 interface AdminLayoutProps {
   children?: ReactNode;

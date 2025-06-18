@@ -25,3 +25,42 @@ body {
     text-wrap: balance;
   }
 }
+
+/* Custom styles for better input visibility */
+@layer components {
+  .input-enhanced {
+    @apply text-gray-900 bg-white border-gray-300 placeholder-gray-500;
+    color: #111827 !important;
+    background-color: #ffffff !important;
+  }
+  
+  .input-enhanced:focus {
+    @apply ring-2 ring-blue-500 border-blue-500;
+    color: #111827 !important;
+    background-color: #ffffff !important;
+  }
+  
+  .input-enhanced::placeholder {
+    color: #6b7280 !important;
+    opacity: 0.7 !important;
+  }
+}
+
+/* Ensure all form inputs have proper contrast */
+input[type="text"],
+input[type="email"], 
+input[type="password"],
+textarea,
+select {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+}

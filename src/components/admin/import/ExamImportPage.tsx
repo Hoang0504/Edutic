@@ -4,16 +4,10 @@ import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { CloudArrowUpIcon, ArrowLeftIcon, CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import AdminLayout from '@/components/layout/AdminLayout';
-import TabGroup from './TabGroup';
-import TablePreview, { 
-  examColumns, 
-  createPartsColumns, 
-  questionsColumns, 
-  answersColumns 
-} from './TablePreview';
 import DownloadTemplate from './DownloadTemplate';
+import PartEditor from './PartEditor';
 import { useExcelProcessor } from '@/hooks/useExcelProcessor';
-import { ExamImportData, TabType } from '@/types/exam';
+import { ExamImportData, PartTabType, EXAM_TYPE_CONFIGS } from '@/types/exam';
 
 const ExamImportPage: React.FC = () => {
   const router = useRouter();
@@ -23,9 +17,10 @@ const ExamImportPage: React.FC = () => {
   // State management
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [examData, setExamData] = useState<ExamImportData | null>(null);
-  const [audioFiles, setAudioFiles] = useState<Record<number, File>>({});
-  const [activeTab, setActiveTab] = useState<TabType>('exam');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activePartTab, setActivePartTab] = useState<number>(1);
+  const [submittingParts, setSubmittingParts] = useState<Set<number>>(new Set());
+  const [submittedParts, setSubmittedParts] = useState<Set<number>>(new Set());
+  const [currentExamId, setCurrentExamId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Handle Excel file selection
@@ -42,68 +37,76 @@ const ExamImportPage: React.FC = () => {
     setSelectedFile(file);
     setError(null);
     setExamData(null);
-    setAudioFiles({});
+    setSubmittedParts(new Set());
+    setCurrentExamId(null);
 
     // Process the Excel file
     const result = await processExcelFile(file);
     if (result.success && result.data) {
       setExamData(result.data);
+      
+      // Set active tab to first available part
+      const availableParts = getAvailableParts(result.data);
+      if (availableParts.length > 0) {
+        setActivePartTab(availableParts[0]);
+      }
+      
+      // Generate examId for this session
+      setCurrentExamId(`exam_${Date.now()}`);
     } else {
       setError(result.error || 'Lỗi xử lý file Excel');
     }
   };
 
-  // Handle audio file selection
-  const handleAudioFileSelect = (partNumber: number, file: File | null) => {
-    setAudioFiles(prev => {
-      const updated = { ...prev };
-      if (file) {
-        updated[partNumber] = file;
-      } else {
-        delete updated[partNumber];
-      }
-      return updated;
-    });
+  // Get available parts based on exam data
+  const getAvailableParts = (data: ExamImportData) => {
+    return data.parts.map(p => p.part_number).sort((a, b) => a - b);
   };
 
-  // Handle form submission
-  const handleSubmit = async () => {
-    if (!examData) {
-      setError('Chưa có dữ liệu để nhập');
+  // Get questions for a specific part
+  const getQuestionsForPart = (partNumber: number) => {
+    if (!examData) return [];
+    return examData.questions.filter(q => q.part_number === partNumber);
+  };
+
+  // Get answers for a specific part
+  const getAnswersForPart = (partNumber: number) => {
+    if (!examData) return [];
+    const questionsInPart = getQuestionsForPart(partNumber);
+    const questionNumbers = questionsInPart.map(q => q.question_number);
+    return examData.answers.filter(a => questionNumbers.includes(a.question_number));
+  };
+
+  // Handle part submission
+  const handlePartSubmission = async (partData: any, audioFile?: File, questionImages?: File[]) => {
+    if (!currentExamId) {
+      setError('Thiếu exam ID');
       return;
     }
 
-    // Validate audio files for listening parts
-    const listeningParts = examData.parts.filter(part => part.type === 'listening');
-    const missingAudio = listeningParts.filter(part => !audioFiles[part.part_number]);
-    
-    if (missingAudio.length > 0) {
-      setError(`Thiếu file audio cho phần: ${missingAudio.map(p => p.title).join(', ')}`);
-      return;
-    }
-
-    // Confirm before submission
-    const confirmed = window.confirm('Bạn có chắc muốn nhập đề thi này vào hệ thống?');
-    if (!confirmed) return;
-
-    setIsSubmitting(true);
+    const partNumber = partData.part_number;
+    setSubmittingParts(prev => new Set(prev).add(partNumber));
     setError(null);
 
     try {
       // Prepare form data
       const formData = new FormData();
-      formData.append('data', JSON.stringify(examData));
+      formData.append('partData', JSON.stringify(partData));
 
-      // Add audio files in order of parts
-      listeningParts.forEach(part => {
-        const audioFile = audioFiles[part.part_number];
-        if (audioFile) {
-          formData.append('audioFiles', audioFile);
-        }
-      });
+      // Add audio file if exists
+      if (audioFile) {
+        formData.append('audioFile', audioFile);
+      }
+
+      // Add question images if exist
+      if (questionImages && questionImages.length > 0) {
+        questionImages.forEach((imageFile, index) => {
+          formData.append('questionImages', imageFile);
+        });
+      }
 
       // Submit to API
-      const response = await fetch('/api/admin/exams/import', {
+      const response = await fetch(`/api/admin/exams/${currentExamId}/parts`, {
         method: 'POST',
         body: formData,
       });
@@ -111,60 +114,321 @@ const ExamImportPage: React.FC = () => {
       const result = await response.json();
 
       if (result.success) {
-        alert('Đã nhập đề thi thành công!');
-        router.push('/admin/exams');
+        setSubmittedParts(prev => new Set(prev).add(partNumber));
+        alert(`Đã gửi Part ${partNumber} thành công!`);
+        
+        // Move to next part if available
+        const availableParts = getAvailableParts(examData!);
+        const currentIndex = availableParts.indexOf(partNumber);
+        if (currentIndex < availableParts.length - 1) {
+          setActivePartTab(availableParts[currentIndex + 1]);
+        }
       } else {
-        setError(result.data?.message || 'Lỗi khi nhập đề thi');
+        setError(result.data?.message || `Lỗi khi gửi Part ${partNumber}`);
       }
 
     } catch (error) {
-      console.error('Submit error:', error);
+      console.error('Part submission error:', error);
       setError('Lỗi kết nối với server');
     } finally {
-      setIsSubmitting(false);
+      setSubmittingParts(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(partNumber);
+        return newSet;
+      });
     }
   };
 
-  // Tab configuration
-  const tabs = [
-    { key: 'exam' as TabType, label: 'Thông tin đề thi', count: examData ? 1 : 0 },
-    { key: 'parts' as TabType, label: 'Phần thi', count: examData?.parts.length || 0 },
-    { key: 'questions' as TabType, label: 'Câu hỏi', count: examData?.questions.length || 0 },
-    { key: 'answers' as TabType, label: 'Đáp án', count: examData?.answers.length || 0 },
-  ];
+  // Get exam type info
+  const getExamTypeInfo = () => {
+    if (!examData?.exam.exam_type) return null;
+    return EXAM_TYPE_CONFIGS[examData.exam.exam_type];
+  };
 
-  // Get data for current tab
-  const getCurrentTabData = () => {
-    if (!examData) return [];
+  // Check if exam type needs part division
+  const needsPartDivision = () => {
+    const typeInfo = getExamTypeInfo();
+    return typeInfo?.needsPartDivision || false;
+  };
+
+  // Render content based on current state
+  const renderContent = () => {
+    if (!selectedFile) {
+      return (
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+          <CloudArrowUpIcon className="mx-auto h-12 w-12 text-gray-400" />
+          <div className="mt-4">
+            <label htmlFor="excel-upload" className="cursor-pointer">
+              <span className="mt-2 block text-sm font-medium text-gray-900">
+                Chọn file Excel để nhập đề thi
+              </span>
+              <span className="mt-1 block text-sm text-gray-500">
+                Hỗ trợ định dạng .xlsx, .xls (Speaking Practice, Writing Practice, Full TOEIC)
+              </span>
+            </label>
+            <input
+              ref={fileInputRef}
+              id="excel-upload"
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+          </div>
+        </div>
+      );
+    }
+
+    if (isProcessing) {
+      return (
+        <div className="text-center py-8">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p className="mt-2 text-gray-600">Đang xử lý file Excel...</p>
+        </div>
+      );
+    }
+
+    if (!examData) {
+      return (
+        <div className="text-center py-8 text-red-600">
+          <ExclamationTriangleIcon className="mx-auto h-12 w-12" />
+          <p className="mt-2">Không thể xử lý file Excel</p>
+        </div>
+      );
+    }
+
+    // Show different UI based on exam type
+    return needsPartDivision() ? <PartTabsContent /> : <SimpleTopicsContent />;
+  };
+
+  // Simple content for practice types (no part division)
+  const SimpleTopicsContent = () => {
+    if (!examData) return null;
+
+    const examTypeInfo = getExamTypeInfo();
+    const questions = examData.questions;
+    const answers = examData.answers;
+
+    return (
+      <div className="space-y-6">
+        {/* Exam Info Summary */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="font-medium text-blue-900">{examData.exam.title}</h3>
+          <p className="text-blue-700 text-sm mt-1">{examData.exam.description}</p>
+          <div className="mt-2 flex items-center space-x-4 text-sm text-blue-600">
+            <span>Độ khó: {examData.exam.difficulty}</span>
+            <span>Thời gian: {examData.exam.estimated_time} phút</span>
+            {examTypeInfo && <span className="font-medium">{examTypeInfo.description}</span>}
+          </div>
+        </div>
+
+        {/* Topics List */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-medium text-gray-900">
+              {examData.exam.exam_type === 'speaking_practice' ? '🗣️ Speaking Topics' : '✍️ Writing Topics'}
+            </h3>
+            <span className="text-sm text-gray-500">{questions.length} topics</span>
+          </div>
+
+          <div className="space-y-4">
+            {questions.map((question, index) => (
+              <div key={question.question_number} className="border border-gray-200 rounded-lg p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900">
+                      Topic {question.question_number}
+                    </h4>
+                    <p className="text-gray-700 mt-1">{question.content}</p>
+                    {question.vietnamese_translation && (
+                      <p className="text-gray-600 text-sm mt-2 italic">
+                        {question.vietnamese_translation}
+                      </p>
+                    )}
+                  </div>
+                  <span className="ml-4 px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                    {examData.exam.exam_type === 'speaking_practice' ? 'Speaking' : 'Writing'}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Submit Button for Practice Types */}
+          <div className="mt-6 flex justify-center">
+            <button
+              onClick={() => handlePracticeSubmission()}
+              disabled={submittingParts.size > 0}
+              className={`px-8 py-3 rounded-md font-medium ${
+                submittingParts.size > 0
+                  ? 'bg-gray-400 text-white cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+            >
+              {submittingParts.size > 0 ? 'Đang gửi...' : `Gửi ${questions.length} Topics`}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Handle practice submission (for speaking/writing practice)
+  const handlePracticeSubmission = async () => {
+    if (!examData || !currentExamId) return;
+
+    setSubmittingParts(prev => new Set(prev).add(1));
+    setError(null);
+
+    try {
+      // Prepare practice data
+      const practiceData = {
+        title: examData.exam.title,
+        part_number: 1,
+        difficulty_level: examData.exam.difficulty,
+        instruction: examData.exam.description,
+        time_limit: examData.exam.estimated_time,
+        questions: examData.questions.map(question => ({
+          question: question.content,
+          vietnamese_translation: question.vietnamese_translation,
+          answers: [] // No answers for practice types
+        })),
+        translations: examData.questions.map(question => ({
+          question_id: question.question_number,
+          vietnamese_text: question.vietnamese_translation || ''
+        })).filter(t => t.vietnamese_text.trim())
+      };
+
+      // Submit to API
+      const formData = new FormData();
+      formData.append('partData', JSON.stringify(practiceData));
+
+      const response = await fetch(`/api/admin/exams/${currentExamId}/parts`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSubmittedParts(prev => new Set(prev).add(1));
+        alert(`Đã gửi ${examData.questions.length} topics thành công!`);
+      } else {
+        setError(result.data?.message || 'Lỗi khi gửi topics');
+      }
+
+    } catch (error) {
+      console.error('Practice submission error:', error);
+      setError('Lỗi kết nối với server');
+    } finally {
+      setSubmittingParts(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(1);
+        return newSet;
+      });
+    }
+  };
+
+  // Part tabs content
+  const PartTabsContent = () => {
+    if (!examData) return null;
+
+    const availableParts = getAvailableParts(examData);
+    const examTypeInfo = getExamTypeInfo();
+    const currentPart = examData.parts.find(p => p.part_number === activePartTab);
     
-    switch (activeTab) {
-      case 'exam':
-        return [examData.exam];
-      case 'parts':
-        return examData.parts;
-      case 'questions':
-        return examData.questions;
-      case 'answers':
-        return examData.answers;
-      default:
-        return [];
-    }
-  };
+    if (!currentPart) return null;
 
-  // Get columns for current tab
-  const getCurrentTabColumns = () => {
-    switch (activeTab) {
-      case 'exam':
-        return examColumns;
-      case 'parts':
-        return createPartsColumns(audioFiles, handleAudioFileSelect);
-      case 'questions':
-        return questionsColumns;
-      case 'answers':
-        return answersColumns;
-      default:
-        return [];
-    }
+    const questionsForPart = getQuestionsForPart(activePartTab);
+    const answersForPart = getAnswersForPart(activePartTab);
+
+    return (
+      <div className="space-y-6">
+        {/* Exam Info Summary */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="font-medium text-blue-900">{examData.exam.title}</h3>
+          <p className="text-blue-700 text-sm mt-1">{examData.exam.description}</p>
+          <div className="mt-2 flex items-center space-x-4 text-sm text-blue-600">
+            <span>Độ khó: {examData.exam.difficulty}</span>
+            <span>Thời gian: {examData.exam.estimated_time} phút</span>
+            {examTypeInfo && <span className="font-medium">{examTypeInfo.description}</span>}
+          </div>
+        </div>
+
+        {/* Part Navigation Tabs */}
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            {availableParts.map(partNumber => {
+              const isActive = partNumber === activePartTab;
+              const isSubmitted = submittedParts.has(partNumber);
+              const isSubmitting = submittingParts.has(partNumber);
+              
+              return (
+                <button
+                  key={partNumber}
+                  onClick={() => setActivePartTab(partNumber)}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
+                    isActive
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <span>Part {partNumber}</span>
+                  {isSubmitted && <CheckIcon className="h-4 w-4 text-green-600" />}
+                  {isSubmitting && (
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Part Editor */}
+        <PartEditor
+          part={currentPart}
+          questions={questionsForPart}
+          answers={answersForPart}
+          onPartUpdate={(partData) => {
+            // Handle part data updates if needed
+          }}
+          onSubmitPart={handlePartSubmission}
+          isSubmitting={submittingParts.has(activePartTab)}
+        />
+
+        {/* Progress Summary */}
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <h4 className="font-medium text-gray-900 mb-2">Tiến độ gửi Parts</h4>
+          <div className="grid grid-cols-7 gap-2">
+            {availableParts.map(partNumber => {
+              const isSubmitted = submittedParts.has(partNumber);
+              const isSubmitting = submittingParts.has(partNumber);
+              
+              return (
+                <div
+                  key={partNumber}
+                  className={`p-2 rounded text-center text-sm font-medium ${
+                    isSubmitted
+                      ? 'bg-green-100 text-green-800'
+                      : isSubmitting
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : 'bg-gray-100 text-gray-600'
+                  }`}
+                >
+                  Part {partNumber}
+                  {isSubmitted && ' ✓'}
+                  {isSubmitting && ' ...'}
+                </div>
+              );
+            })}
+          </div>
+          
+          <div className="mt-3 text-sm text-gray-600">
+            Đã gửi: {submittedParts.size}/{availableParts.length} parts
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -174,7 +438,7 @@ const ExamImportPage: React.FC = () => {
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Nhập đề thi từ Excel</h1>
-            <p className="text-gray-600">Tải file Excel và xem trước dữ liệu trước khi nhập vào hệ thống</p>
+            <p className="text-gray-600">Upload Excel, chỉnh sửa và gửi từng Part riêng lẻ</p>
           </div>
           <button
             onClick={() => router.push('/admin/exams')}
@@ -192,127 +456,68 @@ const ExamImportPage: React.FC = () => {
           {/* Download Template */}
           <DownloadTemplate />
           
-          {!selectedFile ? (
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-              <CloudArrowUpIcon className="mx-auto h-12 w-12 text-gray-400" />
-              <div className="mt-4">
-                <label htmlFor="excel-upload" className="cursor-pointer">
-                  <span className="mt-2 block text-sm font-medium text-gray-900">
-                    Chọn file Excel để tải lên
-                  </span>
-                  <span className="mt-1 block text-sm text-gray-500">
-                    Hỗ trợ .xlsx, .xls
-                  </span>
-                </label>
-                <input
-                  ref={fileInputRef}
-                  id="excel-upload"
-                  type="file"
-                  accept=".xlsx,.xls"
-                  onChange={handleFileSelect}
-                  className="sr-only"
-                />
-              </div>
-              <div className="mt-4">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                >
-                  Chọn file
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="flex items-center">
-                <CheckIcon className="h-5 w-5 text-green-600 mr-2" />
-                <span className="text-green-800 font-medium">{selectedFile.name}</span>
-                <span className="text-green-600 ml-2">
-                  ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                </span>
-              </div>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-              >
-                Đổi file
-              </button>
-            </div>
-          )}
-
-          {isProcessing && (
-            <div className="mt-4 flex items-center text-blue-600">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-              Đang xử lý file Excel...
-            </div>
-          )}
+          {renderContent()}
         </div>
 
         {/* Error Display */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
             <div className="flex">
-              <ExclamationTriangleIcon className="h-5 w-5 text-red-400" />
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">Lỗi</h3>
-                <p className="mt-1 text-sm text-red-700">{error}</p>
-              </div>
+              <ExclamationTriangleIcon className="h-5 w-5 text-red-400 mr-2" />
+              <span className="text-red-800">{error}</span>
             </div>
           </div>
         )}
 
-        {/* Preview Section */}
-        {examData && (
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">2. Xem trước dữ liệu</h2>
-            
-            <TabGroup
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              tabs={tabs}
-            />
+        {/* Instructions */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <h3 className="font-medium text-yellow-800 mb-2">📚 Hướng dẫn sử dụng</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            {/* Speaking Practice */}
+            <div className="bg-blue-50 border border-blue-200 rounded p-3">
+              <h4 className="font-medium text-blue-800 mb-2">🗣️ Speaking Practice</h4>
+              <ul className="text-blue-700 text-sm space-y-1">
+                <li>• Chỉ cần topics/câu hỏi thực hành</li>
+                <li>• Không cần đáp án hoặc chia parts</li>
+                <li>• Thời gian linh hoạt (10-30 phút)</li>
+                <li>• Bản dịch tiếng Việt tùy chọn</li>
+              </ul>
+            </div>
 
-            <TablePreview
-              data={getCurrentTabData()}
-              columns={getCurrentTabColumns()}
-              title={tabs.find(t => t.key === activeTab)?.label || ''}
-              audioFiles={audioFiles}
-              onAudioFileSelect={handleAudioFileSelect}
-            />
+            {/* Writing Practice */}
+            <div className="bg-green-50 border border-green-200 rounded p-3">
+              <h4 className="font-medium text-green-800 mb-2">✍️ Writing Practice</h4>
+              <ul className="text-green-700 text-sm space-y-1">
+                <li>• Chỉ cần topics/đề bài thực hành</li>
+                <li>• Không cần đáp án hoặc chia parts</li>
+                <li>• Thời gian linh hoạt (30-90 phút)</li>
+                <li>• Bản dịch tiếng Việt tùy chọn</li>
+              </ul>
+            </div>
+
+            {/* Full TOEIC */}
+            <div className="bg-purple-50 border border-purple-200 rounded p-3">
+              <h4 className="font-medium text-purple-800 mb-2">📝 Full TOEIC Test</h4>
+              <ul className="text-purple-700 text-sm space-y-1">
+                <li>• Đề thi TOEIC chuẩn ETS (200 câu)</li>
+                <li>• Chia đúng 7 parts: 1-6, 7-31, 32-70...</li>
+                <li>• Parts 1-4 cần file audio</li>
+                <li>• Mỗi câu có 4 đáp án A,B,C,D</li>
+              </ul>
+            </div>
           </div>
-        )}
 
-        {/* Action Buttons */}
-        {examData && (
-          <div className="flex justify-between items-center">
-            <button
-              onClick={() => router.push('/admin/exams')}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
-              <ArrowLeftIcon className="h-4 w-4 mr-2" />
-              Quay lại
-            </button>
-
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Đang xử lý...
-                </>
-              ) : (
-                <>
-                  <CheckIcon className="h-4 w-4 mr-2" />
-                  Nhập vào hệ thống
-                </>
-              )}
-            </button>
+          <div className="text-yellow-700 text-sm">
+            <p className="mb-2"><strong>Quy trình chung:</strong></p>
+            <ol className="list-decimal list-inside space-y-1 ml-4">
+              <li>Tải template Excel phù hợp với loại đề thi</li>
+              <li>Điền thông tin vào file Excel</li>
+              <li>Upload file và xem trước dữ liệu</li>
+              <li>Chỉnh sửa và gửi dữ liệu lên server</li>
+            </ol>
           </div>
-        )}
+        </div>
       </div>
     </AdminLayout>
   );

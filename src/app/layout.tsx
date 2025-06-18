@@ -1,9 +1,12 @@
+import { Metadata } from "next";
+
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+
 import "./globals.css";
 
-export const metadata = {
-  title: "My TOEIC App",
+export const metadata: Metadata = {
+  title: "Edutic - Ôn là trúng, Luyện là đạt",
   description: "Luyện thi TOEIC hiệu quả",
 };
 
@@ -19,6 +22,10 @@ export default function DashboardLayout({
 
   return (
     <html lang="vi">
+      <head>
+        <meta charSet="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </head>
       <body>
         <div className="min-h-screen bg-gray-50 flex flex-col">
           <Header user={user} />

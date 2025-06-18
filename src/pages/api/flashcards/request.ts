@@ -1,8 +1,8 @@
-import { Flashcard } from "@/models/Flashcard";
-import { User } from "@/models/User";
-import { Vocabulary } from "@/models/Vocabulary";
 import type { NextApiRequest, NextApiResponse } from "next";
-// import { User, Flashcard, Vocabulary } from "@/lib/db";
+
+import { User } from "@/models/User";
+import { Flashcard } from "@/models/Flashcard";
+import { Vocabulary } from "@/models/Vocabulary";
 
 export default async function handler(
   req: NextApiRequest,

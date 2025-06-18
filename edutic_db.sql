@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: localhost:3306
--- Thời gian đã tạo: Th6 16, 2025 lúc 04:05 PM
+-- Thời gian đã tạo: Th6 18, 2025 lúc 04:39 PM
 -- Phiên bản máy phục vụ: 8.4.3
 -- Phiên bản PHP: 8.3.16
 
@@ -98,6 +98,13 @@ CREATE TABLE `audio_files` (
   `created_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Đang đổ dữ liệu cho bảng `audio_files`
+--
+
+INSERT INTO `audio_files` (`id`, `part_id`, `file_path`, `duration`, `transcript`, `created_at`) VALUES
+(1, 1, 'PART_1-TEST_1.mp3', NULL, '1. (A) She’s eating in a picnic area. (B) She’s waiting in line at a food truck. (C) She’s wiping off a bench. (D) She’s throwing away a plate.  2. (A) The man is brushing snow off the roof of a car. (B) The man is standing in the snow beside a car. (C) The man is shoveling snow from a walkway. (D) The man is running through the snow.  3. (A) Some workers are hanging art in a gallery. (B) Two of the people are having a conversation. (C) One of the men is rearranging cushions on a sofa. (D) One of the men is painting a picture.  4. (A) Vehicles are entering a parking garage. (B) Clothes hangers are scattered on the ground. (C) Empty racks are lined up next to a building. (D) Clothing is being displayed under a tent.  5. (A) Potted plants have been suspended from a ceiling. (B) Chairs have been stacked in front of an entryway. (C) A computer station has been set up on a desk. (D) A rug has been rolled up against a wall.  6. (A) One of the men is sweeping a patio. (B) One of the men is replacing some flooring. (C) A door has been taken off its frame. (D) A light fixture has been left on the ground.', '2025-06-18 14:38:18');
+
 -- --------------------------------------------------------
 
 --
@@ -186,6 +193,28 @@ CREATE TABLE `leader_boards` (
 -- --------------------------------------------------------
 
 --
+-- Cấu trúc bảng cho bảng `listening_transcripts`
+--
+
+CREATE TABLE `listening_transcripts` (
+  `id` int NOT NULL,
+  `audio_file_id` int NOT NULL,
+  `level` enum('easy','medium','hard') DEFAULT 'easy',
+  `blanks` json NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `listening_transcripts`
+--
+
+INSERT INTO `listening_transcripts` (`id`, `audio_file_id`, `level`, `blanks`, `created_at`) VALUES
+(1, 1, 'easy', '[{\"index\": 0, \"length\": 6, \"position\": 11}, {\"index\": 1, \"length\": 8, \"position\": 116}]', '2025-06-18 14:47:28'),
+(2, 1, 'medium', '[{\"index\": 0, \"length\": 6, \"position\": 11}, {\"index\": 1, \"length\": 8, \"position\": 116}, {\"index\": 2, \"length\": 9, \"position\": 237}]', '2025-06-18 14:49:52');
+
+-- --------------------------------------------------------
+
+--
 -- Cấu trúc bảng cho bảng `parts`
 --
 
@@ -200,6 +229,13 @@ CREATE TABLE `parts` (
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `parts`
+--
+
+INSERT INTO `parts` (`id`, `part_number`, `title`, `description`, `instruction`, `difficulty_level`, `time_limit`, `created_at`, `updated_at`) VALUES
+(1, 1, 'part 1', NULL, NULL, 'easy', NULL, '2025-06-18 14:26:47', '2025-06-18 14:26:47');
 
 -- --------------------------------------------------------
 
@@ -320,12 +356,19 @@ CREATE TABLE `study_sessions` (
 
 CREATE TABLE `translations` (
   `id` int NOT NULL,
-  `content_type` enum('question','answer','instruction','transcript') DEFAULT NULL,
+  `content_type` enum('question','answer','instruction','transcript','audio_transcript') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `content_id` int DEFAULT NULL,
   `vietnamese_text` text,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `translations`
+--
+
+INSERT INTO `translations` (`id`, `content_type`, `content_id`, `vietnamese_text`, `created_at`, `updated_at`) VALUES
+(1, 'audio_transcript', 1, '1. (A) Cô ấy đang ăn trong khu vực dã ngoại.\n(B) Cô ấy đang xếp hàng tại một xe bán đồ ăn.\n(C) Cô ấy đang lau ghế dài.\n(D) Cô ấy đang vứt đĩa đi.\n\n2. (A) Người đàn ông đang phủi tuyết khỏi mái xe.\n(B) Người đàn ông đang đứng trong tuyết bên cạnh một chiếc xe.\n(C) Người đàn ông đang xúc tuyết khỏi lối đi.\n(D) Người đàn ông đang chạy qua tuyết.\n\n3. (A) Một số công nhân đang treo tranh trong một phòng trưng bày.\n(B) Hai người trong số họ đang trò chuyện.\n(C) Một trong những người đàn ông đang sắp xếp lại gối trên ghế sofa.\n(D) Một trong những người đàn ông đang vẽ tranh.\n\n4. (A) Các phương tiện đang vào một bãi đỗ xe.\n(B) Móc treo quần áo bị vứt rải rác trên mặt đất.\n(C) Các giá treo quần áo trống được xếp hàng cạnh một tòa nhà.\n(D) Quần áo được trưng bày dưới một chiếc lều.\n\n5. (A) Cây cảnh đã được treo từ trần nhà.\n(B) Ghế đã được xếp chồng lên nhau trước lối vào.\n(C) Một trạm máy tính đã được thiết lập trên bàn.\n(D) Một tấm thảm đã được cuộn lại dựa vào tường.\n\n6. (A) Một trong những người đàn ông đang quét sân.\n(B) Một trong những người đàn ông đang thay thế sàn nhà.\n(C) Cửa đã được tháo khỏi khung.\n(D) Một thiết bị chiếu sáng đã được để lại trên mặt đất.', '2025-06-18 15:02:03', '2025-06-18 15:02:03');
 
 -- --------------------------------------------------------
 
@@ -582,6 +625,13 @@ ALTER TABLE `leader_boards`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Chỉ mục cho bảng `listening_transcripts`
+--
+ALTER TABLE `listening_transcripts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `audio_file_id` (`audio_file_id`);
+
+--
 -- Chỉ mục cho bảng `parts`
 --
 ALTER TABLE `parts`
@@ -749,7 +799,7 @@ ALTER TABLE `api_usages`
 -- AUTO_INCREMENT cho bảng `audio_files`
 --
 ALTER TABLE `audio_files`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT cho bảng `exams`
@@ -782,10 +832,16 @@ ALTER TABLE `leader_boards`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT cho bảng `listening_transcripts`
+--
+ALTER TABLE `listening_transcripts`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT cho bảng `parts`
 --
 ALTER TABLE `parts`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT cho bảng `questions`
@@ -833,7 +889,7 @@ ALTER TABLE `study_sessions`
 -- AUTO_INCREMENT cho bảng `translations`
 --
 ALTER TABLE `translations`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT cho bảng `users`
@@ -930,6 +986,12 @@ ALTER TABLE `flashcards`
 --
 ALTER TABLE `leader_boards`
   ADD CONSTRAINT `leader_boards_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Ràng buộc cho bảng `listening_transcripts`
+--
+ALTER TABLE `listening_transcripts`
+  ADD CONSTRAINT `listening_transcripts_ibfk_1` FOREIGN KEY (`audio_file_id`) REFERENCES `audio_files` (`id`);
 
 --
 -- Ràng buộc cho bảng `questions`

@@ -28,6 +28,7 @@ import { AudioFile } from "@/models/AudioFile";
 import { Translation } from "@/models/Translation";
 import { QuestionGroup } from "@/models/QuestionGroup";
 import { UserTargetSkill } from "@/models/UserTargetSkill";
+import { ListeningTranscript } from "@/models/ListeningTranscript";
 
 const sequelize = new Sequelize({
   dialect: "mysql",
@@ -42,6 +43,7 @@ const sequelize = new Sequelize({
     Answer,
     ApiUsage,
     AudioFile,
+    ListeningTranscript,
     Exam,
     ExamPart,
     Feedback,

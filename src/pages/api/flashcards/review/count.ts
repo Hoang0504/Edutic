@@ -1,7 +1,8 @@
-import { Flashcard } from "@/lib/db";
 import dayjs from "dayjs";
-import { NextApiRequest, NextApiResponse } from "next";
 import { Op } from "sequelize";
+import { NextApiRequest, NextApiResponse } from "next";
+
+import { Flashcard } from "@/models/Flashcard";
 
 export default async function handler(
   req: NextApiRequest,

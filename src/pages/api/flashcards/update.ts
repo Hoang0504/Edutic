@@ -2,7 +2,7 @@
 import dayjs from "dayjs";
 import { NextApiRequest, NextApiResponse } from "next";
 
-import { Flashcard } from "@/lib/db";
+import { Flashcard } from "@/models/Flashcard";
 
 const reviewIntervals: Record<number, number> = {
   0: 1,

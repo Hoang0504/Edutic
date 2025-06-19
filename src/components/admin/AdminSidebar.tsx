@@ -6,6 +6,7 @@ import {
   UserIcon,
   DocumentTextIcon,
   PowerIcon,
+  ClipboardIcon,
 } from '@heroicons/react/24/outline';
 import { useAdminContext } from '@/context/AdminContext';
 import { useRouter } from 'next/navigation';
@@ -31,6 +32,7 @@ const AdminSidebar = ({ onMenuSelect }: AdminSidebarProps) => {
     { key: 'dashboard', label: 'Dashboard', icon: <HomeIcon className="h-5 w-5" /> },
     { key: 'users', label: 'Users', icon: <UserIcon className="h-5 w-5" /> },
     { key: 'exams', label: 'Exams', icon: <DocumentTextIcon className="h-5 w-5" /> },
+    { key: 'flashcard', label: 'Flashcard', icon: <ClipboardIcon className="h-5 w-5" /> },
     { key: 'logout', label: <button onClick={handleLogout}>Logout</button>, icon: <PowerIcon className="h-5 w-5" /> },
   ];
 

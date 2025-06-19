@@ -1,30 +1,63 @@
 'use client';
-import React, { useState } from 'react';
-import { PencilIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from 'react';
+import { XMarkIcon } from '@heroicons/react/24/outline';
+
+interface Exam {
+  id: number;
+  title: string;
+  type: string;
+  estimatedTime: string;
+  isPublished: boolean;
+  description: string;
+}
 
 interface EditExamProps {
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
-  initialData?: { title: string; level: string; description: string; published: string };
+  initialData?: Exam;
 }
 
 const EditExamPage = ({ onSubmit, onCancel, initialData }: EditExamProps) => {
-  const [formData, setFormData] = useState({
-    title: initialData?.title || '',
-    level: initialData?.level || 'Easy',
-    description: initialData?.description || '',
-    published: initialData?.published || 'Yes',
-  });
+  const [title, setTitle] = useState('');
+  const [type, setType] = useState('TOEIC Sample');
+  const [estimatedTime, setEstimatedTime] = useState('120 minutes');
+  const [isPublished, setIsPublished] = useState(true);
+  const [description, setDescription] = useState('');
+
+  useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title || '');
+      setType(initialData.type || 'TOEIC Sample');
+      setEstimatedTime(initialData.estimatedTime || '120 minutes');
+      setIsPublished(initialData.isPublished || false);
+      setDescription(initialData.description || '');
+    }
+  }, [initialData]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Submitting form with data:', formData); // Debug
+    console.log('Updating exam with data:', { title, type, estimatedTime, isPublished, description }); // Debug
     onSubmit(e);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTitle(e.target.value);
+  };
+
+  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setType(e.target.value);
+  };
+
+  const handleEstimatedTimeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setEstimatedTime(e.target.value);
+  };
+
+  const handlePublishedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setIsPublished(e.target.value === 'On');
+  };
+
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setDescription(e.target.value);
   };
 
   return (
@@ -35,10 +68,7 @@ const EditExamPage = ({ onSubmit, onCancel, initialData }: EditExamProps) => {
       >
         <XMarkIcon className="h-6 w-6" />
       </button>
-      <h2 className="text-2xl font-semibold flex items-center mb-6">
-        <PencilIcon className="h-6 w-6 mr-2 text-blue-600" />
-        Edit Exam
-      </h2>
+      <h2 className="text-2xl font-semibold mb-6">Edit Exam</h2>
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -48,26 +78,43 @@ const EditExamPage = ({ onSubmit, onCancel, initialData }: EditExamProps) => {
             type="text"
             id="title"
             name="title"
-            value={formData.title}
-            onChange={handleChange}
+            value={title}
+            onChange={handleTitleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-            placeholder="Nhập tiêu đề"
+            placeholder="Enter title"
           />
         </div>
         <div>
-          <label htmlFor="level" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Level
+          <label htmlFor="type" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Type
           </label>
           <select
-            id="level"
-            name="level"
-            value={formData.level}
-            onChange={handleChange}
+            id="type"
+            name="type"
+            value={type}
+            onChange={handleTypeChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
           >
-            <option value="Easy">Dễ</option>
-            <option value="Medium">Trung bình</option>
-            <option value="Hard">Khó</option>
+            <option value="TOEIC Sample">TOEIC Sample</option>
+            <option value="TOEIC Full">TOEIC Full</option>
+            <option value="Writing">Writing</option>
+            <option value="Speaking">Speaking</option>
+          </select>
+        </div>
+        <div>
+          <label htmlFor="estimatedTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Estimated Time
+          </label>
+          <select
+            id="estimatedTime"
+            name="estimatedTime"
+            value={estimatedTime}
+            onChange={handleEstimatedTimeChange}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+          >
+            <option value="120 minutes">120 minutes</option>
+            <option value="30 minutes">30 minutes</option>
+            <option value="20 minutes">20 minutes</option>
           </select>
         </div>
         <div>
@@ -77,11 +124,11 @@ const EditExamPage = ({ onSubmit, onCancel, initialData }: EditExamProps) => {
           <textarea
             id="description"
             name="description"
-            value={formData.description}
-            onChange={handleChange}
+            value={description}
+            onChange={handleDescriptionChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
             rows={3}
-            placeholder="Nhập mô tả"
+            placeholder="Enter description"
           />
         </div>
         <div>
@@ -91,20 +138,26 @@ const EditExamPage = ({ onSubmit, onCancel, initialData }: EditExamProps) => {
           <select
             id="published"
             name="published"
-            value={formData.published}
-            onChange={handleChange}
+            value={isPublished ? 'On' : 'Off'}
+            onChange={handlePublishedChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
           >
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
+            <option value="On">On</option>
+            <option value="Off">Off</option>
           </select>
         </div>
         <div className="flex justify-center space-x-4">
           <button
+            type="button"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+          <button
             type="submit"
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
           >
-            <PencilIcon className="h-5 w-5 mr-2" />
             Update Exam
           </button>
         </div>

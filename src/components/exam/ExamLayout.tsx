@@ -1,0 +1,157 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import QuestionNavigator from './QuestionNavigator';
+
+interface ExamLayoutProps {
+  examTitle: string;
+  totalTime: number; // in minutes
+  onExit: () => void;
+  onSubmit: () => void;
+  children: React.ReactNode;
+  onSkillChange?: (skill: string) => void;
+  selectedAnswers?: { [key: number]: string };
+  onQuestionClick?: (questionId: number) => void;
+}
+
+const ExamLayout: React.FC<ExamLayoutProps> = ({
+  examTitle,
+  totalTime,
+  onExit,
+  onSubmit,
+  children,
+  onSkillChange,
+  selectedAnswers = {},
+  onQuestionClick = () => {}
+}) => {
+  const [timeLeft, setTimeLeft] = useState(totalTime * 60); // convert to seconds
+  const [activeSkill, setActiveSkill] = useState<'listening' | 'reading' | 'writing' | 'speaking'>('listening');
+
+  const skills = [
+    { id: 'listening', name: 'Listening', color: 'bg-blue-500' },
+    { id: 'reading', name: 'Reading', color: 'bg-green-500' },
+    { id: 'writing', name: 'Writing', color: 'bg-yellow-500' },
+    { id: 'speaking', name: 'Speaking', color: 'bg-red-500' }
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          onSubmit();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [onSubmit]);
+
+  const formatTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleSkillChange = (skill: 'listening' | 'reading' | 'writing' | 'speaking') => {
+    setActiveSkill(skill);
+    if (onSkillChange) {
+      onSkillChange(skill);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <h1 className="text-xl font-semibold text-gray-800">{examTitle}</h1>
+            <button
+              onClick={onExit}
+              className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+            >
+              Thoát
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Skills Navigation */}
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex space-x-1">
+            {skills.map((skill) => (
+              <button
+                key={skill.id}
+                onClick={() => handleSkillChange(skill.id as any)}
+                className={`px-6 py-3 font-medium text-sm rounded-t-lg transition-colors ${
+                  activeSkill === skill.id
+                    ? 'bg-gray-100 text-gray-800 border-b-2 border-blue-500'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                }`}
+              >
+                {skill.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="flex gap-6">
+          {/* Main Content */}
+          <div className="flex-1">
+            {activeSkill === 'listening' && children}
+            {activeSkill === 'reading' && (
+              <div className="bg-white rounded-lg shadow-sm border p-6">
+                <h2 className="text-lg font-medium text-gray-800 mb-4">Reading Section</h2>
+                <p className="text-gray-600">Reading interface will be implemented here.</p>
+              </div>
+            )}
+            {activeSkill === 'writing' && (
+              <div className="bg-white rounded-lg shadow-sm border p-6">
+                <h2 className="text-lg font-medium text-gray-800 mb-4">Writing Section</h2>
+                <p className="text-gray-600">Writing interface will be implemented here.</p>
+              </div>
+            )}
+            {activeSkill === 'speaking' && (
+              <div className="bg-white rounded-lg shadow-sm border p-6">
+                <h2 className="text-lg font-medium text-gray-800 mb-4">Speaking Section</h2>
+                <p className="text-gray-600">Speaking interface will be implemented here.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="w-80 space-y-6">
+            {/* Timer */}
+            <div className="bg-white rounded-lg shadow-sm border p-4">
+              <h3 className="font-medium text-gray-800 mb-2">Thời gian làm bài</h3>
+              <div className="text-2xl font-bold text-red-600 mb-4">
+                {formatTime(timeLeft)}
+              </div>
+              <button
+                onClick={onSubmit}
+                className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-medium transition-colors"
+              >
+                Nộp bài
+              </button>
+            </div>
+
+            {/* Question Navigator */}
+            <QuestionNavigator
+              selectedAnswers={selectedAnswers}
+              onQuestionClick={onQuestionClick}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ExamLayout; 

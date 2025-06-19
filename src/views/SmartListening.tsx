@@ -1,21 +1,128 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   ListeningStep1,
   ListeningStep2,
   ListeningStep3,
+  ListeningStep4,
 } from "@/components/features/Listening";
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
-function SmartListening() {
+type ClozeLevel = {
+  index: number;
+  position: number;
+  length: number;
+};
+
+type TranscriptData = {
+  audio_path: string;
+  transcript: string;
+  vietnameseTranscript: string;
+  level: {
+    easy: ClozeLevel[];
+    medium: ClozeLevel[];
+    hard: ClozeLevel[];
+  };
+};
+
+function SmartListening({ audio_id }: { audio_id: string }) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const [openStep, setOpenStep] = useState<number | null>(null);
+  const [data, setData] = useState<TranscriptData | null>(null);
 
   const toggleStep = (step: number) => {
     setOpenStep((prev) => (prev === step ? null : step));
   };
+
+  const fetchData = async (audio_id: string) => {
+    try {
+      const res = await fetch(`/api/listening-transcripts/${audio_id}`);
+      const result = await res.json();
+
+      if (result?.message === "Audio file not found") {
+        setNotFound(true);
+        setData(null);
+      } else {
+        setData(result);
+        setNotFound(false);
+      }
+    } catch (error) {
+      console.error("Error fetching transcript data:", error);
+      setNotFound(true);
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (audio_id) {
+      fetchData(audio_id);
+    }
+  }, [audio_id]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-60 text-gray-600">
+        <svg
+          className="animate-spin h-6 w-6 mr-2 text-blue-500"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+            fill="none"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v8z"
+          />
+        </svg>
+        Đang tải dữ liệu...
+      </div>
+    );
+  }
+
+  if (notFound) {
+    return (
+      <div className="text-center text-red-600 font-semibold p-8">
+        Không tìm thấy nội dung audio tương ứng.
+      </div>
+    );
+  }
+
+  // const clozeDataByLevel = {
+  //   baseText:
+  //     "1. (A) She’s eating in a picnic area. (B) She’s waiting in line at a food truck. (C) She’s wiping off a bench. (D) She’s throwing away a plate.  2. (A) The man is brushing snow off the roof of a car. (B) The man is standing in the snow beside a car. (C) The man is shoveling snow from a walkway. (D) The man is running through the snow.  3. (A) Some workers are hanging art in a gallery. (B) Two of the people are having a conversation. (C) One of the men is rearranging cushions on a sofa. (D) One of the men is painting a picture.  4. (A) Vehicles are entering a parking garage. (B) Clothes hangers are scattered on the ground. (C) Empty racks are lined up next to a building. (D) Clothing is being displayed under a tent.  5. (A) Potted plants have been suspended from a ceiling. (B) Chairs have been stacked in front of an entryway. (C) A computer station has been set up on a desk. (D) A rug has been rolled up against a wall.  6. (A) One of the men is sweeping a patio. (B) One of the men is replacing some flooring. (C) A door has been taken off its frame. (D) A light fixture has been left on the ground.",
+
+  //   level: {
+  //     easy: [
+  //       { index: 0, position: 11, length: 6 }, // eating
+  //       { index: 1, position: 116, length: 8 }, // brushing
+  //     ],
+  //     medium: [
+  //       { index: 0, position: 11, length: 6 }, // eating
+  //       { index: 1, position: 116, length: 8 }, // brushing
+  //       { index: 2, position: 237, length: 9 }, // shoveling
+  //     ],
+  //     hard: [
+  //       { index: 0, position: 11, length: 6 }, // eating
+  //       { index: 1, position: 116, length: 8 }, // brushing
+  //       { index: 2, position: 237, length: 9 }, // shoveling
+  //       { index: 3, position: 408, length: 8 }, // entering
+  //       { index: 4, position: 696, length: 9 }, // sweeping
+  //     ],
+  //   },
+  // };
 
   return (
     <div className="max-w-7xl mx-auto space-y-4 px-3 sm:px-6 lg:px-8">
@@ -25,7 +132,7 @@ function SmartListening() {
 
       <audio
         ref={audioRef}
-        src="exam_audio/PART_1-TEST_1.mp3"
+        src={`/exam_audio/${data?.audio_path}`}
         controls
         className="w-full rounded"
       />
@@ -86,8 +193,8 @@ function SmartListening() {
         {openStep === 2 && (
           <div className="p-4 border-t">
             <ListeningStep2
-              transcript="1. (A) She’s eating in a picnic area.\n(B) She’s waiting in line at a food truck.\n(C) She’s wiping off a bench.\n(D) She’s throwing away a plate.\n\n2. (A) The man is brushing snow off the roof of a car.\n(B) The man is standing in the snow beside a car.\n(C) The man is shoveling snow from a walkway.\n(D) The man is running through the snow.\n\n3. (A) Some workers are hanging art in a gallery.\n(B) Two of the people are having a conversation.\n(C) One of the men is rearranging cushions on a sofa.\n(D) One of the men is painting a picture.\n\n4. (A) Vehicles are entering a parking garage.\n(B) Clothes hangers are scattered on the ground.\n(C) Empty racks are lined up next to a building.\n(D) Clothing is being displayed under a tent.\n\n5. (A) Potted plants have been suspended from a ceiling.\n(B) Chairs have been stacked in front of an entryway.\n(C) A computer station has been set up on a desk.\n(D) A rug has been rolled up against a wall.\n\n6. (A) One of the men is sweeping a patio.\n(B) One of the men is replacing some flooring.\n(C) A door has been taken off its frame.\n(D) A light fixture has been left on the ground."
-              transcriptVi="1. (A) Cô ấy đang ăn trong khu vực dã ngoại.\n(B) Cô ấy đang xếp hàng tại một xe bán đồ ăn.\n(C) Cô ấy đang lau ghế dài.\n(D) Cô ấy đang vứt đĩa đi.\n\n2. (A) Người đàn ông đang phủi tuyết khỏi mái xe.\n(B) Người đàn ông đang đứng trong tuyết bên cạnh một chiếc xe.\n(C) Người đàn ông đang xúc tuyết khỏi lối đi.\n(D) Người đàn ông đang chạy qua tuyết.\n\n3. (A) Một số công nhân đang treo tranh trong một phòng trưng bày.\n(B) Hai người trong số họ đang trò chuyện.\n(C) Một trong những người đàn ông đang sắp xếp lại gối trên ghế sofa.\n(D) Một trong những người đàn ông đang vẽ tranh.\n\n4. (A) Các phương tiện đang vào một bãi đỗ xe.\n(B) Móc treo quần áo bị vứt rải rác trên mặt đất.\n(C) Các giá treo quần áo trống được xếp hàng cạnh một tòa nhà.\n(D) Quần áo được trưng bày dưới một chiếc lều.\n\n5. (A) Cây cảnh đã được treo từ trần nhà.\n(B) Ghế đã được xếp chồng lên nhau trước lối vào.\n(C) Một trạm máy tính đã được thiết lập trên bàn.\n(D) Một tấm thảm đã được cuộn lại dựa vào tường.\n\n6. (A) Một trong những người đàn ông đang quét sân.\n(B) Một trong những người đàn ông đang thay thế sàn nhà.\n(C) Cửa đã được tháo khỏi khung.\n(D) Một thiết bị chiếu sáng đã được để lại trên mặt đất."
+              transcript={data?.transcript || ""}
+              transcriptVi={data?.vietnameseTranscript || ""}
             />
           </div>
         )}
@@ -110,7 +217,7 @@ function SmartListening() {
           >
             Bước 3: Nghe điều chỉnh tốc độ và lặp lại nhiều lần
           </h2>
-          {openStep === 2 ? (
+          {openStep === 4 ? (
             <ChevronDownIcon height={20} width={20} />
           ) : (
             <ChevronRightIcon height={20} width={20} />
@@ -119,6 +226,41 @@ function SmartListening() {
         {openStep === 3 && (
           <div className="p-4 border-t">
             <ListeningStep3 audioRef={audioRef} />
+          </div>
+        )}
+      </div>
+
+      {/* Step 4 */}
+      <div
+        className={`border rounded-lg ${
+          openStep === 4 ? "border-blue-500" : "border-gray-200"
+        }`}
+      >
+        <div
+          className="flex justify-between items-center p-4 cursor-pointer"
+          onClick={() => toggleStep(4)}
+        >
+          <h2
+            className={`text-lg font-semibold ${
+              openStep === 4 ? "text-blue-600" : "text-gray-800"
+            }`}
+          >
+            Bước 4: Nghe điền từ theo độ khó
+          </h2>
+          {openStep === 4 ? (
+            <ChevronDownIcon height={20} width={20} />
+          ) : (
+            <ChevronRightIcon height={20} width={20} />
+          )}
+        </div>
+        {openStep === 4 && (
+          <div className="p-4 border-t">
+            <ListeningStep4
+              clozeDataByLevel={{
+                baseText: data?.transcript || "",
+                level: data?.level ?? { easy: [], medium: [], hard: [] },
+              }}
+            />
           </div>
         )}
       </div>

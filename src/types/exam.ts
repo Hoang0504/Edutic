@@ -33,6 +33,7 @@ export interface ExamQuestion {
 }
 
 export interface ExamAnswer {
+  part_number: number;
   question_number: number;
   content: string;
   is_correct: boolean;

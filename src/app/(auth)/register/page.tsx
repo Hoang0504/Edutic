@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import AuthCard from "@/components/auth/AuthCard";
 import AuthInput from "@/components/auth/AuthInput";
+import emailjs from '@emailjs/browser';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -35,6 +36,36 @@ export default function RegisterPage() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const sendVerificationEmail = async (verificationCode: string, userEmail: string, userName: string) => {
+    try {
+      const templateParams = {
+        email: userEmail,
+        name: userName,
+        app_name: "Edutic",
+        greeting: `Xin chào ${userName},`,
+        main_message: "Chào mừng bạn đến với Edutic! Vui lòng sử dụng mã xác thực dưới đây để hoàn tất việc đăng ký tài khoản của bạn.",
+        code_label: "Mã xác thực của bạn là:",
+        verification_code: verificationCode,
+        additional_info: "Mã này sẽ hết hạn sau 24 giờ vì lý do bảo mật.",
+        button_text: "Xác thực tài khoản",
+        footer_message: "Nếu bạn không đăng ký tài khoản này, vui lòng bỏ qua email này.",
+        time: new Date().getFullYear()
+      };
+
+      await emailjs.send(
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+        templateParams,
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
+      );
+
+      console.log('Verification email sent successfully');
+    } catch (error) {
+      console.error('Failed to send verification email:', error);
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -56,11 +87,38 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setErrors({ submit: data.message });
+        setErrors({ submit: data.data?.message || data.message });
         return;
       }
 
-      setVerificationSent(true);
+      // Generate verification code and store it with timestamp
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const codeGenerationTime = new Date();
+      
+      // Store verification data in localStorage
+      localStorage.setItem('verifyEmail', formData.email);
+      localStorage.setItem('verifyName', formData.name);
+      localStorage.setItem('verificationCode', verificationCode);
+      localStorage.setItem('codeGenerationTime', codeGenerationTime.toISOString());
+
+      // Send verification email
+      try {
+        await sendVerificationEmail(
+          verificationCode,
+          formData.email,
+          formData.name
+        );
+        
+        setVerificationSent(true);
+        
+        // Redirect to verify email page after 2 seconds
+        setTimeout(() => {
+          router.push('/verify-email');
+        }, 2000);
+      } catch (emailError) {
+        setErrors({ submit: "Account created but failed to send verification email. Please contact support." });
+      }
+
     } catch (error) {
       setErrors({ submit: "An error occurred. Please try again." });
     } finally {

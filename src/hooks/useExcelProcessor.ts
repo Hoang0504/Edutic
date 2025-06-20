@@ -270,18 +270,56 @@ export function useExcelProcessor() {
       vietnamese_translation: row.vietnamese_translation || ''
     }));
 
+    // Create mapping từ question_number to part_number
+    const questionToPartMap = new Map<number, number>();
+    questions.forEach(q => {
+      questionToPartMap.set(q.question_number, q.part_number);
+    });
+
     // Process Answers sheet
     const answersSheet = workbook.Sheets['Answers'];
     if (!answersSheet) throw new Error('Thiếu sheet "Answers"');
     
     const answersData = XLSX.utils.sheet_to_json(answersSheet) as any[];
-    const answers: ExamAnswer[] = answersData.map(row => ({
-      question_number: row.question_number,
-      content: row.content,
-      is_correct: row.is_correct === true || row.is_correct === 'TRUE' || row.is_correct === 1,
-      explanation: row.explanation || '',
-      vietnamese_translation: row.vietnamese_translation || ''
-    }));
+    console.log('Answers data count:', answersData.length);
+    console.log('Sample answer data:', answersData[0]);
+    
+    const answers: ExamAnswer[] = answersData.map(row => {
+      const questionNumber = parseInt(row.question_number || row['Question No'] || row['Question Number'] || '0');
+      const partNumber = questionToPartMap.get(questionNumber);
+      
+      if (!partNumber) {
+        console.warn(`Không tìm thấy part_number cho question ${questionNumber}`);
+      }
+      
+      // Handle missing answer_text - construct from answer_letter if needed
+      let content = row.answer_text || row.content || row['Content'] || row['Answer Text'] || '';
+      if (!content && row.answer_letter) {
+        content = `(${row.answer_letter}) [Missing answer text]`;
+        console.warn(`Missing answer_text for question ${questionNumber}, option ${row.answer_letter}`);
+      }
+      
+      return {
+        part_number: partNumber || 1, // Default to part 1 if not found
+        question_number: questionNumber,
+        content: content,
+        is_correct: row.is_correct === true || row.is_correct === 'TRUE' || row.is_correct === 1 || 
+                   row['Is Correct'] === true || row['Is Correct'] === 'TRUE' || row['Is Correct'] === 1,
+        explanation: row.explanation || row['Explanation'] || '', // Keep empty if not available
+        vietnamese_translation: row.vietnamese_translation || row['Vietnamese Translation'] || ''
+      };
+    });
+
+    console.log('Processed answers count:', answers.length);
+    console.log('Sample processed answers:');
+    answers.slice(0, 5).forEach((answer, index) => {
+      console.log(`Answer ${index + 1}:`, {
+        question_number: answer.question_number,
+        part_number: answer.part_number,
+        content: answer.content?.substring(0, 50) + '...',
+        is_correct: answer.is_correct
+      });
+    });
 
     // Process translations
     const translations: Translation[] = [];

@@ -114,7 +114,7 @@ export async function createExamWithData(
       }, { transaction });
 
       // Handle audio file for listening parts
-      if (partData.type === 'listening' && audioFiles[audioFileIndex]) {
+      if ([1, 2, 3, 4].includes(partData.part_number) && audioFiles[audioFileIndex]) {
         const audioFile = audioFiles[audioFileIndex];
         const filePath = await saveAudioFile(audioFile, examId, partData.part_number);
         const duration = getAudioDuration(audioFile);

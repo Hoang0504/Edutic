@@ -44,6 +44,11 @@ async function handler(req: MulterRequest, res: NextApiResponse) {
     console.log("Questions count:", examData.questions?.length || 0);
     console.log("Answers count:", examData.answers?.length || 0);
     console.log("Audio files count:", audioFiles.length);
+    console.log("Parts details:", examData.parts?.map((p: any) => ({
+      part_number: p.part_number,
+      title: p.title,
+      type: p.type
+    })));
     
     // Log each audio file info
     audioFiles.forEach((file, index) => {
@@ -63,12 +68,12 @@ async function handler(req: MulterRequest, res: NextApiResponse) {
     }
 
     // Validate parts that require audio files
-    const listeningParts = examData.parts.filter((part: any) => part.type === 'listening');
+    const listeningParts = examData.parts.filter((part: any) => [1, 2, 3, 4].includes(part.part_number));
     if (listeningParts.length > audioFiles.length) {
       return res.status(400).json({
         success: false,
         data: { 
-          message: `Thiếu file audio. Cần ${listeningParts.length} file cho các part listening nhưng chỉ nhận được ${audioFiles.length} file.`
+          message: `Thiếu file audio. Cần ${listeningParts.length} file cho các part listening (Part ${listeningParts.map((p: any) => p.part_number).join(', ')}) nhưng chỉ nhận được ${audioFiles.length} file.`
         }
       });
     }

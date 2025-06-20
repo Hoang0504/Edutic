@@ -1,7 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
-import db from '@/models';
+import { User } from '@/models/User';
+import sequelize from '@/lib/db';
 import { withErrorHandler } from '@/lib/withErrorHandler';
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -13,6 +14,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       data: { message: 'Method not allowed' } 
     });
   }
+
+  await sequelize.authenticate();
 
   const { token } = req.body;
 
@@ -33,7 +36,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { email, name, sub: googleId } = payload;
 
   // Find or create user
-  let user = await (db as any).User.findOne({
+  let user = await User.findOne({
     where: { 
       email 
     }
@@ -41,14 +44,17 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
   if (!user) {
     // Create new user
-    user = await (db as any).User.create({
+    user = await User.create({
       email,
       name,
       auth_provider: 'google',
       auth_provider_id: googleId,
       is_email_verified: true, // Google emails are pre-verified
-      role: 'student'
-    });
+      role: 'student',
+      uuid: crypto.randomUUID(),
+      created_at: new Date(),
+      updated_at: new Date(),
+    } as any);
   } else if (user.auth_provider !== 'google') {
     return res.status(400).json({ 
       success: false,
@@ -58,7 +64,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
   // Update last login
   await user.update({
-    last_login: new Date()
+    last_login: new Date(),
+    updated_at: new Date(),
   });
 
   // Generate JWT

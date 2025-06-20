@@ -55,7 +55,17 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setErrors({ submit: data.message || "Login failed" });
+        // Check if it's an email verification error
+        if (data.data?.emailNotVerified) {
+          setErrors({ 
+            submit: `${data.data.message}. `,
+            emailNotVerified: "true"
+          });
+          // Store email for potential resend
+          localStorage.setItem('verifyEmail', data.data.email);
+        } else {
+          setErrors({ submit: data.data?.message || data.message || "Login failed" });
+        }
         return;
       }
 
@@ -135,6 +145,14 @@ export default function LoginPage() {
         {errors.submit && (
           <div className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-md px-3 py-2">
             {errors.submit}
+            {errors.emailNotVerified && (
+              <Link
+                href="/verify-email"
+                className="ml-1 font-medium text-indigo-600 hover:text-indigo-500 underline"
+              >
+                Click here to verify your email
+              </Link>
+            )}
           </div>
         )}
 

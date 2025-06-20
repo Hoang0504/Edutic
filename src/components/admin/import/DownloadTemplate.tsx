@@ -161,7 +161,7 @@ const DownloadTemplate: React.FC = () => {
 
     // Sheet 4: Answers - 4 options per question (A, B, C, D)
     const answersData = [
-      ['Question No', 'Content', 'Is Correct', 'Explanation', 'Vietnamese Translation']
+      ['question_number', 'answer_letter', 'answer_text', 'is_correct', 'vietnamese_translation']
     ];
     
     // Generate 4 answers per question for all 200 questions
@@ -170,11 +170,11 @@ const DownloadTemplate: React.FC = () => {
         const letter = String.fromCharCode(65 + a); // A, B, C, D
         const isCorrect = a === 0; // First option correct for template
         answersData.push([
-          q.toString(),
-          `${letter}. Answer option ${letter} for question ${q}`,
-          isCorrect ? 'TRUE' : 'FALSE',
-          isCorrect ? 'Correct answer explanation' : 'Incorrect option',
-          `${letter}. Lựa chọn ${letter} cho câu hỏi ${q}`
+          q,
+          letter,
+          `(${letter}) Answer option ${letter} for question ${q}`,
+          isCorrect,
+          `(${letter}) Lựa chọn ${letter} cho câu hỏi ${q}`
         ]);
       }
     }

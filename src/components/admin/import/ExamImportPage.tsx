@@ -148,40 +148,47 @@ const ExamImportPage: React.FC = () => {
 
     setError(null);
 
-    // Validate that all listening parts have audio files
-    const listeningParts = [1, 2, 3, 4];
-    const availableParts = getAvailableParts(examData);
-    const requiredListeningParts = listeningParts.filter(part => availableParts.includes(part));
+    // Only validate audio for full_toeic exam type with listening parts
+    const isFullToeic = examData.exam.exam_type === 'full_toeic';
     
-    // Check if all required listening parts have audio files
-    const missingAudioParts = requiredListeningParts.filter(part => !audioFiles[part]);
-    if (missingAudioParts.length > 0) {
-      setError(`Thiếu file audio cho Part ${missingAudioParts.join(', ')}. Vui lòng upload đầy đủ audio files cho các part listening.`);
-      return;
+    if (isFullToeic) {
+      // Validate that all listening parts have audio files for TOEIC exams
+      const listeningParts = [1, 2, 3, 4];
+      const availableParts = getAvailableParts(examData);
+      const requiredListeningParts = listeningParts.filter(part => availableParts.includes(part));
+      
+      // Check if all required listening parts have audio files
+      const missingAudioParts = requiredListeningParts.filter(part => !audioFiles[part]);
+      if (missingAudioParts.length > 0) {
+        setError(`Thiếu file audio cho Part ${missingAudioParts.join(', ')}. Vui lòng upload đầy đủ audio files cho các part listening.`);
+        return;
+      }
     }
 
     try {
-      // Prepare audio files array in correct order
+      // Prepare audio files array in correct order (only for full_toeic)
       const audioFilesArray: File[] = [];
-      requiredListeningParts.forEach(partNumber => {
-        if (audioFiles[partNumber]) {
-          audioFilesArray.push(audioFiles[partNumber]);
-        }
-      });
+      
+      if (isFullToeic) {
+        const listeningParts = [1, 2, 3, 4];
+        const availableParts = getAvailableParts(examData);
+        const requiredListeningParts = listeningParts.filter(part => availableParts.includes(part));
+        
+        requiredListeningParts.forEach(partNumber => {
+          if (audioFiles[partNumber]) {
+            audioFilesArray.push(audioFiles[partNumber]);
+          }
+        });
+      }
 
-      console.log('Submitting exam with audio files:', {
+      console.log('Submitting exam with details:', {
+        examType: examData.exam.exam_type,
         examTitle: examData.exam.title,
         totalParts: examData.parts.length,
         totalQuestions: examData.questions.length,
         audioFilesCount: audioFilesArray.length,
         audioFileNames: audioFilesArray.map(f => f.name),
-        audioFilesState: audioFiles,
-        requiredListeningParts,
-        listeningPartsFromExam: examData.parts.filter(p => [1, 2, 3, 4].includes(p.part_number)).map(p => ({
-          part_number: p.part_number,
-          title: p.title,
-          type: p.type
-        }))
+        isFullToeic
       });
 
       const result = await submitExamToDatabase(examData, audioFilesArray);
@@ -349,8 +356,8 @@ const ExamImportPage: React.FC = () => {
             )}
           </div>
 
-          {/* Audio Upload for Listening Parts */}
-          {isListeningPart(activePartTab) && (
+          {/* Audio Upload for Listening Parts - Only show for full_toeic */}
+          {isListeningPart(activePartTab) && examData?.exam.exam_type === 'full_toeic' && (
             <div className="mb-6 p-4 bg-gray-50 rounded-lg">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 📎 Upload Audio cho Part {activePartTab} *
@@ -376,7 +383,7 @@ const ExamImportPage: React.FC = () => {
                 className="hidden"
               />
               <p className="mt-1 text-xs text-gray-500">
-                Mô tả hình ảnh dựa trên audio
+                Audio file cho part listening
               </p>
             </div>
           )}

@@ -13,6 +13,7 @@ interface ExamData {
   exam: {
     title: string;
     type: string;
+    exam_type?: string;
     description: string;
     estimated_time: number;
     year_of_release: number;
@@ -76,10 +77,12 @@ export async function createExamWithData(
     // 1. Create exam
     const exam = await Exam.create({
       title: examData.exam.title,
-      type: examData.exam.type as 'random' | 'full_test',
-      description: examData.exam.description,
+      type: (examData.exam.exam_type || examData.exam.type) as 'random' | 'full_test' | 'speaking' | 'writing',
+      description: examData.exam.exam_type ? 
+        `[${examData.exam.exam_type}] ${examData.exam.description}` : 
+        examData.exam.description,
       estimated_time: examData.exam.estimated_time,
-      year_of_release: examData.exam.year_of_release,
+      year_of_release: examData.exam.year_of_release || new Date().getFullYear(),
       is_published: false,
       created_at: new Date(),
       updated_at: new Date()
@@ -134,7 +137,20 @@ export async function createExamWithData(
     // 3. Create question groups and questions
     const questionMap = new Map<string, number>(); // part_number:question_number -> question_id
 
-    for (const partNumber of [...new Set(examData.questions.map(q => q.part_number))]) {
+    // Handle specific question numbers
+    const processedQuestions = new Set<number>();
+    
+    for (const questionData of examData.questions) {
+      // Skip if already processed (avoid duplicates)
+      if (processedQuestions.has(questionData.question_number)) {
+        continue;
+      }
+      
+      // Convert Set to Array for iteration
+      const processedArray = Array.from(processedQuestions);
+      processedQuestions.add(questionData.question_number);
+
+      const partNumber = questionData.part_number;
       const partId = partMap.get(partNumber);
       if (!partId) continue;
 
@@ -145,33 +161,29 @@ export async function createExamWithData(
         created_at: new Date()
       }, { transaction });
 
-      // Create questions for this part
-      const partQuestions = examData.questions.filter(q => q.part_number === partNumber);
-      
-      for (const questionData of partQuestions) {
-        const question = await Question.create({
-          part_id: partId,
-          group_id: group.id,
-          question_number: questionData.question_number,
-          content: questionData.content,
-          question_type: questionData.question_type as any,
-          image_url: '', // Will be set when images are uploaded
+      // Create question
+      const question = await Question.create({
+        part_id: partId,
+        group_id: group.id,
+        question_number: questionData.question_number,
+        content: questionData.content,
+        question_type: questionData.question_type as any,
+        image_url: '', // Will be set when images are uploaded
+        created_at: new Date(),
+        updated_at: new Date()
+      }, { transaction });
+
+      questionMap.set(`${partNumber}:${questionData.question_number}`, question.id);
+
+      // Add Vietnamese translation if exists
+      if (questionData.vietnamese_translation) {
+        await Translation.create({
+          content_type: 'question',
+          content_id: question.id,
+          vietnamese_text: questionData.vietnamese_translation,
           created_at: new Date(),
           updated_at: new Date()
         }, { transaction });
-
-        questionMap.set(`${partNumber}:${questionData.question_number}`, question.id);
-
-        // Add Vietnamese translation if exists
-        if (questionData.vietnamese_translation) {
-          await Translation.create({
-            content_type: 'question',
-            content_id: question.id,
-            vietnamese_text: questionData.vietnamese_translation,
-            created_at: new Date(),
-            updated_at: new Date()
-          }, { transaction });
-        }
       }
     }
 

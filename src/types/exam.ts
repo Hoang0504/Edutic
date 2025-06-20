@@ -4,7 +4,7 @@ export interface ExamInfo {
   difficulty: 'easy' | 'medium' | 'hard';
   estimated_time: number; // in minutes
   is_published?: boolean;
-  exam_type?: 'speaking_practice' | 'writing_practice' | 'full_toeic'; // 3 loại chính
+  exam_type?: 'speaking_practice' | 'writing_practice' | 'full_toeic' | 'speaking' | 'writing'; // Thêm speaking và writing
 }
 
 export interface ExamPart {
@@ -96,7 +96,7 @@ export type PartTabType = 'part1' | 'part2' | 'part3' | 'part4' | 'part5' | 'par
 
 // Exam type configuration
 export interface ExamTypeConfig {
-  type: 'speaking_practice' | 'writing_practice' | 'full_toeic';
+  type: 'speaking_practice' | 'writing_practice' | 'full_toeic' | 'speaking' | 'writing';
   maxQuestions: number;
   defaultDuration: number; // in minutes
   parts: number[];
@@ -143,6 +143,58 @@ export const EXAM_TYPE_CONFIGS: Record<string, ExamTypeConfig> = {
         title: 'Writing Topics',
         questionRange: [1, 50],
         questionCount: 50
+      }
+    ]
+  },
+  speaking: {
+    type: 'speaking',
+    maxQuestions: 11,
+    defaultDuration: 20,
+    parts: [1, 2, 3], // 3 parts cho speaking test
+    description: 'Đề thi Speaking - 11 câu hỏi theo chuẩn đánh giá',
+    needsPartDivision: true,
+    needsAnswers: false, // Không cần đáp án cho speaking
+    questionStructure: [
+      {
+        partNumber: 1,
+        title: 'Part 1 - Personal Introduction',
+        questionRange: [1, 3],
+        questionCount: 3
+      },
+      {
+        partNumber: 2,
+        title: 'Part 2 - Describe & Express',
+        questionRange: [4, 6],
+        questionCount: 3
+      },
+      {
+        partNumber: 3,
+        title: 'Part 3 - Express Opinion',
+        questionRange: [7, 11],
+        questionCount: 5
+      }
+    ]
+  },
+  writing: {
+    type: 'writing',
+    maxQuestions: 8,
+    defaultDuration: 60,
+    parts: [1, 2], // 2 parts cho writing test
+    description: 'Đề thi Writing - 8 câu hỏi theo chuẩn đánh giá',
+    needsPartDivision: true,
+    needsAnswers: false, // Không cần đáp án cho writing
+    questionStructure: [
+      {
+        partNumber: 1,
+        title: 'Part 1 - Complete Sentence',
+        questionRange: [1, 5],
+        questionCount: 5
+      },
+      {
+        partNumber: 2,
+        title: 'Part 2 - Write an Essay',
+        questionRange: [6, 8],
+        questionCount: 3
       }
     ]
   },

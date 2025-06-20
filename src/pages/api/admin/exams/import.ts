@@ -69,13 +69,33 @@ async function handler(req: MulterRequest, res: NextApiResponse) {
 
     // Validate parts that require audio files
     const listeningParts = examData.parts.filter((part: any) => [1, 2, 3, 4].includes(part.part_number));
-    if (listeningParts.length > audioFiles.length) {
-      return res.status(400).json({
-        success: false,
-        data: { 
-          message: `Thiếu file audio. Cần ${listeningParts.length} file cho các part listening (Part ${listeningParts.map((p: any) => p.part_number).join(', ')}) nhưng chỉ nhận được ${audioFiles.length} file.`
+    
+    // Only require audio for full_toeic exam type
+    const isFullToeic = examData.exam.exam_type === 'full_toeic';
+    
+    if (isFullToeic && listeningParts.length > 0) {
+      // For TOEIC exams, validate that we have audio files for listening parts
+      if (audioFiles.length < listeningParts.length) {
+        return res.status(400).json({
+          success: false,
+          data: { 
+            message: `TOEIC exam requires ${listeningParts.length} audio files for listening parts (Part 1-4), but only ${audioFiles.length} were provided` 
+          }
+        });
+      }
+
+      // Validate audio file types
+      for (const audioFile of audioFiles) {
+        if (!audioFile.mimetype.startsWith('audio/')) {
+          return res.status(400).json({
+            success: false,
+            data: { message: `File "${audioFile.originalname}" is not a valid audio file` }
+          });
         }
-      });
+      }
+    } else if (examData.exam.exam_type === 'speaking' || examData.exam.exam_type === 'writing') {
+      // Speaking and Writing exams don't require audio files
+      console.log(`${examData.exam.exam_type} exam detected - no audio files required`);
     }
 
     // Validate exam data structure

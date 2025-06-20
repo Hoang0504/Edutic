@@ -7,6 +7,7 @@ import {
   DocumentTextIcon,
   PowerIcon,
   ClipboardIcon,
+  MegaphoneIcon,
 } from '@heroicons/react/24/outline';
 import { useAdminContext } from '@/context/AdminContext';
 import { useRouter } from 'next/navigation';
@@ -33,6 +34,7 @@ const AdminSidebar = ({ onMenuSelect }: AdminSidebarProps) => {
     { key: 'users', label: 'Users', icon: <UserIcon className="h-5 w-5" /> },
     { key: 'exams', label: 'Exams', icon: <DocumentTextIcon className="h-5 w-5" /> },
     { key: 'flashcard', label: 'Flashcard', icon: <ClipboardIcon className="h-5 w-5" /> },
+    { key: 'listenningTranscript', label: 'ListenningTranscript', icon: <MegaphoneIcon className="h-5 w-5" /> },
     { key: 'logout', label: <button onClick={handleLogout}>Logout</button>, icon: <PowerIcon className="h-5 w-5" /> },
   ];
 

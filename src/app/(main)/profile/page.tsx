@@ -46,7 +46,7 @@ interface FormErrors {
 }
 
 export default function ProfilePage() {
-  const [activeTab, setActiveTab] = useState<TabType>('personal');
+  const [activeTab, setActiveTab] = useState<TabType>('learning');
   const [activeStatsTab, setActiveStatsTab] = useState<StatisticsTabType>('results');
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -141,7 +141,6 @@ export default function ProfilePage() {
       newErrors.studyTime = 'Thời gian học không được vượt quá 1440 phút (24 giờ)';
     }
 
-    // Validate that at least one skill target is set (greater than 0)
     if (listening === 0 && reading === 0 && speaking === 0 && writing === 0) {
       newErrors.listening = 'Vui lòng nhập ít nhất một mục tiêu điểm số lớn hơn 0';
     }
@@ -150,7 +149,6 @@ export default function ProfilePage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Real-time validation functions
   const validateDisplayNameOnChange = (value: string) => {
     const newErrors = { ...errors };
     
@@ -341,16 +339,6 @@ export default function ProfilePage() {
           <div className="border-b border-gray-200">
             <nav className="flex">
               <button
-                onClick={() => setActiveTab('personal')}
-                className={`flex-1 px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium border-b-2 transition-colors ${
-                  activeTab === 'personal'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                Thông tin cá nhân
-              </button>
-              <button
                 onClick={() => setActiveTab('learning')}
                 className={`flex-1 px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium border-b-2 transition-colors ${
                   activeTab === 'learning'
@@ -360,145 +348,21 @@ export default function ProfilePage() {
               >
                 Thiết lập học tập
               </button>
+              <button
+                onClick={() => setActiveTab('personal')}
+                className={`flex-1 px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium border-b-2 transition-colors ${
+                  activeTab === 'personal'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Thông tin cá nhân
+              </button>
             </nav>
           </div>
 
           <div className="p-4 sm:p-6">
-            {activeTab === 'personal' ? (
-              <div className="space-y-6">
-                {!isEditing ? (
-                  // View Mode - Display information only
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-500 mb-1">Email</h3>
-                        <p className="text-lg text-gray-900">{personalInfo.email}</p>
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-500 mb-1">Tên hiển thị</h3>
-                        <p className="text-lg text-gray-900">{personalInfo.displayName}</p>
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-500 mb-1">Loại tài khoản</h3>
-                        <p className="text-lg text-gray-900">
-                          {personalInfo.accountType === 'student' ? 'Học viên' : 'Quản trị viên'}
-                        </p>
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-500 mb-1">Trạng thái xác thực</h3>
-                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${
-                          personalInfo.emailVerified 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {personalInfo.emailVerified ? (
-                            <CheckCircleIcon className="w-4 h-4" />
-                          ) : (
-                            <XCircleIcon className="w-4 h-4" />
-                          )}
-                          {personalInfo.emailVerified ? 'Đã xác minh' : 'Chưa xác minh'}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  // Edit Mode - Show forms
-                  <div className="space-y-6">
-                    {/* Email */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        value={personalInfo.email}
-                        readOnly
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
-                      />
-                    </div>
-
-                    {/* Display Name */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Tên hiển thị *
-                      </label>
-                      <input
-                        type="text"
-                        value={personalInfo.displayName}
-                        onChange={(e) => {
-                          setPersonalInfo(prev => ({ ...prev, displayName: e.target.value }));
-                          validateDisplayNameOnChange(e.target.value);
-                        }}
-                        className={`w-full px-3 py-2 border rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-black ${
-                          errors.displayName ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="Nhập tên hiển thị"
-                      />
-                      {errors.displayName && (
-                        <p className="mt-1 text-sm text-red-500">{errors.displayName}</p>
-                      )}
-                    </div>
-
-                    {/* Account Type */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Loại tài khoản
-                      </label>
-                      <input
-                        type="text"
-                        value={personalInfo.accountType === 'student' ? 'Học viên' : 'Quản trị viên'}
-                        readOnly
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
-                      />
-                    </div>
-
-                    {/* Email Verification */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Xác thực email
-                      </label>
-                      <div className="flex items-center gap-3">
-                        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
-                          personalInfo.emailVerified ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-                        }`}>
-                          {personalInfo.emailVerified ? (
-                            <CheckCircleIcon className="w-5 h-5" />
-                          ) : (
-                            <XCircleIcon className="w-5 h-5" />
-                          )}
-                          <span className="text-sm font-medium">
-                            {personalInfo.emailVerified ? 'Đã xác minh' : 'Chưa xác minh'}
-                          </span>
-                        </div>
-                        {!personalInfo.emailVerified && (
-                          <button
-                            onClick={handleResendVerification}
-                            disabled={isLoading}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {isLoading ? (
-                              <ArrowPathIcon className="w-4 h-4 animate-spin" />
-                            ) : null}
-                            Gửi lại link
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Save Button */}
-                    <div className="pt-4">
-                      <button
-                        onClick={handleSavePersonalInfo}
-                        disabled={isLoading}
-                        className="w-full sm:w-auto px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                      >
-                        {isLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
+            {activeTab === 'learning' ? (
               <div className="space-y-6">
                 {!isEditing ? (
                   // View Mode - Display learning settings
@@ -695,6 +559,140 @@ export default function ProfilePage() {
                   </div>
                 )}
               </div>
+            ) : (
+              <div className="space-y-6">
+                {!isEditing ? (
+                  // View Mode - Display information only
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500 mb-1">Email</h3>
+                        <p className="text-lg text-gray-900">{personalInfo.email}</p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500 mb-1">Tên hiển thị</h3>
+                        <p className="text-lg text-gray-900">{personalInfo.displayName}</p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500 mb-1">Loại tài khoản</h3>
+                        <p className="text-lg text-gray-900">
+                          {personalInfo.accountType === 'student' ? 'Học viên' : 'Quản trị viên'}
+                        </p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500 mb-1">Trạng thái xác thực</h3>
+                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${
+                          personalInfo.emailVerified 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {personalInfo.emailVerified ? (
+                            <CheckCircleIcon className="w-4 h-4" />
+                          ) : (
+                            <XCircleIcon className="w-4 h-4" />
+                          )}
+                          {personalInfo.emailVerified ? 'Đã xác minh' : 'Chưa xác minh'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  // Edit Mode
+                  <div className="space-y-6">
+                    {/* Email */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        value={personalInfo.email}
+                        readOnly
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+                      />
+                    </div>
+
+                    {/* Display Name */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tên hiển thị *
+                      </label>
+                      <input
+                        type="text"
+                        value={personalInfo.displayName}
+                        onChange={(e) => {
+                          setPersonalInfo(prev => ({ ...prev, displayName: e.target.value }));
+                          validateDisplayNameOnChange(e.target.value);
+                        }}
+                        className={`w-full px-3 py-2 border rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-black ${
+                          errors.displayName ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="Nhập tên hiển thị"
+                      />
+                      {errors.displayName && (
+                        <p className="mt-1 text-sm text-red-500">{errors.displayName}</p>
+                      )}
+                    </div>
+
+                    {/* Account Type */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Loại tài khoản
+                      </label>
+                      <input
+                        type="text"
+                        value={personalInfo.accountType === 'student' ? 'Học viên' : 'Quản trị viên'}
+                        readOnly
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+                      />
+                    </div>
+
+                    {/* Email Verification */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Xác thực email
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
+                          personalInfo.emailVerified ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                        }`}>
+                          {personalInfo.emailVerified ? (
+                            <CheckCircleIcon className="w-5 h-5" />
+                          ) : (
+                            <XCircleIcon className="w-5 h-5" />
+                          )}
+                          <span className="text-sm font-medium">
+                            {personalInfo.emailVerified ? 'Đã xác minh' : 'Chưa xác minh'}
+                          </span>
+                        </div>
+                        {!personalInfo.emailVerified && (
+                          <button
+                            onClick={handleResendVerification}
+                            disabled={isLoading}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isLoading ? (
+                              <ArrowPathIcon className="w-4 h-4 animate-spin" />
+                            ) : null}
+                            Gửi lại link
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Save Button */}
+                    <div className="pt-4">
+                      <button
+                        onClick={handleSavePersonalInfo}
+                        disabled={isLoading}
+                        className="w-full sm:w-auto px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                      >
+                        {isLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -828,7 +826,7 @@ export default function ProfilePage() {
                         </div>
                       ))}
                       
-                      {/* Empty state when no exams */}
+                      {/* state when no exams */}
                       {false && (
                         <div className="grid grid-cols-6 gap-1">
                           <div className="col-span-6 p-8 text-center text-gray-500 border border-gray-300 bg-gray-50">

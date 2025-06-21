@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { BellIcon, UserCircleIcon, ChevronDownIcon, DocumentTextIcon, CalendarIcon, AcademicCapIcon, BookOpenIcon, ClipboardDocumentListIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { BellIcon, UserCircleIcon, ChevronDownIcon, DocumentTextIcon, CalendarIcon, AcademicCapIcon, BookOpenIcon, ClipboardDocumentListIcon, Bars3Icon, XMarkIcon, PlayIcon, PauseIcon, StopIcon } from '@heroicons/react/24/outline';
+import { usePomodoro } from '@/contexts/PomodoroContext';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 interface HeaderProps {
   user?: {
@@ -15,6 +17,19 @@ export default function Header({ user }: HeaderProps) {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeNotificationTab, setActiveNotificationTab] = useState<'all' | 'unread' | 'read'>('all');
+  const [showStopConfirm, setShowStopConfirm] = useState(false);
+
+  // Pomodoro context
+  const { 
+    isActive, 
+    isRunning, 
+    currentTime, 
+    isStudyMode, 
+    formatTime, 
+    startTimer, 
+    pauseTimer, 
+    stopFocusMode 
+  } = usePomodoro();
 
   // Refs for dropdowns
   const notificationRef = useRef<HTMLDivElement>(null);
@@ -50,6 +65,22 @@ export default function Header({ user }: HeaderProps) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  const handlePomodoroToggle = () => {
+    if (isRunning) {
+      pauseTimer();
+    } else {
+      startTimer();
+    }
+  };
+
+  const handleStopClick = () => {
+    setShowStopConfirm(true);
+  };
+
+  const handleStopConfirm = () => {
+    stopFocusMode();
+  };
 
   // Sample notifications data
   const notifications = [
@@ -146,7 +177,7 @@ export default function Header({ user }: HeaderProps) {
             </a>
           </div>
 
-          {/*  Mobile Menu, Notifications & User Menu */}
+          {/*  Mobile Menu, Pomodoro Timer, Notifications & User Menu */}
           <div className="flex items-center space-x-3 sm:space-x-4">
             {/* Mobile Menu Button - Only shown on mobile */}
             <div className="sm:hidden relative" ref={mobileMenuRef}>
@@ -185,6 +216,48 @@ export default function Header({ user }: HeaderProps) {
                 </div>
               )}
             </div>
+
+            {/* Pomodoro Timer - Show when active */}
+            {isActive && (
+              <div className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  <div className="text-sm font-medium text-gray-800">
+                    {isStudyMode ? 'Học' : 'Nghỉ'}
+                  </div>
+                  <div className="text-lg font-bold text-blue-600 min-w-[4rem]">
+                    {formatTime(currentTime)}
+                  </div>
+                  
+                  {/* Timer Controls */}
+                  <div className="flex items-center space-x-1">
+                    <button
+                      onClick={handlePomodoroToggle}
+                      className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
+                        isRunning 
+                          ? 'bg-red-500 hover:bg-red-600 text-white' 
+                          : 'bg-green-500 hover:bg-green-600 text-white'
+                      }`}
+                      title={isRunning ? 'Tạm dừng' : 'Tiếp tục'}
+                    >
+                      {isRunning ? (
+                        <PauseIcon className="w-4 h-4" />
+                      ) : (
+                        <PlayIcon className="w-3 h-3 ml-0.5" />
+                      )}
+                    </button>
+                    
+                    <button
+                      onClick={handleStopClick}
+                      className="w-7 h-7 rounded-full bg-gray-500 hover:bg-gray-600 text-white flex items-center justify-center transition-colors"
+                      title="Dừng"
+                    >
+                      <StopIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Notification Bell */}
             <div className="relative" ref={notificationRef}>
@@ -336,6 +409,18 @@ export default function Header({ user }: HeaderProps) {
           </div>
         </div>
       </div>
+
+      {/* Stop Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showStopConfirm}
+        onClose={() => setShowStopConfirm(false)}
+        onConfirm={handleStopConfirm}
+        title="Tắt chế độ tập trung"
+        message="Bạn có chắc chắn muốn tắt chế độ tập trung? Tiến trình hiện tại sẽ bị mất."
+        confirmText="Tắt chế độ"
+        cancelText="Tiếp tục"
+        type="warning"
+      />
     </header>
   );
 }

@@ -25,3 +25,41 @@ body {
     text-wrap: balance;
   }
 }
+
+/* Marquee Text Animations */
+@keyframes marqueeScroll {
+  0% {
+    transform: translateX(0);
+  }
+  15% {
+    transform: translateX(0);
+  }
+  85% {
+    transform: translateX(calc(-100% + var(--container-width, 300px)));
+  }
+  100% {
+    transform: translateX(calc(-100% + var(--container-width, 300px)));
+  }
+}
+
+.marquee-container {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+
+.marquee-text {
+  white-space: nowrap;
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.marquee-text.animate-marquee {
+  animation-name: marqueeScroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.marquee-text.animate-marquee:hover {
+  animation-play-state: paused;
+}

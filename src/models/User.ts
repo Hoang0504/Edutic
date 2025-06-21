@@ -23,7 +23,7 @@ interface UserCreationAttributes {
   id?: number;
   email: string;
   password_hash: string;
-  name: string;
+  name?: string;
   avatar?: string | null; // Có thể null
   is_email_verified?: boolean;
   auth_provider?: "email" | "google";

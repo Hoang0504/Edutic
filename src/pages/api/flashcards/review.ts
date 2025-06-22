@@ -5,14 +5,17 @@ import dayjs from "dayjs";
 import { Op } from "sequelize";
 import { Flashcard } from "@/models/Flashcard";
 import { Vocabulary } from "@/models/Vocabulary";
+import sequelize from "@/lib/db";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   if (req.method !== "GET") {
-    return res.status(405).json({ message: "Phương thức không được hỗ trợ" });
+    return res.status(405).json({ message: "Method not allowed" });
   }
+
+  await sequelize.authenticate();
 
   const group = parseInt(req.query.group as string) || 1;
   const limit = 10;
@@ -24,7 +27,7 @@ export default async function handler(
   //   }
 
   //   const token = authHeader.split(" ")[1];
-  const decoded = { id: 1 }; // verifyToken(token);
+  const decoded = { id: 2 }; // verifyToken(token);
   if (!decoded || !decoded.id) {
     return res
       .status(401)

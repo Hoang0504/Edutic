@@ -4,6 +4,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import RightSideBar from "@/components/layout/RightSideBar";
 import "../globals.css";
+import { DictionaryProvider } from "@/context/DictionaryContext";
 
 // export const metadata: Metadata = {
 //   title: "Edutic - Ôn là trúng, Luyện là đạt",
@@ -25,7 +26,9 @@ export default function DashboardLayout({
       <Header user={user} />
       <main className="flex-1 py-6">{children}</main>
       <Footer />
-      <RightSideBar />
+      <DictionaryProvider>
+        <RightSideBar />
+      </DictionaryProvider>
     </>
   );
 }

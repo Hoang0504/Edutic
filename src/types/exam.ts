@@ -26,7 +26,7 @@ export interface ExamQuestion {
   part_number: number;
   question_number: number;
   content: string;
-  question_type: 'multiple_choice' | 'fill_blank' | 'essay';
+  question_type: 'multiple_choice' | 'fill_in_blank' | 'matching' | 'speaking' | 'writing'; // Updated to match database ENUM
   image_url?: string;
   image_file?: File; // Upload ảnh cho câu hỏi
   vietnamese_translation?: string; // Bản dịch tiếng Việt

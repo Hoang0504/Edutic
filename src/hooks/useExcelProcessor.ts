@@ -211,11 +211,14 @@ export function useExcelProcessor() {
       const vietnameseTranslation = row['Vietnamese'] || row['Tiếng Việt'] || row['Bản dịch'] || '';
 
       if (content) {
+        // Determine question type based on exam type
+        const questionType = examType === 'speaking_practice' ? 'speaking' : 'writing';
+        
         questions.push({
           part_number: 1,
           question_number: questionNumber,
           content: content.toString(),
-          question_type: 'essay' as const, // Use essay for practice types
+          question_type: questionType, // Use 'speaking' or 'writing' instead of 'essay'
           vietnamese_translation: vietnameseTranslation?.toString() || ''
         });
 
@@ -403,7 +406,7 @@ export function useExcelProcessor() {
       part_number: row.part_number,
       question_number: row.question_number,
       content: row.content,
-      question_type: examType === 'speaking' ? 'essay' : 'essay', // Both use essay type
+      question_type: examType, // Use 'speaking' or 'writing' directly
       vietnamese_translation: row.vietnamese_translation || ''
     }));
 

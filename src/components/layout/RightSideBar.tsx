@@ -9,17 +9,29 @@ import {
   ChevronLeftIcon
 } from '@heroicons/react/24/outline';
 import PomodoroModal from '../features/PomodoroModal';
+import { usePomodoro } from '@/contexts/PomodoroContext';
 
 export default function RightSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isPomodoroOpen, setIsPomodoroOpen] = useState(false);
 
+  const { isActive, isStudyMode, openStudyModal } = usePomodoro();
+
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
 
-  const openPomodoro = () => {
-    setIsPomodoroOpen(true);
+  const handleFocusModeClick = () => {
+    if (isActive) {
+      // If already in focus mode, open the appropriate modal
+      if (isStudyMode) {
+        openStudyModal();
+      }
+      // For break mode, the break modal is handled by MusicBreakModal component
+    } else {
+      // If not in focus mode, open the setup modal
+      setIsPomodoroOpen(true);
+    }
   };
 
   const closePomodoro = () => {
@@ -44,9 +56,9 @@ export default function RightSidebar() {
     {
       id: 'focus-mode',
       icon: EyeIcon,
-      label: 'Chế độ tập trung',
-      color: 'bg-purple-500 hover:bg-purple-600',
-      onClick: openPomodoro
+      label: isActive ? (isStudyMode ? 'Giờ học tập' : 'Giờ nghỉ ngơi') : 'Chế độ tập trung',
+      color: isActive ? 'bg-orange-500 hover:bg-orange-600' : 'bg-purple-500 hover:bg-purple-600',
+      onClick: handleFocusModeClick
     }
   ];
 

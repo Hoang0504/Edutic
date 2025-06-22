@@ -5,13 +5,12 @@ import { usePomodoro } from '@/contexts/PomodoroContext';
 import { useMusic } from '@/contexts/MusicContext';
 import MarqueeText from '@/components/ui/MarqueeText';
 
-export default function MusicBreakModal() {
+export default function StudyModal() {
   const { 
-    isBreakModalOpen, 
-    currentTime: breakTime, 
+    isStudyModalOpen, 
+    currentTime: studyTime, 
     formatTime, 
-    closeBreakModal, 
-    continueStudying,
+    closeStudyModal,
     isRunning,
     pauseTimer,
     startTimer
@@ -35,10 +34,17 @@ export default function MusicBreakModal() {
     }
   };
 
-  if (!isBreakModalOpen) return null;
+  // Start music when modal opens if not already active
+  const handleModalOpen = () => {
+    if (!isStudyMusicActive) {
+      startStudyMusic();
+    }
+  };
+
+  if (!isStudyModalOpen) return null;
 
   // Auto start music when modal is open
-  if (isBreakModalOpen && !isStudyMusicActive) {
+  if (isStudyModalOpen && !isStudyMusicActive) {
     startStudyMusic();
   }
 
@@ -49,12 +55,12 @@ export default function MusicBreakModal() {
 
       {/* Modal */}
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-gradient-to-br from-purple-100 to-blue-100 rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden border border-purple-200">
+        <div className="bg-gradient-to-br from-green-100 to-blue-100 rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden border border-green-200">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-purple-200">
-            <h2 className="text-xl font-semibold text-gray-800">Giờ nghỉ ngơi</h2>
+          <div className="flex items-center justify-between p-6 border-b border-green-200">
+            <h2 className="text-xl font-semibold text-gray-800">Giờ học tập</h2>
             <button
-              onClick={closeBreakModal}
+              onClick={closeStudyModal}
               className="p-2 hover:bg-white/50 rounded-full transition-colors"
             >
               <XMarkIcon className="w-5 h-5 text-gray-600" />
@@ -63,17 +69,17 @@ export default function MusicBreakModal() {
 
           {/* Content */}
           <div className="p-6 space-y-6">
-            {/* Break Timer */}
+            {/* Study Timer */}
             <div className="text-center">
-              <div className="text-sm text-gray-600 mb-2">Thời gian nghỉ còn lại</div>
-              <div className="text-4xl font-bold text-blue-600 mb-4">
-                {formatTime(breakTime)}
+              <div className="text-sm text-gray-600 mb-2">Thời gian học còn lại</div>
+              <div className="text-4xl font-bold text-green-600 mb-4">
+                {formatTime(studyTime)}
               </div>
               
               {/* Timer Control Button */}
               <button
                 onClick={toggleTimer}
-                className="flex items-center justify-center space-x-2 mx-auto px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white font-medium rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-200 shadow-lg"
+                className="flex items-center justify-center space-x-2 mx-auto px-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white font-medium rounded-lg hover:from-green-600 hover:to-blue-600 transition-all duration-200 shadow-lg"
               >
                 {isRunning ? (
                   <PauseIcon className="w-5 h-5" />
@@ -140,16 +146,6 @@ export default function MusicBreakModal() {
                   Nhạc sẽ tiếp tục phát trong nền khi đóng modal
                 </p>
               </div>
-            </div>
-
-            {/* Action Button */}
-            <div className="flex space-x-3">
-              <button
-                onClick={continueStudying}
-                className="flex-1 py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-medium rounded-lg hover:from-cyan-500 hover:to-blue-600 transition-all duration-200"
-              >
-                Tiếp tục học bài
-              </button>
             </div>
           </div>
         </div>

@@ -6,19 +6,33 @@ import { AdminProvider } from "@/context/AdminContext";
 import UserAdmin from "@/components/admin/UserAdmin";
 import Exams from "@/components/admin/Exams";
 import Flashcard from "@/components/admin/Flashcard";
+import ListeningTranscript from "@/components/admin/ListeningTranscript";
 
 interface AdminLayoutProps {
   children?: ReactNode;
 }
 
-type MenuKey = "dashboard" | "users" | "exams" | "flashcard";
+type MenuKey =
+  | "dashboard"
+  | "users"
+  | "exams"
+  | "flashcard"
+  | "listenningTranscript";
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [selectedMenu, setSelectedMenu] = useState<MenuKey>("dashboard");
 
   const handleMenuSelect = (menuKey: string) => {
     // Chuyển string thành MenuKey, chỉ chấp nhận các giá trị hợp lệ
-    if (["dashboard", "users", "exams", "flashcard"].includes(menuKey)) {
+    if (
+      [
+        "dashboard",
+        "users",
+        "exams",
+        "flashcard",
+        "listenningTranscript",
+      ].includes(menuKey)
+    ) {
       setSelectedMenu(menuKey as MenuKey);
     }
   };
@@ -38,6 +52,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         return <Exams />;
       case "flashcard":
         return <Flashcard />;
+      case "listenningTranscript":
+        return <ListeningTranscript />;
       default:
         return children || null; // Nếu không khớp, giữ nguyên children (nếu có)
     }

@@ -5,28 +5,25 @@ import {
   ChatBubbleLeftRightIcon,
   BookOpenIcon,
   EyeIcon,
-  EyeSlashIcon,
-  SpeakerWaveIcon,
-  SpeakerXMarkIcon,
   ChevronRightIcon,
   ChevronLeftIcon
 } from '@heroicons/react/24/outline';
+import PomodoroModal from '../features/PomodoroModal';
 
 export default function RightSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMusicOn, setIsMusicOn] = useState(true);
-  const [isFocusMode, setIsFocusMode] = useState(false);
+  const [isPomodoroOpen, setIsPomodoroOpen] = useState(false);
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
 
-  const toggleMusic = () => {
-    setIsMusicOn(!isMusicOn);
+  const openPomodoro = () => {
+    setIsPomodoroOpen(true);
   };
 
-  const toggleFocusMode = () => {
-    setIsFocusMode(!isFocusMode);
+  const closePomodoro = () => {
+    setIsPomodoroOpen(false);
   };
 
   const sidebarItems = [
@@ -46,22 +43,16 @@ export default function RightSidebar() {
     },
     {
       id: 'focus-mode',
-      icon: isFocusMode ? EyeSlashIcon : EyeIcon,
-      label: isFocusMode ? 'Tắt chế độ tập trung' : 'Chế độ tập trung',
-      color: isFocusMode ? 'bg-red-500 hover:bg-red-600' : 'bg-purple-500 hover:bg-purple-600',
-      onClick: toggleFocusMode
-    },
-    {
-      id: 'music',
-      icon: isMusicOn ? SpeakerWaveIcon : SpeakerXMarkIcon,
-      label: isMusicOn ? 'Tắt nhạc' : 'Bật nhạc',
-      color: isMusicOn ? 'bg-orange-500 hover:bg-orange-600' : 'bg-gray-500 hover:bg-gray-600',
-      onClick: toggleMusic
+      icon: EyeIcon,
+      label: 'Chế độ tập trung',
+      color: 'bg-purple-500 hover:bg-purple-600',
+      onClick: openPomodoro
     }
   ];
 
   if (isCollapsed) {
     return (
+      <>
       <div className="fixed right-2 sm:right-4 bottom-4 sm:top-1/2 sm:transform sm:-translate-y-1/2 z-40">
         <button
           onClick={toggleSidebar}
@@ -71,10 +62,15 @@ export default function RightSidebar() {
           <ChevronLeftIcon className="w-5 h-5" />
         </button>
       </div>
+        
+        {/* Pomodoro Modal */}
+        <PomodoroModal isOpen={isPomodoroOpen} onClose={closePomodoro} />
+      </>
     );
   }
 
   return (
+    <>
     <div className="fixed right-2 sm:right-4 bottom-4 sm:top-1/2 sm:transform sm:-translate-y-1/2 z-40 space-y-2 sm:space-y-3">
       {/* Nút thu gọn */}
       <div className="flex justify-end">
@@ -118,5 +114,9 @@ export default function RightSidebar() {
         );
       })}
     </div>
+
+      {/* Pomodoro Modal */}
+      <PomodoroModal isOpen={isPomodoroOpen} onClose={closePomodoro} />
+    </>
   );
 } 

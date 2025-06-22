@@ -1,4 +1,7 @@
 import { Metadata } from "next";
+import { PomodoroProvider } from "@/contexts/PomodoroContext";
+import MusicBreakModal from "@/components/features/MusicBreakModal";
+import BreakEndModal from "@/components/features/BreakEndModal";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -6,15 +9,35 @@ export const metadata: Metadata = {
   description: "Luyện thi TOEIC hiệu quả",
 };
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+function AppContent({ children }: { children: React.ReactNode }) {
+  const user = {
+    name: "null",
+    // avatar: '/path/to/avatar.jpg'
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Header user={user} />
+      <main className="flex-1 py-6">{children}</main>
+      <Footer />
+      <RightSideBar />
+      <MusicBreakModal />
+      <BreakEndModal />
+    </div>
+  );
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="vi">
-      <head>
-        <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      </head>
       <body>
-        <div className="min-h-screen bg-gray-50 flex flex-col">{children}</div>
+        <PomodoroProvider>
+          <AppContent>{children}</AppContent>
+        </PomodoroProvider>
       </body>
     </html>
   );

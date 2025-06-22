@@ -52,26 +52,15 @@ export default function ForgotPasswordPage() {
       const templateParams = {
         email: userEmail,
         name: userName,
-        to_name: userName,
+        app_name: "Edutic",
+        greeting: `Xin chào ${userName},`,
+        main_message: "Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản Edutic của bạn. Vui lòng sử dụng mã xác thực dưới đây để đặt lại mật khẩu.",
+        code_label: "Mã đặt lại mật khẩu của bạn là:",
         verification_code: resetToken,
-        app_name: 'Edutic',
-        Edutic: 'Edutic',
-        time: new Date().toLocaleString('vi-VN', {
-          timeZone: 'Asia/Ho_Chi_Minh',
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
-        email_type: "password_reset",
-        subject: "Reset Your Edutic Password",
-        greeting: `Hello ${userName},`,
-        main_message: "We received a request to reset your password for your Edutic account. Use the verification code below to reset your password.",
-        action_text: "reset your password",
-        code_label: "Your password reset code is:",
-        footer_message: "If you didn't request a password reset, please ignore this email. Your password will remain unchanged.",
-        additional_info: "This code will expire in 30 minutes for security reasons."
+        additional_info: "Mã này sẽ hết hạn sau 30 phút vì lý do bảo mật.",
+        button_text: "Đặt lại mật khẩu",
+        footer_message: "Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.",
+        time: new Date().getFullYear()
       };
 
       await emailjs.send(

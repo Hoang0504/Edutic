@@ -14,7 +14,7 @@ interface ExamCreationAttributes {
   id?: number; // Optional (auto-increment)
   title: string; // Bắt buộc (allowNull: false)
   year_of_release: number; // Bắt buộc (DataType.INTEGER mặc định not null)
-  type?: "random" | "full_test"; // Optional (có defaultValue)
+  type?: "random" | "full_test" | "speaking" | "writing"; // Extended to include speaking and writing
   description: string; // Bắt buộc (DataType.TEXT mặc định not null)
   estimated_time: number; // Bắt buộc
   is_published?: boolean; // Optional (có defaultValue)
@@ -39,6 +39,14 @@ export class Exam extends Model<Exam, ExamCreationAttributes> {
     type: DataType.ENUM("random", "full_test"),
     allowNull: false,
     defaultValue: "full_test",
+    // Map speaking/writing to full_test for now until DB schema is updated
+    set(value: string) {
+      if (value === 'speaking' || value === 'writing') {
+        this.setDataValue('type', 'full_test');
+      } else {
+        this.setDataValue('type', value as any);
+      }
+    }
   })
   type!: string;
 

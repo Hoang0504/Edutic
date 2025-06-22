@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import * as XLSX from 'xlsx';
-import { ExamImportData, ExamInfo, ExamPart, ExamQuestion, ExamAnswer } from '@/types/exam';
+import { ExamImportData, ExamInfo, ExamPart, ExamQuestion, ExamAnswer, Translation, EXAM_TYPE_CONFIGS } from '@/types/exam';
 
 interface ProcessResult {
   success: boolean;
@@ -8,272 +8,459 @@ interface ProcessResult {
   error?: string;
 }
 
-export const useExcelProcessor = () => {
+interface SubmitResult {
+  success: boolean;
+  data?: {
+    examId: number;
+    summary: any;
+    message: string;
+  };
+  error?: string;
+}
+
+export function useExcelProcessor() {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const processExcelFile = async (file: File): Promise<ProcessResult> => {
     setIsProcessing(true);
     
     try {
+      // Read Excel file
       const arrayBuffer = await file.arrayBuffer();
       const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-
-      // Validate required sheets
-      const requiredSheets = ['Exam Info', 'Parts', 'Questions', 'Answers'];
-      const missingSheets = requiredSheets.filter(sheet => !workbook.SheetNames.includes(sheet));
       
-      if (missingSheets.length > 0) {
-        return {
-          success: false,
-          error: `File Excel thiếu các sheet: ${missingSheets.join(', ')}`
-        };
+      // Get worksheet names
+      const sheetNames = workbook.SheetNames;
+      console.log('Available sheets:', sheetNames);
+      
+      // Determine exam type based on file name and content
+      const examType = determineExamType(file.name, sheetNames, workbook);
+      console.log('Detected exam type:', examType);
+      
+      // Process based on exam type
+      let result: ExamImportData;
+      
+      if (examType === 'speaking_practice' || examType === 'writing_practice') {
+        result = processPracticeExam(workbook, examType, file.name);
+      } else if (examType === 'full_toeic') {
+        result = processFullToeicExam(workbook, file.name);
+      } else if (examType === 'speaking' || examType === 'writing') {
+        result = processStructuredExam(workbook, examType, file.name);
+      } else {
+        throw new Error('Không thể xác định loại đề thi từ file Excel');
       }
-
-      // Process each sheet
-      const examData = processExamSheet(workbook.Sheets['Exam Info']);
-      const partsData = processPartsSheet(workbook.Sheets['Parts']);
-      const questionsData = processQuestionsSheet(workbook.Sheets['Questions']);
-      const answersData = processAnswersSheet(workbook.Sheets['Answers']);
-
-      // Validate data
-      const validation = validateData(examData, partsData, questionsData, answersData);
-      if (!validation.valid) {
-        return {
-          success: false,
-          error: validation.error
-        };
-      }
-
-      return {
-        success: true,
-        data: {
-          exam: examData,
-          parts: partsData,
-          questions: questionsData,
-          answers: answersData
-        }
-      };
-
+      
+      return { success: true, data: result };
+      
     } catch (error) {
       console.error('Excel processing error:', error);
-      return {
-        success: false,
-        error: 'Lỗi xử lý file Excel. Vui lòng kiểm tra định dạng file.'
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Lỗi xử lý file Excel' 
       };
     } finally {
       setIsProcessing(false);
     }
   };
 
+  // Submit exam data to database
+  const submitExamToDatabase = async (
+    examData: ExamImportData, 
+    audioFiles: File[] = []
+  ): Promise<SubmitResult> => {
+    setIsSubmitting(true);
+    
+    try {
+      // Prepare form data
+      const formData = new FormData();
+      formData.append('data', JSON.stringify(examData));
+      
+      // Add audio files
+      audioFiles.forEach((audioFile, index) => {
+        formData.append('audioFiles', audioFile);
+      });
+
+      // Submit to API
+      const response = await fetch('/api/admin/exams/import', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        return {
+          success: true,
+          data: {
+            examId: result.data.examId,
+            summary: result.data.summary,
+            message: result.data.message
+          }
+        };
+      } else {
+        return {
+          success: false,
+          error: result.data?.message || 'Lỗi khi lưu đề thi'
+        };
+      }
+
+    } catch (error) {
+      console.error('Submit exam error:', error);
+      return {
+        success: false,
+        error: 'Lỗi kết nối với server'
+      };
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const determineExamType = (fileName: string, sheetNames: string[], workbook: XLSX.WorkBook): 'speaking_practice' | 'writing_practice' | 'full_toeic' | 'speaking' | 'writing' => {
+    // Check file name first
+    if (fileName.toLowerCase().includes('speaking')) {
+      // Check if it's practice or actual test
+      if (fileName.toLowerCase().includes('practice')) {
+        return 'speaking_practice';
+      }
+      return 'speaking';
+    }
+    
+    if (fileName.toLowerCase().includes('writing')) {
+      // Check if it's practice or actual test
+      if (fileName.toLowerCase().includes('practice')) {
+        return 'writing_practice';
+      }
+      return 'writing';
+    }
+    
+    if (fileName.toLowerCase().includes('toeic')) {
+      return 'full_toeic';
+    }
+    
+    // Check sheet structure for TOEIC
+    if (sheetNames.includes('Exams') && sheetNames.includes('Parts') && 
+        sheetNames.includes('Questions') && sheetNames.includes('Answers')) {
+      return 'full_toeic';
+    }
+    
+    // Check for practice types by sheet content
+    if (sheetNames.includes('Topics') || sheetNames[0] === 'Topics') {
+      // Assume speaking practice as default for topics
+      return 'speaking_practice';
+    }
+    
+    // Default to speaking practice for single sheet files
+    return 'speaking_practice';
+  };
+
+  const processPracticeExam = (workbook: XLSX.WorkBook, examType: 'speaking_practice' | 'writing_practice', fileName: string): ExamImportData => {
+    const config = EXAM_TYPE_CONFIGS[examType];
+    if (!config) throw new Error('Cấu hình exam type không hợp lệ');
+
+    // Try different possible sheet names
+    const possibleSheetNames = ['Topics', 'Sheet1', 'Questions', workbook.SheetNames[0]];
+    let worksheet = null;
+
+    for (const name of possibleSheetNames) {
+      if (workbook.Sheets[name]) {
+        worksheet = workbook.Sheets[name];
+        break;
+      }
+    }
+
+    if (!worksheet) {
+      throw new Error('Không tìm thấy sheet dữ liệu trong file Excel');
+    }
+
+    const jsonData = XLSX.utils.sheet_to_json(worksheet) as any[];
+    
+    if (jsonData.length === 0) {
+      throw new Error('Sheet không có dữ liệu');
+    }
+
+    // Create exam info
+    const exam: ExamInfo = {
+      title: `${config.description} - ${new Date().toLocaleDateString()}`,
+      description: config.description,
+      difficulty: 'medium' as const,
+      estimated_time: config.defaultDuration,
+      exam_type: examType
+    };
+
+    // Create single part for practice exam
+    const part: ExamPart = {
+      part_number: 1,
+      title: config.questionStructure[0].title,
+      description: config.description,
+      instruction: config.description,
+      difficulty_level: 'medium',
+      time_limit: config.defaultDuration,
+      type: 'reading' // Practice types use 'reading' as default
+    };
+
+    // Process questions
+    const questions: ExamQuestion[] = [];
+    const translations: Translation[] = [];
+
+    jsonData.forEach((row, index) => {
+      const questionNumber = index + 1;
+      
+      // Try different possible column names
+      const content = row['Topic'] || row['Question'] || row['Content'] || row['Đề bài'] || '';
+      const vietnameseTranslation = row['Vietnamese'] || row['Tiếng Việt'] || row['Bản dịch'] || '';
+
+      if (content) {
+        questions.push({
+          part_number: 1,
+          question_number: questionNumber,
+          content: content.toString(),
+          question_type: 'essay' as const, // Use essay for practice types
+          vietnamese_translation: vietnameseTranslation?.toString() || ''
+        });
+
+        if (vietnameseTranslation) {
+          translations.push({
+            question_id: questionNumber,
+            type: 'question',
+            vietnamese_text: vietnameseTranslation.toString()
+          });
+        }
+      }
+    });
+
+    return {
+      exam,
+      parts: [part],
+      questions,
+      answers: [], // No answers for practice exams
+      translations
+    };
+  };
+
+  const processFullToeicExam = (workbook: XLSX.WorkBook, fileName: string): ExamImportData => {
+    // Process Exams sheet
+    const examSheet = workbook.Sheets['Exams'];
+    if (!examSheet) throw new Error('Thiếu sheet "Exams"');
+    
+    const examData = XLSX.utils.sheet_to_json(examSheet)[0] as any;
+    const exam: ExamInfo = {
+      title: examData.title || `TOEIC Test - ${new Date().toLocaleDateString()}`,
+      description: examData.description || 'TOEIC test với các parts reading',
+      difficulty: (examData.difficulty as 'easy' | 'medium' | 'hard') || 'medium',
+      estimated_time: examData.estimated_time || 60,
+      exam_type: 'full_toeic'
+    };
+
+    // Process Parts sheet
+    const partsSheet = workbook.Sheets['Parts'];
+    if (!partsSheet) throw new Error('Thiếu sheet "Parts"');
+    
+    const partsData = XLSX.utils.sheet_to_json(partsSheet) as any[];
+    const parts: ExamPart[] = partsData.map(row => ({
+      part_number: row.part_number,
+      title: row.title,
+      description: row.description,
+      instruction: row.instruction,
+      difficulty_level: row.difficulty_level || 'medium',
+      time_limit: row.time_limit || 20,
+      type: [1, 2, 3, 4].includes(row.part_number) ? 'listening' : 'reading'
+    }));
+
+    // Process Questions sheet
+    const questionsSheet = workbook.Sheets['Questions'];
+    if (!questionsSheet) throw new Error('Thiếu sheet "Questions"');
+    
+    const questionsData = XLSX.utils.sheet_to_json(questionsSheet) as any[];
+    const questions: ExamQuestion[] = questionsData.map(row => ({
+      part_number: row.part_number,
+      question_number: row.question_number,
+      content: row.content,
+      question_type: 'multiple_choice' as const,
+      vietnamese_translation: row.vietnamese_translation || ''
+    }));
+
+    // Create mapping từ question_number to part_number
+    const questionToPartMap = new Map<number, number>();
+    questions.forEach(q => {
+      questionToPartMap.set(q.question_number, q.part_number);
+    });
+
+    // Process Answers sheet
+    const answersSheet = workbook.Sheets['Answers'];
+    if (!answersSheet) throw new Error('Thiếu sheet "Answers"');
+    
+    const answersData = XLSX.utils.sheet_to_json(answersSheet) as any[];
+    console.log('Answers data count:', answersData.length);
+    console.log('Sample answer data:', answersData[0]);
+    
+    const answers: ExamAnswer[] = answersData.map(row => {
+      const questionNumber = parseInt(row.question_number || row['Question No'] || row['Question Number'] || '0');
+      const partNumber = questionToPartMap.get(questionNumber);
+      
+      if (!partNumber) {
+        console.warn(`Không tìm thấy part_number cho question ${questionNumber}`);
+      }
+      
+      // Handle missing answer_text - construct from answer_letter if needed
+      let content = row.answer_text || row.content || row['Content'] || row['Answer Text'] || '';
+      if (!content && row.answer_letter) {
+        content = `(${row.answer_letter}) [Missing answer text]`;
+        console.warn(`Missing answer_text for question ${questionNumber}, option ${row.answer_letter}`);
+      }
+      
+      return {
+        part_number: partNumber || 1, // Default to part 1 if not found
+        question_number: questionNumber,
+        content: content,
+        is_correct: row.is_correct === true || row.is_correct === 'TRUE' || row.is_correct === 1 || 
+                   row['Is Correct'] === true || row['Is Correct'] === 'TRUE' || row['Is Correct'] === 1,
+        explanation: row.explanation || row['Explanation'] || '', // Keep empty if not available
+        vietnamese_translation: row.vietnamese_translation || row['Vietnamese Translation'] || ''
+      };
+    });
+
+    console.log('Processed answers count:', answers.length);
+    console.log('Sample processed answers:');
+    answers.slice(0, 5).forEach((answer, index) => {
+      console.log(`Answer ${index + 1}:`, {
+        question_number: answer.question_number,
+        part_number: answer.part_number,
+        content: answer.content?.substring(0, 50) + '...',
+        is_correct: answer.is_correct
+      });
+    });
+
+    // Process translations
+    const translations: Translation[] = [];
+    
+    // Add question translations
+    questions.forEach(q => {
+      if (q.vietnamese_translation) {
+        translations.push({
+          question_id: q.question_number,
+          type: 'question',
+          vietnamese_text: q.vietnamese_translation
+        });
+      }
+    });
+
+    // Add answer translations
+    answers.forEach(a => {
+      if (a.vietnamese_translation) {
+        translations.push({
+          question_id: a.question_number,
+          type: 'answer',
+          vietnamese_text: a.vietnamese_translation
+        });
+      }
+    });
+
+    return {
+      exam,
+      parts,
+      questions,
+      answers,
+      translations
+    };
+  };
+
+  const processStructuredExam = (workbook: XLSX.WorkBook, examType: 'speaking' | 'writing', fileName: string): ExamImportData => {
+    // Process Exams sheet
+    const examSheet = workbook.Sheets['Exams'];
+    if (!examSheet) throw new Error('Thiếu sheet "Exams"');
+    
+    const examData = XLSX.utils.sheet_to_json(examSheet)[0] as any;
+    const exam: ExamInfo = {
+      title: examData.title || `${examType === 'speaking' ? 'Speaking' : 'Writing'} Test - ${new Date().toLocaleDateString()}`,
+      description: examData.description || EXAM_TYPE_CONFIGS[examType].description,
+      difficulty: (examData.difficulty as 'easy' | 'medium' | 'hard') || 'medium',
+      estimated_time: examData.estimated_time || EXAM_TYPE_CONFIGS[examType].defaultDuration,
+      exam_type: examType
+    };
+
+    // Process Parts sheet
+    const partsSheet = workbook.Sheets['Parts'];
+    if (!partsSheet) throw new Error('Thiếu sheet "Parts"');
+    
+    const partsData = XLSX.utils.sheet_to_json(partsSheet) as any[];
+    const parts: ExamPart[] = partsData.map(row => ({
+      part_number: row.part_number,
+      title: row.title,
+      description: row.description,
+      instruction: row.instruction,
+      difficulty_level: row.difficulty_level || 'medium',
+      time_limit: row.time_limit || 20,
+      type: 'reading' // Speaking và Writing đều dùng 'reading' type (không cần audio)
+    }));
+
+    // Process Questions sheet
+    const questionsSheet = workbook.Sheets['Questions'];
+    if (!questionsSheet) throw new Error('Thiếu sheet "Questions"');
+    
+    const questionsData = XLSX.utils.sheet_to_json(questionsSheet) as any[];
+    const questions: ExamQuestion[] = questionsData.map(row => ({
+      part_number: row.part_number,
+      question_number: row.question_number,
+      content: row.content,
+      question_type: examType === 'speaking' ? 'essay' : 'essay', // Both use essay type
+      vietnamese_translation: row.vietnamese_translation || ''
+    }));
+
+    // Speaking và Writing không cần answers, nhưng vẫn kiểm tra sheet để tránh lỗi
+    let answers: ExamAnswer[] = [];
+    if (workbook.Sheets['Answers']) {
+      // Có thể có sheet Answers nhưng để trống, chỉ parse nếu có dữ liệu
+      const answersData = XLSX.utils.sheet_to_json(workbook.Sheets['Answers']) as any[];
+      if (answersData.length > 0 && answersData[0].question_number) {
+        const questionToPartMap = new Map<number, number>();
+        questions.forEach(q => {
+          questionToPartMap.set(q.question_number, q.part_number);
+        });
+
+        answers = answersData.map(row => {
+          const questionNumber = parseInt(row.question_number || '0');
+          const partNumber = questionToPartMap.get(questionNumber);
+          
+          return {
+            part_number: partNumber || 1,
+            question_number: questionNumber,
+            content: row.content || '',
+            is_correct: false, // Speaking/Writing không có đáp án đúng/sai
+            explanation: row.explanation || '',
+            vietnamese_translation: row.vietnamese_translation || ''
+          };
+        });
+      }
+    }
+
+    // Process translations
+    const translations: Translation[] = [];
+    
+    // Add question translations
+    questions.forEach(q => {
+      if (q.vietnamese_translation) {
+        translations.push({
+          question_id: q.question_number,
+          type: 'question',
+          vietnamese_text: q.vietnamese_translation
+        });
+      }
+    });
+
+    return {
+      exam,
+      parts,
+      questions,
+      answers,
+      translations
+    };
+  };
+
   return {
     processExcelFile,
-    isProcessing
+    submitExamToDatabase,
+    isProcessing,
+    isSubmitting
   };
-};
-
-function processExamSheet(sheet: XLSX.WorkSheet): ExamInfo {
-  const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-  const rows = data as any[][];
-  
-  // Assuming format: [Header row, Data row]
-  const headers = rows[0] || [];
-  const values = rows[1] || [];
-  
-  const result: any = {};
-  headers.forEach((header: string, index: number) => {
-    if (header && values[index] !== undefined) {
-      result[header.toLowerCase().replace(/\s+/g, '_')] = values[index];
-    }
-  });
-
-  return {
-    title: result.title || '',
-    description: result.description || '',
-    difficulty: mapDifficulty(result.difficulty || result.level),
-    estimated_time: parseInt(result.duration || result.estimated_time) || 120,
-    is_published: false
-  };
-}
-
-function processPartsSheet(sheet: XLSX.WorkSheet): ExamPart[] {
-  const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-  const rows = data as any[][];
-  
-  if (rows.length < 2) return [];
-  
-  const headers = rows[0];
-  const dataRows = rows.slice(1);
-  
-  return dataRows.map(row => {
-    const result: any = {};
-    headers.forEach((header: string, index: number) => {
-      if (header && row[index] !== undefined) {
-        result[header.toLowerCase().replace(/\s+/g, '_')] = row[index];
-      }
-    });
-
-    return {
-      part_number: parseInt(result.part_no || result.part_number) || 0,
-      title: result.title || '',
-      description: result.description || '',
-      instruction: result.instruction || '',
-      time_limit: parseTimeLimit(result.time_limit),
-      type: mapPartType(result.type)
-    };
-  });
-}
-
-function processQuestionsSheet(sheet: XLSX.WorkSheet): ExamQuestion[] {
-  const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-  const rows = data as any[][];
-  
-  if (rows.length < 2) return [];
-  
-  const headers = rows[0];
-  const dataRows = rows.slice(1);
-  
-  return dataRows.map(row => {
-    const result: any = {};
-    headers.forEach((header: string, index: number) => {
-      if (header && row[index] !== undefined) {
-        result[header.toLowerCase().replace(/\s+/g, '_')] = row[index];
-      }
-    });
-
-    return {
-      part_number: parseInt(result.part_no || result.part_number) || 0,
-      question_number: parseInt(result.question_no || result.question_number) || 0,
-      content: result.content || result.question_content || '',
-      question_type: mapQuestionType(result.type || result.question_type),
-      image_url: result.image_url || result.image || undefined
-    };
-  });
-}
-
-function processAnswersSheet(sheet: XLSX.WorkSheet): ExamAnswer[] {
-  const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-  const rows = data as any[][];
-  
-  if (rows.length < 2) return [];
-  
-  const headers = rows[0];
-  const dataRows = rows.slice(1);
-  
-  return dataRows.map(row => {
-    const result: any = {};
-    headers.forEach((header: string, index: number) => {
-      if (header && row[index] !== undefined) {
-        result[header.toLowerCase().replace(/\s+/g, '_')] = row[index];
-      }
-    });
-
-    return {
-      question_number: parseInt(result.question_no || result.question_number) || 0,
-      content: result.content || result.answer_content || '',
-      is_correct: mapBooleanValue(result.is_correct || result.correct),
-      explanation: result.explanation || result.explain || undefined
-    };
-  });
-}
-
-function validateData(
-  exam: ExamInfo, 
-  parts: ExamPart[], 
-  questions: ExamQuestion[], 
-  answers: ExamAnswer[]
-): { valid: boolean; error?: string } {
-  
-  if (!exam.title) {
-    return { valid: false, error: 'Thiếu tiêu đề đề thi' };
-  }
-  
-  if (parts.length === 0) {
-    return { valid: false, error: 'Không có phần nào trong đề thi' };
-  }
-  
-  if (questions.length === 0) {
-    return { valid: false, error: 'Không có câu hỏi nào' };
-  }
-  
-  if (answers.length === 0) {
-    return { valid: false, error: 'Không có đáp án nào' };
-  }
-
-  // Validate part numbers
-  const partNumbers = new Set(parts.map(p => p.part_number));
-  const questionParts = new Set(questions.map(q => q.part_number));
-  const invalidQuestionParts = Array.from(questionParts).filter(p => !partNumbers.has(p));
-  
-  if (invalidQuestionParts.length > 0) {
-    return { 
-      valid: false, 
-      error: `Câu hỏi thuộc phần không tồn tại: ${invalidQuestionParts.join(', ')}` 
-    };
-  }
-
-  // Validate question numbers
-  const questionNumbers = new Set(questions.map(q => q.question_number));
-  const answerQuestions = new Set(answers.map(a => a.question_number));
-  const invalidAnswerQuestions = Array.from(answerQuestions).filter(q => !questionNumbers.has(q));
-  
-  if (invalidAnswerQuestions.length > 0) {
-    return { 
-      valid: false, 
-      error: `Đáp án cho câu hỏi không tồn tại: ${invalidAnswerQuestions.join(', ')}` 
-    };
-  }
-
-  return { valid: true };
-}
-
-// Helper functions
-function mapDifficulty(value: any): 'easy' | 'medium' | 'hard' {
-  const str = String(value).toLowerCase();
-  if (str.includes('easy') || str.includes('dễ')) return 'easy';
-  if (str.includes('hard') || str.includes('khó')) return 'hard';
-  return 'medium';
-}
-
-function mapPartType(value: any): 'listening' | 'reading' {
-  const str = String(value).toLowerCase();
-  return str.includes('listen') || str.includes('nghe') ? 'listening' : 'reading';
-}
-
-function mapQuestionType(value: any): 'multiple_choice' | 'fill_blank' | 'essay' {
-  const str = String(value).toLowerCase();
-  if (str.includes('fill') || str.includes('điền')) return 'fill_blank';
-  if (str.includes('essay') || str.includes('tự luận')) return 'essay';
-  return 'multiple_choice';
-}
-
-function mapBooleanValue(value: any): boolean {
-  if (typeof value === 'boolean') return value;
-  const str = String(value).toLowerCase();
-  return str === 'true' || str === '1' || str === 'yes' || str === 'đúng' || str === '✓';
-}
-
-function parseTimeLimit(value: any): number {
-  if (typeof value === 'number') return value;
-  
-  const str = String(value).toLowerCase();
-  
-  // Parse "X minutes" or "X phút"
-  const minuteMatch = str.match(/(\d+)\s*(minute|phút|min)/);
-  if (minuteMatch) {
-    return parseInt(minuteMatch[1]) * 60;
-  }
-  
-  // Parse "X:Y" format (minutes:seconds)
-  const timeMatch = str.match(/(\d+):(\d+)/);
-  if (timeMatch) {
-    return parseInt(timeMatch[1]) * 60 + parseInt(timeMatch[2]);
-  }
-  
-  // Parse plain number (assume seconds)
-  const numberMatch = str.match(/(\d+)/);
-  if (numberMatch) {
-    return parseInt(numberMatch[1]);
-  }
-  
-  return 0;
 } 

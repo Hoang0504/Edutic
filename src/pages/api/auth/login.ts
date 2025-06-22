@@ -43,6 +43,18 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     });
   }
 
+  // Check if email is verified
+  if (!user.is_email_verified) {
+    return res.status(401).json({
+      success: false,
+      data: { 
+        message: "Please verify your email before logging in",
+        emailNotVerified: true,
+        email: user.email
+      },
+    });
+  }
+
   await user.update({
     last_login: new Date(),
     updated_at: new Date(),

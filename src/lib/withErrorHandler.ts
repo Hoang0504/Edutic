@@ -19,7 +19,7 @@ export function withErrorHandler(
       res.status(500).json({
         success: false,
         data: {
-          message: errorMessage || "Có lỗi xảy ra trong quá trình xử lý.",
+          message: errorMessage || "Error occurs during processing.",
           error:
             process.env.NODE_ENV === "development" && error instanceof Error
               ? error.message

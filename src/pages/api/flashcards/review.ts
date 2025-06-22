@@ -1,10 +1,10 @@
 // pages/api/flashcards/review.ts
 
 import { NextApiRequest, NextApiResponse } from "next";
-// import { verifyToken } from '@/lib/jwt';
-import { Flashcard, Vocabulary } from "@/lib/db";
 import dayjs from "dayjs";
 import { Op } from "sequelize";
+import { Flashcard } from "@/models/Flashcard";
+import { Vocabulary } from "@/models/Vocabulary";
 
 export default async function handler(
   req: NextApiRequest,

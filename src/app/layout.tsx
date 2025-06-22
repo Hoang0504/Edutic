@@ -1,8 +1,15 @@
 import { Metadata } from "next";
-import { PomodoroProvider } from "@/contexts/PomodoroContext";
-import MusicBreakModal from "@/components/features/MusicBreakModal";
-import BreakEndModal from "@/components/features/BreakEndModal";
+import { Toaster } from "react-hot-toast";
 import "./globals.css";
+
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import RightSidebar from "@/components/layout/RightSideBar";
+import BreakEndModal from "@/components/features/BreakEndModal";
+import MusicBreakModal from "@/components/features/MusicBreakModal";
+
+import { PomodoroProvider } from "@/contexts/PomodoroContext";
+import { RouteLoadingProvider } from "@/context/RouteLoadingContext";
 
 export const metadata: Metadata = {
   title: "Edutic - Ôn là trúng, Luyện là đạt",
@@ -20,7 +27,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
       <Header user={user} />
       <main className="flex-1 py-6">{children}</main>
       <Footer />
-      <RightSideBar />
+      <RightSidebar />
       <MusicBreakModal />
       <BreakEndModal />
     </div>
@@ -35,9 +42,15 @@ export default function DashboardLayout({
   return (
     <html lang="vi">
       <body>
-        <PomodoroProvider>
-          <AppContent>{children}</AppContent>
-        </PomodoroProvider>
+        <Toaster position="top-right" />
+
+        {/* <div className="min-h-screen bg-gray-50 flex flex-col"> */}
+        <RouteLoadingProvider>
+          <PomodoroProvider>
+            <AppContent>{children}</AppContent>
+          </PomodoroProvider>
+        </RouteLoadingProvider>
+        {/* </div> */}
       </body>
     </html>
   );

@@ -5,6 +5,8 @@ import sequelize from "@/lib/db";
 import { Vocabulary } from "@/models/Vocabulary";
 import { normalizeVocabulary } from "@/utils/normalize";
 import { withErrorHandler } from "@/lib/withErrorHandler";
+import { User } from "@/models/User";
+import { Flashcard } from "@/models/Flashcard";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   await sequelize.authenticate();
@@ -46,7 +48,10 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   if (req.method === "POST") {
+    let user_existing = null;
+
     const {
+      user_id,
       word,
       image_url,
       pronunciation,
@@ -57,18 +62,26 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       status = "pending",
     } = req.body;
 
+    if (user_id) {
+      user_existing = await User.findOne({ where: { id: user_id } });
+      if (!user_existing) {
+        return res.status(400).json({ message: "User is not found" });
+      }
+    }
+
     if (!word || !meaning || !example || !context) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    const existing = await Vocabulary.findOne({ where: { word, example } });
-    if (existing) {
+    let vocab = await Vocabulary.findOne({ where: { word, example } });
+
+    if (vocab) {
       return res
         .status(200)
         .json({ message: "This word + example already exists" });
     }
 
-    const vocab = await Vocabulary.create({
+    vocab = await Vocabulary.create({
       word,
       image_url,
       pronunciation,
@@ -79,8 +92,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       status,
     });
 
-    const normalized = normalizeVocabulary(vocab);
-    return res.status(201).json(normalized);
+    if (user_existing) {
+      Flashcard.create({ user_id: user_existing.id, vocabulary_id: vocab.id });
+    }
+
+    // const normalized = normalizeVocabulary(vocab);
+    return res.status(201).json({ message: "Created successfully" });
   }
 
   return res.status(405).end();

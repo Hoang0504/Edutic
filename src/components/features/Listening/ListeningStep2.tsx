@@ -2,9 +2,7 @@
 
 import { useState } from "react";
 
-import FlashcardPopover from "./FlashcardPopover";
-import SelectableTranscript from "./SelectableTranscript";
-import { getContextLine } from "@/utils";
+import AddFlashcard from "../flashcards/AddFlashcard";
 
 export default function ListeningStep2({
   transcript,
@@ -14,29 +12,9 @@ export default function ListeningStep2({
   transcriptVi?: string;
 }) {
   const [openSection, setOpenSection] = useState<"en" | "vi" | null>(null);
-  const [selectedWord, setSelectedWord] = useState<string | null>(null);
-  const [position, setPosition] = useState<{ x: number; y: number } | null>(
-    null
-  );
 
   const handleToggle = (section: "en" | "vi") => {
     setOpenSection((prev) => (prev === section ? null : section));
-  };
-
-  const handleSelectWord = (
-    word: string,
-    position: { x: number; y: number }
-  ) => {
-    console.log("Selected word:", word);
-    console.log("Popup position:", position);
-    setSelectedWord(word);
-    setPosition(position);
-    // Show FlashcardPopover here or trigger state
-  };
-
-  const handleClosePopover = () => {
-    setSelectedWord(null);
-    setPosition(null);
   };
 
   return (
@@ -50,23 +28,7 @@ export default function ListeningStep2({
           <button onClick={() => handleToggle("en")}>
             Hiện / Ẩn Transcript Tiếng Anh
           </button>
-          {openSection === "en" && (
-            <div className="relative">
-              <SelectableTranscript
-                text={transcript}
-                onSelectWord={handleSelectWord}
-              />
-
-              {selectedWord && position && (
-                <FlashcardPopover
-                  word={selectedWord}
-                  contextEn={getContextLine(transcript, selectedWord)}
-                  position={position}
-                  onClose={handleClosePopover}
-                />
-              )}
-            </div>
-          )}
+          {openSection === "en" && <AddFlashcard text={transcript} />}
         </div>
 
         <div className="border-t pt-4">

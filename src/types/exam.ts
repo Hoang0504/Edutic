@@ -4,7 +4,7 @@ export interface ExamInfo {
   difficulty: 'easy' | 'medium' | 'hard';
   estimated_time: number; // in minutes
   is_published?: boolean;
-  exam_type?: 'speaking_practice' | 'writing_practice' | 'full_toeic' | 'speaking' | 'writing'; // Thêm speaking và writing
+  exam_type?: 'full_toeic' | 'speaking' | 'writing'; // Removed practice types
 }
 
 export interface ExamPart {
@@ -96,7 +96,7 @@ export type PartTabType = 'part1' | 'part2' | 'part3' | 'part4' | 'part5' | 'par
 
 // Exam type configuration
 export interface ExamTypeConfig {
-  type: 'speaking_practice' | 'writing_practice' | 'full_toeic' | 'speaking' | 'writing';
+  type: 'full_toeic' | 'speaking' | 'writing'; // Removed practice types
   maxQuestions: number;
   defaultDuration: number; // in minutes
   parts: number[];
@@ -112,40 +112,6 @@ export interface ExamTypeConfig {
 }
 
 export const EXAM_TYPE_CONFIGS: Record<string, ExamTypeConfig> = {
-  speaking_practice: {
-    type: 'speaking_practice',
-    maxQuestions: 50, // Flexible for practice topics
-    defaultDuration: 30,
-    parts: [1], // Single "part" for topics
-    description: 'Luyện tập Speaking - Topics để thực hành nói',
-    needsPartDivision: false,
-    needsAnswers: false,
-    questionStructure: [
-      {
-        partNumber: 1,
-        title: 'Speaking Topics',
-        questionRange: [1, 50],
-        questionCount: 50
-      }
-    ]
-  },
-  writing_practice: {
-    type: 'writing_practice', 
-    maxQuestions: 50, // Flexible for practice topics
-    defaultDuration: 60,
-    parts: [1], // Single "part" for topics
-    description: 'Luyện tập Writing - Topics để thực hành viết',
-    needsPartDivision: false,
-    needsAnswers: false,
-    questionStructure: [
-      {
-        partNumber: 1,
-        title: 'Writing Topics',
-        questionRange: [1, 50],
-        questionCount: 50
-      }
-    ]
-  },
   speaking: {
     type: 'speaking',
     maxQuestions: 11,

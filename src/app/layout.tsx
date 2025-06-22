@@ -1,5 +1,6 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { AuthProvider } from "@/contexts/AuthContext";
 import "./globals.css";
 
 export const metadata = {
@@ -7,24 +8,21 @@ export const metadata = {
   description: "Luyện thi TOEIC hiệu quả",
 };
 
-export default function DashboardLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const user = {
-    name: "null",
-    // avatar: '/path/to/avatar.jpg'
-  };
-
   return (
     <html lang="vi">
       <body>
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-          <Header user={user} />
-          <main className="flex-1 py-6">{children}</main>
-          <Footer />
-        </div>
+        <AuthProvider>
+          <div className="min-h-screen bg-gray-50 flex flex-col">
+            <Header />
+            <main className="flex-1 py-6">{children}</main>
+            <Footer />
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );

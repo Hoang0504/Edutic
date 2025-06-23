@@ -29,7 +29,8 @@ async function handler(
     return res.status(200).json(normalizeUser(user));
   }
 
-  if (req.method === "PUT") {
+ if (req.method === "PUT") {
+  try {
     const user = await User.findByPk(id.toString());
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -49,8 +50,16 @@ async function handler(
     if (password) {
       updateData.password_hash = await bcrypt.hash(password, 10);
     }
+
+    console.log("Update data:", updateData); // Thêm dòng này để log dữ liệu gửi lên
+
+    await user.update(updateData);
     return res.status(200).json(normalizeUser(user));
+  } catch (err) {
+    console.error("Update user error:", err); // Log lỗi chi tiết
+    return res.status(500).json({ message: "Internal server error", error: err instanceof Error ? err.message : err });
   }
+}
 
   if (req.method === "DELETE") {
     const user = await User.findByPk(id.toString());

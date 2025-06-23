@@ -88,6 +88,7 @@ const AudioDetailEditor = ({ audio, transcripts, onClose }: AudioDetailEditorPro
       setLocalTranscripts(localTranscripts.map(t => t.level === level ? { ...t, blanks: newBlanks } : t));
       setSelectedWords(new Set());
     }
+    console.log(`Updated blanks for ${level}:`, localTranscripts.find(t => t.level === level)?.blanks);
   };
 
   return (

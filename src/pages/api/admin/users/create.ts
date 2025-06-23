@@ -14,7 +14,7 @@ async function handler(
   if (req.method === "POST") {
     await sequelize.authenticate();
 
-    const { email, password, avatar = null, role = "student" } = req.body;
+    const { email, password, avatar = null, role = "admin" } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ message: "Missing required fields" });
@@ -35,6 +35,8 @@ async function handler(
       is_email_verified: true,
       auth_provider: "email",
       uuid: uuidv4(),
+      created_at: new Date(),   
+  updated_at: new Date(),  
     });
     return res.status(201).json(normalizeUser(user));
   } else {

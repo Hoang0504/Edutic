@@ -29,14 +29,14 @@ const UserAdmin = () => {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:3000/api/admin/users?page=${currentPage}&limit=10`, {
+        const token = localStorage.getItem('token'); 
+        const response = await fetch('http://localhost:3000/api/admin/users', {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) throw new Error('Failed to fetch users');
         const data = await response.json();
         console.log('Fetched users:', data);
-        setUsers(data.data);
+        setUsers(data.data || []); 
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
@@ -44,7 +44,7 @@ const UserAdmin = () => {
       }
     };
     fetchUsers();
-  }, [currentPage]);
+  }, []);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilterName(e.target.value);
@@ -57,7 +57,7 @@ const UserAdmin = () => {
     return emailLower.includes(searchLower);
   });
 
-  const pageSize = 2;
+  const pageSize = 5;
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const totalUsers = filteredUsers.length;
 
@@ -81,24 +81,128 @@ const UserAdmin = () => {
     setIsProfileVisible(true);
   };
 
-  const handleAddUser = (e: React.FormEvent, formData: { email: string; role: string; avatarFile?: File }) => {
-    e.preventDefault();
-    console.log('Add User submitted', formData);
-    if (formData.avatarFile) {
+ const handleAddUser = async (
+  e: React.FormEvent,
+  formData: { email: string; role: string; avatarFile?: File; password_hash: string }
+) => {
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
+
+  try {
+    const payload = {
+      email: formData.email,
+      password: formData.password_hash,
+      avatar: formData.avatarFile ? await convertFileToBase64(formData.avatarFile) : null,
+      role: formData.role,
+    };
+    console.log('Payload sent:', payload);
+
+    const token = localStorage.getItem('token'); // Bỏ nếu không cần
+   const response = await fetch('/api/admin/users/create', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  },
+  body: JSON.stringify(payload),
+});
+
+const data = await response.json();
+console.log('Response data:', data);
+if (!response.ok) throw new Error(data.message || 'Failed to add user');
+
+setUsers((prev) => [...prev, data]); // data là user mới đã normalize từ API
+setIsAddModalVisible(false);
+  } catch (err) {
+    console.error('Error:', err);
+    setError(err instanceof Error ? err.message : 'Unknown error');
+  } finally {
+    setLoading(false);
+  }
+};
+
+  // Hàm chuyển đổi file thành base64
+  const convertFileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        console.log('Avatar base64:', reader.result);
-      };
-      reader.readAsDataURL(formData.avatarFile);
-    }
-    setIsAddModalVisible(false);
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   };
 
-  const handleUpdateUser = (e: React.FormEvent, formData: { email: string; role: string; avatar: string; avatarFile?: File }) => {
-    e.preventDefault();
-    console.log('Update User submitted', formData, formData.avatarFile);
+  const handleUpdateUser = async (
+  e: React.FormEvent,
+  formData: { email?: string; role?: string; avatar?: string; avatarFile?: File; password?: string }
+) => {
+  e.preventDefault();
+  if (!selectedUser) return;
+  setLoading(true);
+  setError(null);
+
+  try {
+    let avatar = formData.avatar;
+    if (formData.avatarFile) {
+      avatar = await convertFileToBase64(formData.avatarFile);
+    }
+
+    const payload: { email?: string; role?: string; avatar?: string; password?: string } = {};
+    if (formData.email) payload.email = formData.email;
+    if (formData.role) payload.role = formData.role;
+    if (avatar) payload.avatar = avatar;
+    if (formData.password) payload.password = formData.password;
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to update user');
+
+    // Cập nhật lại danh sách users
+    setUsers((prev) =>
+      prev.map((u) => (u.id === data.id ? { ...u, ...data } : u))
+    );
     setIsEditUserModalVisible(false);
-  };
+  } catch (err) {
+    setError(err instanceof Error ? err.message : 'Unknown error');
+  } finally {
+    setLoading(false);
+  }
+};
+const handleDeleteUser = async (userId: number) => {
+  if (!window.confirm("Are you sure you want to delete this user?")) return;
+  setLoading(true);
+  setError(null);
+
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`/api/admin/users/${userId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.status === 204) {
+      setUsers((prev) => prev.filter((u) => u.id !== userId));
+    } else {
+      const data = await response.json();
+      throw new Error(data.message || 'Failed to delete user');
+    }
+  } catch (err) {
+    setError(err instanceof Error ? err.message : 'Unknown error');
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (loading) return <div className="text-center p-4">Loading...</div>;
   if (error) return <div className="text-center p-4 text-red-500">Error: {error}</div>;
@@ -185,11 +289,14 @@ const UserAdmin = () => {
                         Edit
                       </button>
                       <button
-                        className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                        onClick={() => {}}
+                         className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                        onClick={(e) => {
+                         e.stopPropagation();
+                         handleDeleteUser(user.id);
+                       }}
                       >
-                        Delete
-                      </button>
+                           Delete
+                       </button>
                     </td>
                   </tr>
                 ))}

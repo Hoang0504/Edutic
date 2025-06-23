@@ -51,8 +51,8 @@ export class User extends Model<User, UserCreationAttributes> {
   @Column(DataType.STRING)
   name!: string;
 
-  @Column(DataType.STRING)
-  avatar!: string;
+  @Column(DataType.TEXT)
+  avatar!: string | null; 
 
   @Column({ type: DataType.BOOLEAN, defaultValue: false })
   is_email_verified!: boolean;
@@ -63,7 +63,7 @@ export class User extends Model<User, UserCreationAttributes> {
   @Column(DataType.STRING)
   auth_provider_id!: string;
 
-  @Column({ type: DataType.ENUM("user", "admin"), defaultValue: "user" })
+  @Column({ type: DataType.ENUM('student', 'admin'), defaultValue: "admin" })
   role!: string;
 
   @Column(DataType.STRING)

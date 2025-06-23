@@ -1,4 +1,5 @@
-import { User ,Vocabulary} from "../Models";
+import { User } from "../../../../models/User";
+import { Vocabulary } from "../../../../models/Vocabulary";
 
 interface NormalizedUser {
   id: number;
@@ -26,10 +27,10 @@ interface NormalizedVocabulary {
 export const normalizeUser = (user: User): NormalizedUser => ({
   id: user.id,
   name: user.name,
-  avatar: user.avatar,
+  avatar: user.avatar ?? undefined,
   email: user.email,
-  role: user.role,
-  last_login: user.last_login,
+  role: user.role === 'student' || user.role === 'teacher' || user.role === 'admin' ? user.role : undefined,
+  last_login: user.last_login ?? undefined,
 });
 
 export const normalizeVocabulary = (vocab: Vocabulary): NormalizedVocabulary => ({

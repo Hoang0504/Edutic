@@ -1,26 +1,40 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PencilIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import Image from 'next/image'; // Import Image từ next/image
+import Image from 'next/image';
 
 interface EditUserProps {
-  onSubmit: (e: React.FormEvent, formData: { email: string; role: string; avatar: string; avatarFile?: File }) => void; // Cập nhật type onSubmit
+  onSubmit: (e: React.FormEvent, formData: { email?: string; role?: string; avatar?: string; avatarFile?: File; password?: string }) => void;
   onCancel: () => void;
   initialData?: { email: string; role: string; avatar: string };
 }
 
 const EditUserPage = ({ onSubmit, onCancel, initialData }: EditUserProps) => {
   const [formData, setFormData] = useState({
-    email: initialData?.email || 'nguyenvana@example.com',
-    role: initialData?.role || 'Employee',
-    avatar: initialData?.avatar || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
+    email: initialData?.email || '',
+    role: initialData?.role || 'user',
+    avatar: initialData?.avatar || '',
+    password: '',
   });
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(initialData?.avatar || null); // Lưu URL preview của ảnh
- const [avatarFile, setAvatarFile] = useState<File | undefined>(undefined);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(initialData?.avatar || null);
+  const [avatarFile, setAvatarFile] = useState<File | undefined>(undefined);
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        email: initialData.email || '',
+        role: initialData.role || 'user',
+        avatar: initialData.avatar || '',
+        password: '',
+      });
+      setAvatarPreview(initialData.avatar || null);
+    }
+  }, [initialData]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(e, { ...formData, avatarFile }); // Truyền avatarFile vào onSubmit để sử dụng
-    console.log('Form submitted with avatarFile:', avatarFile); // Đảm bảo avatarFile được đọc
+    onSubmit(e, { ...formData, avatarFile });
+    console.log('Form submitted with data:', { ...formData, avatarFile });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -28,18 +42,28 @@ const EditUserPage = ({ onSubmit, onCancel, initialData }: EditUserProps) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setAvatarFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result as string);
-        setFormData((prev) => ({ ...prev, avatar: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
-    }
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, password: e.target.value }));
   };
+
+ const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setAvatarPreview(event.target.result as string);
+        setAvatarFile(file);
+        e.target.value = ""; // reset input
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+useEffect(() => {
+  console.log('avatarPreview changed:', avatarPreview);
+}, [avatarPreview]);
 
   return (
     <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-6 relative">
@@ -69,6 +93,20 @@ const EditUserPage = ({ onSubmit, onCancel, initialData }: EditUserProps) => {
           />
         </div>
         <div>
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Password (leave blank to keep unchanged)
+          </label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            value={formData.password}
+            onChange={handlePasswordChange}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+            placeholder="Nhập password mới (tùy chọn)"
+          />
+        </div>
+        <div>
           <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Role
           </label>
@@ -79,8 +117,8 @@ const EditUserPage = ({ onSubmit, onCancel, initialData }: EditUserProps) => {
             onChange={handleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
           >
-            <option value="Employee">Employee</option>
-            <option value="Admin">Admin</option>
+            <option value="student">student</option>
+            <option value="admin">admin</option>
           </select>
         </div>
         <div>
@@ -105,10 +143,11 @@ const EditUserPage = ({ onSubmit, onCancel, initialData }: EditUserProps) => {
             </button>
             {avatarPreview && (
               <Image
+                key={avatarPreview}
                 src={avatarPreview}
                 alt="Avatar Preview"
-                width={64} // Đặt kích thước cố định
-                height={64} // Đặt kích thước cố định
+                width={64}
+                height={64}
                 className="object-cover rounded-full"
               />
             )}

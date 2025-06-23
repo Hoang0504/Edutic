@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import EditVocabulary from './edit/EditVocabulary';
+import AddVocabulary from './add/AddVocabulary';
 
 interface Vocabulary {
   id: number;
@@ -16,6 +17,17 @@ interface Vocabulary {
   created_at: string;
 }
 
+interface VocabularyInput {
+  word: string;
+  image_url: string;
+  pronunciation: string;
+  speech_audio_url: string;
+  meaning: string;
+  example: string;
+  context: string;
+  status: string;
+}
+
 const Flashcard = () => {
   const router = useRouter();
   const [filterKeyword, setFilterKeyword] = useState('');
@@ -24,6 +36,7 @@ const Flashcard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [selectedVocabulary, setSelectedVocabulary] = useState<Vocabulary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -83,15 +96,150 @@ const Flashcard = () => {
     router.push('/admin/login');
   };
 
-  const handleViewReview = (vocab: Vocabulary) => {
-    setSelectedVocabulary(vocab);
-    setIsDetailModalVisible(true);
+ const handleAddVocabulary = async (data: VocabularyInput) => {
+  setLoading(true);
+  setError(null);
+  try {
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('word', data.word);
+    formData.append('pronunciation', data.pronunciation || '');
+    formData.append('meaning', data.meaning || '');
+    formData.append('example', data.example);
+    formData.append('context', data.context);
+    formData.append('status', data.status);
+
+    // Chuyển đổi file ảnh thành base64
+    if (data.image_url && data.image_url.startsWith('blob:')) {
+      const response = await fetch(data.image_url);
+      const blob = await response.blob();
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      const base64Image = await new Promise<string>((resolve) => {
+        reader.onloadend = () => resolve(reader.result as string);
+      });
+      formData.append('image', base64Image.split(',')[1]); // Lấy phần base64 sau dấu phẩy
+    }
+
+    // Chuyển đổi file audio thành base64
+    if (data.speech_audio_url && data.speech_audio_url.startsWith('blob:')) {
+      const response = await fetch(data.speech_audio_url);
+      const blob = await response.blob();
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      const base64Audio = await new Promise<string>((resolve) => {
+        reader.onloadend = () => resolve(reader.result as string);
+      });
+      formData.append('audio', base64Audio.split(',')[1]); // Lấy phần base64 sau dấu phẩy
+    }
+
+    console.log('Sending FormData:', Array.from(formData.entries())); // Debug
+    const response = await fetch('http://localhost:3000/api/vocabularies/create', { // Cập nhật endpoint
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error('Server response:', text);
+      throw new Error(`HTTP error! status: ${response.status}, message: ${text || 'No response'}`);
+    }
+
+    const newVocab = await response.json();
+    setVocabularies((prev) => [newVocab, ...prev]);
+    setIsAddModalVisible(false);
+  } catch (err) {
+    setError(err instanceof Error ? err.message : 'Unknown error');
+    console.error('Add vocabulary error:', err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+  const handleViewReview = async (vocab: Vocabulary) => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/api/admin/vocabularies/${vocab.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch vocabulary details');
+      const data = await response.json();
+      setSelectedVocabulary(data);
+      setIsDetailModalVisible(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSaveVocabulary = (e: React.FormEvent, data: Vocabulary) => {
+  const handleSaveVocabulary = async (e: React.FormEvent, data: Vocabulary) => {
     e.preventDefault();
-    console.log('Vocabulary saved:', data);
-    setIsDetailModalVisible(false);
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/api/admin/vocabularies/${data.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          word: data.word,
+          image_url: data.image_url,
+          pronunciation: data.pronunciation,
+          speech_audio_url: data.speech_audio_url,
+          meaning: data.meaning,
+          example: data.example,
+          context: data.context,
+          status: data.status,
+        }),
+      });
+      if (!response.ok) throw new Error('Failed to update vocabulary');
+      const updatedData = await response.json();
+      setVocabularies((prev) =>
+        prev.map((vocab) => (vocab.id === updatedData.id ? updatedData : vocab))
+      );
+      setIsDetailModalVisible(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteVocabulary = async (id: number) => {
+    if (!window.confirm("Are you sure you want to delete this vocabulary?")) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/api/admin/vocabularies/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status === 204) {
+        setVocabularies((prev) => prev.filter((vocab) => vocab.id !== id));
+        setIsDetailModalVisible(false);
+      } else if (response.status === 404) {
+        setError("Vocabulary not found");
+      } else if (response.status === 400) {
+        setError("Invalid ID");
+      } else {
+        const data = await response.json();
+        setError(data.message || "Failed to delete vocabulary");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (loading) return <div className="text-center p-4">Loading...</div>;
@@ -105,6 +253,12 @@ const Flashcard = () => {
         </div>
         <div className="flex justify-between items-center p-4">
           <div className="flex space-x-4 items-center">
+            <button
+              className="flex items-center bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              onClick={() => setIsAddModalVisible(true)}
+            >
+              Add Vocabulary
+            </button>
             <input
               type="text"
               placeholder="Search by keyword..."
@@ -192,6 +346,12 @@ const Flashcard = () => {
                       >
                         View & Review
                       </button>
+                      <button
+                        className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                        onClick={() => handleDeleteVocabulary(vocab.id)}
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -218,6 +378,16 @@ const Flashcard = () => {
         </div>
       </main>
 
+      {isAddModalVisible && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-6 w-1/3 relative">
+            <AddVocabulary
+              onSave={handleAddVocabulary}
+              onCancel={() => setIsAddModalVisible(false)}
+            />
+          </div>
+        </div>
+      )}
       <div className={isDetailModalVisible ? 'modal-content' : 'hidden'}>
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-6 w-1/3 relative">

@@ -29,7 +29,8 @@ export default function PomodoroModal({ isOpen, onClose }: PomodoroModalProps) {
     resetTimer,
     startFocusMode,
     stopFocusMode,
-    formatTime
+    formatTime,
+    openStudyModal
   } = usePomodoro();
 
   const handleStart = () => {
@@ -55,6 +56,10 @@ export default function PomodoroModal({ isOpen, onClose }: PomodoroModalProps) {
   const handleFocusMode = () => {
     startFocusMode();
     onClose();
+    // Open study modal after a short delay to allow focus mode to start
+    setTimeout(() => {
+      openStudyModal();
+    }, 100);
   };
 
   const handleCloseAttempt = () => {

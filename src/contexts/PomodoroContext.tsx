@@ -12,6 +12,8 @@ interface PomodoroContextType {
   isActive: boolean;
   isBreakModalOpen: boolean;
   isBreakEndModalOpen: boolean;
+  isStudyModalOpen: boolean;
+  isStudyEndModalOpen: boolean;
   
   // Input values (in minutes)
   studyMinutes: number;
@@ -31,6 +33,11 @@ interface PomodoroContextType {
   closeBreakEndModal: () => void;
   startNextSession: () => void;
   extendBreak: () => void;
+  openStudyModal: () => void;
+  closeStudyModal: () => void;
+  closeStudyEndModal: () => void;
+  startBreakFromStudy: () => void;
+  continueStudyingFromEnd: () => void;
   
   // Utilities
   formatTime: (seconds: number) => string;
@@ -47,6 +54,8 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
   const [isActive, setIsActive] = useState(false);
   const [isBreakModalOpen, setIsBreakModalOpen] = useState(false);
   const [isBreakEndModalOpen, setIsBreakEndModalOpen] = useState(false);
+  const [isStudyModalOpen, setIsStudyModalOpen] = useState(false);
+  const [isStudyEndModalOpen, setIsStudyEndModalOpen] = useState(false);
   
   // Input values for customization (in minutes)
   const [studyMinutes, setStudyMinutes] = useState(25);
@@ -59,7 +68,10 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
     // Timer runs when:
     // 1. Normal running state (isRunning && isActive)
     // 2. OR when break modal is open AND isRunning (user can pause break timer)
-    const shouldRun = (isRunning && isActive) || (isBreakModalOpen && isRunning && !isStudyMode);
+    // 3. OR when study modal is open AND isRunning (user can pause study timer)
+    const shouldRun = (isRunning && isActive) || 
+                     (isBreakModalOpen && isRunning && !isStudyMode) ||
+                     (isStudyModalOpen && isRunning && isStudyMode);
 
     if (shouldRun && currentTime > 0) {
       interval = setInterval(() => {
@@ -67,12 +79,10 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
       }, 1000);
     } else if (currentTime === 0 && isActive) {
       if (isStudyMode) {
-        // Study time finished - show break modal and start break countdown
-        setIsBreakModalOpen(true);
-        setIsStudyMode(false);
-        setCurrentTime(breakTime);
-        // Keep running for break countdown
-        setIsRunning(true);
+        // Study time finished - show study end modal
+        setIsStudyModalOpen(false);
+        setIsStudyEndModalOpen(true);
+        setIsRunning(false);
       } else {
         // Break time finished - show break end modal
         setIsBreakModalOpen(false);
@@ -84,7 +94,7 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isRunning, currentTime, isStudyMode, studyTime, breakTime, isActive, isBreakModalOpen, isBreakEndModalOpen]);
+  }, [isRunning, currentTime, isStudyMode, studyTime, breakTime, isActive, isBreakModalOpen, isBreakEndModalOpen, isStudyModalOpen, isStudyEndModalOpen]);
 
   // Update times when input values change
   useEffect(() => {
@@ -129,9 +139,17 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
     setIsRunning(false);
     setIsBreakModalOpen(false);
     setIsBreakEndModalOpen(false);
+    setIsStudyModalOpen(false);
+    setIsStudyEndModalOpen(false);
     // Reset to initial state
     setIsStudyMode(true);
     setCurrentTime(studyTime);
+    
+    // Stop music when focus mode ends
+    if (typeof window !== 'undefined') {
+      // Dispatch custom event to stop music
+      window.dispatchEvent(new CustomEvent('stopStudyMusic'));
+    }
   };
 
   const startBreakMode = () => {
@@ -175,6 +193,34 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
     setIsBreakModalOpen(true);
   };
 
+  const openStudyModal = () => {
+    setIsStudyModalOpen(true);
+  };
+
+  const closeStudyModal = () => {
+    setIsStudyModalOpen(false);
+  };
+
+  const closeStudyEndModal = () => {
+    setIsStudyEndModalOpen(false);
+  };
+
+  const startBreakFromStudy = () => {
+    setIsStudyEndModalOpen(false);
+    setIsStudyMode(false);
+    setCurrentTime(breakTime);
+    setIsRunning(true);
+    setIsBreakModalOpen(true);
+  };
+
+  const continueStudyingFromEnd = () => {
+    setIsStudyEndModalOpen(false);
+    setIsStudyMode(true);
+    setCurrentTime(studyTime);
+    setIsRunning(true);
+    setIsStudyModalOpen(true);
+  };
+
   const value: PomodoroContextType = {
     studyTime,
     breakTime,
@@ -184,6 +230,8 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
     isActive,
     isBreakModalOpen,
     isBreakEndModalOpen,
+    isStudyModalOpen,
+    isStudyEndModalOpen,
     studyMinutes,
     breakMinutes,
     setStudyMinutes,
@@ -199,6 +247,11 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
     closeBreakEndModal,
     startNextSession,
     extendBreak,
+    openStudyModal,
+    closeStudyModal,
+    closeStudyEndModal,
+    startBreakFromStudy,
+    continueStudyingFromEnd,
     formatTime
   };
 

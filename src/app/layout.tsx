@@ -2,14 +2,17 @@ import { Metadata } from "next";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-import RightSidebar from "@/components/layout/RightSideBar";
-import BreakEndModal from "@/components/features/BreakEndModal";
-import MusicBreakModal from "@/components/features/MusicBreakModal";
-
+import { MusicProvider } from "@/contexts/MusicContext";
 import { PomodoroProvider } from "@/contexts/PomodoroContext";
 import { RouteLoadingProvider } from "@/context/RouteLoadingContext";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import BreakEndModal from "@/components/features/BreakEndModal";
+import MusicBreakModal from "@/components/features/MusicBreakModal";
+import StudyModal from "@/components/features/StudyModal";
+import StudyEndModal from "@/components/features/StudyEndModal";
+import MusicControl from "@/components/features/MusicControl";
+import RightSidebar from "@/components/layout/RightSideBar";
 
 export const metadata: Metadata = {
   title: "Edutic - Ôn là trúng, Luyện là đạt",
@@ -23,14 +26,23 @@ function AppContent({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header user={user} />
-      <main className="flex-1 py-6">{children}</main>
-      <Footer />
-      <RightSidebar />
-      <MusicBreakModal />
-      <BreakEndModal />
-    </div>
+    <RouteLoadingProvider>
+      <MusicProvider>
+        <PomodoroProvider>
+          <div className="min-h-screen bg-gray-50 flex flex-col">
+            <Header user={user} />
+            <main className="flex-1 py-6">{children}</main>
+            <Footer />
+            <RightSidebar />
+            <MusicBreakModal />
+            <BreakEndModal />
+            <StudyModal />
+            <StudyEndModal />
+            <MusicControl />
+          </div>
+        </PomodoroProvider>
+      </MusicProvider>
+    </RouteLoadingProvider>
   );
 }
 
@@ -43,14 +55,7 @@ export default function DashboardLayout({
     <html lang="vi">
       <body>
         <Toaster position="top-right" />
-
-        {/* <div className="min-h-screen bg-gray-50 flex flex-col"> */}
-        <RouteLoadingProvider>
-          <PomodoroProvider>
-            <AppContent>{children}</AppContent>
-          </PomodoroProvider>
-        </RouteLoadingProvider>
-        {/* </div> */}
+        <AppContent>{children}</AppContent>
       </body>
     </html>
   );

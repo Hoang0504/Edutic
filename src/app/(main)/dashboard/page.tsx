@@ -1,6 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import API_ENDPOINTS from "@/constants/api";
+import { FlashcardOverviewProps } from "@/interfaces";
+import FlashcardOverview from "@/components/features/flashcards/FlashcardOverview";
 
 export default function DashboardPage() {
   const [targetScores, setTargetScores] = useState({
@@ -10,16 +14,18 @@ export default function DashboardPage() {
     writing: 150,
   });
   const [isEditingTarget, setIsEditingTarget] = useState(false);
+  const [flashcardOverviewData, setFlashcardOverviewData] =
+    useState<FlashcardOverviewProps | null>(null);
 
-  const flashcardSchedule = [
-    { day: "t2", date: "24/12/2015", completed: true },
-    { day: "t3", date: "25/12/2025", completed: false },
-    { day: "t4", date: "26/12/2025", completed: false },
-    { day: "t5", date: "27/12/2025", completed: false },
-    { day: "t6", date: "28/12/2025", completed: false },
-    { day: "t7", date: "29/12/2025", completed: false },
-    { day: "CN", date: "30/12/2025", completed: false },
-  ];
+  // const flashcardSchedule = [
+  //   { day: "t2", date: "24/12/2015", completed: true },
+  //   { day: "t3", date: "25/12/2025", completed: false },
+  //   { day: "t4", date: "26/12/2025", completed: false },
+  //   { day: "t5", date: "27/12/2025", completed: false },
+  //   { day: "t6", date: "28/12/2025", completed: false },
+  //   { day: "t7", date: "29/12/2025", completed: false },
+  //   { day: "CN", date: "30/12/2025", completed: false },
+  // ];
 
   const recentTests = [
     { id: 1, title: "Bài 1", status: "Xem chi tiết" },
@@ -36,18 +42,52 @@ export default function DashboardPage() {
     { id: 6, title: "Bài 1", status: "Xem chi tiết" },
   ];
 
-  const updateTargetScore = (skill: keyof typeof targetScores, value: number) => {
-    setTargetScores(prev => ({
+  const fetchFlashcardOverview = async () => {
+    try {
+      const res = await fetch(API_ENDPOINTS.VOCABULARIES.DASHBOARD("2"));
+      const result = await res.json();
+
+      console.log(result);
+
+      if (!res.ok || !result) {
+        setFlashcardOverviewData(null);
+      } else {
+        const mappedData: FlashcardOverviewProps = {
+          approvedCount: result.approved_vocab_count,
+          userCount: result.user_vocab_count,
+          dueCount: result.user_vocab_due_count,
+          contextGroups: result.context_groups,
+        };
+
+        setFlashcardOverviewData(mappedData);
+      }
+    } catch (error) {
+      console.error("Error fetching flashcard overview:", error);
+      setFlashcardOverviewData(null);
+    }
+  };
+
+  const updateTargetScore = (
+    skill: keyof typeof targetScores,
+    value: number
+  ) => {
+    setTargetScores((prev) => ({
       ...prev,
-      [skill]: value
+      [skill]: value,
     }));
   };
+
+  useEffect(() => {
+    fetchFlashcardOverview();
+  }, []);
 
   return (
     <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 pb-20 sm:pb-6">
       {/* User */}
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Xin chào, Tên</h1>
+        <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
+          Xin chào, Tên
+        </h1>
       </div>
 
       {/* Flash card gần nhất */}
@@ -58,7 +98,9 @@ export default function DashboardPage() {
             <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-2">
               Flash card gần nhất
             </h3>
-            <p className="text-xl sm:text-2xl font-bold text-gray-900">5 ngày</p>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900">
+              5 ngày
+            </p>
           </div>
 
           {/*Ngày ôn tập */}
@@ -66,12 +108,16 @@ export default function DashboardPage() {
             <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-2">
               Ngày ôn tập
             </h3>
-            <p className="text-base sm:text-lg font-semibold text-gray-900">ngày cụ thể</p>
+            <p className="text-base sm:text-lg font-semibold text-gray-900">
+              ngày cụ thể
+            </p>
           </div>
 
           {/* Target Score */}
           <div className="text-center">
-            <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-2">Target</h3>
+            <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-2">
+              Target
+            </h3>
             {isEditingTarget ? (
               <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-1 sm:gap-2">
@@ -80,7 +126,9 @@ export default function DashboardPage() {
                     <input
                       type="number"
                       value={targetScores.listening}
-                      onChange={(e) => updateTargetScore('listening', Number(e.target.value))}
+                      onChange={(e) =>
+                        updateTargetScore("listening", Number(e.target.value))
+                      }
                       className="w-full px-1 sm:px-2 py-1 border border-gray-300 rounded text-center text-xs sm:text-sm"
                       min="0"
                       max="495"
@@ -91,7 +139,9 @@ export default function DashboardPage() {
                     <input
                       type="number"
                       value={targetScores.speaking}
-                      onChange={(e) => updateTargetScore('speaking', Number(e.target.value))}
+                      onChange={(e) =>
+                        updateTargetScore("speaking", Number(e.target.value))
+                      }
                       className="w-full px-1 sm:px-2 py-1 border border-gray-300 rounded text-center text-xs sm:text-sm"
                       min="0"
                       max="200"
@@ -102,7 +152,9 @@ export default function DashboardPage() {
                     <input
                       type="number"
                       value={targetScores.reading}
-                      onChange={(e) => updateTargetScore('reading', Number(e.target.value))}
+                      onChange={(e) =>
+                        updateTargetScore("reading", Number(e.target.value))
+                      }
                       className="w-full px-1 sm:px-2 py-1 border border-gray-300 rounded text-center text-xs sm:text-sm"
                       min="0"
                       max="495"
@@ -113,7 +165,9 @@ export default function DashboardPage() {
                     <input
                       type="number"
                       value={targetScores.writing}
-                      onChange={(e) => updateTargetScore('writing', Number(e.target.value))}
+                      onChange={(e) =>
+                        updateTargetScore("writing", Number(e.target.value))
+                      }
                       className="w-full px-1 sm:px-2 py-1 border border-gray-300 rounded text-center text-xs sm:text-sm"
                       min="0"
                       max="200"
@@ -152,9 +206,9 @@ export default function DashboardPage() {
         <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">
           flashcard của tôi
         </h2>
-        
+
         {/* Calendar  */}
-        <div className="grid grid-cols-7 gap-2 sm:gap-4 mb-6">
+        {/* <div className="grid grid-cols-7 gap-2 sm:gap-4 mb-6">
           {flashcardSchedule.map((item, index) => (
             <div
               key={index}
@@ -186,7 +240,8 @@ export default function DashboardPage() {
               )}
             </div>
           ))}
-        </div>
+        </div> */}
+        <FlashcardOverview data={flashcardOverviewData} />
       </div>
 
       {/* Kết quả thi gần nhất */}
@@ -194,19 +249,21 @@ export default function DashboardPage() {
         <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6 p-2 bg-purple-100 border border-purple-300 rounded-lg inline-block">
           Kết quả thi gần nhất
         </h2>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4">
           {recentTests.map((test) => (
             <div
               key={test.id}
               className="bg-gray-400 rounded-lg p-4 sm:p-6 text-center text-white hover:bg-gray-500 transition-colors cursor-pointer"
             >
-              <h3 className="text-base sm:text-lg font-semibold mb-2">{test.title}</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">
+                {test.title}
+              </h3>
               <p className="text-xs sm:text-sm">{test.status}</p>
             </div>
           ))}
         </div>
-        
+
         <div className="text-center">
           <button className="text-blue-500 hover:text-blue-700 font-medium text-sm sm:text-base">
             Xem tất cả &gt;&gt;&gt;
@@ -219,19 +276,21 @@ export default function DashboardPage() {
         <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">
           Đề thi mới nhất
         </h2>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
           {latestTests.map((test) => (
             <div
               key={test.id}
               className="bg-gray-400 rounded-lg p-4 sm:p-6 text-center text-white hover:bg-gray-500 transition-colors cursor-pointer"
             >
-              <h3 className="text-base sm:text-lg font-semibold mb-2">{test.title}</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">
+                {test.title}
+              </h3>
               <p className="text-xs sm:text-sm">{test.status}</p>
             </div>
           ))}
         </div>
-        
+
         <div className="text-center">
           <button className="text-blue-500 hover:text-blue-700 font-medium text-sm sm:text-base">
             Xem tất cả &gt;&gt;&gt; :

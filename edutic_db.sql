@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: localhost:3306
--- Thời gian đã tạo: Th6 18, 2025 lúc 04:39 PM
+-- Thời gian đã tạo: Th6 22, 2025 lúc 05:06 PM
 -- Phiên bản máy phục vụ: 8.4.3
 -- Phiên bản PHP: 8.3.16
 
@@ -46,11 +46,12 @@ CREATE TABLE `ai_feedbacks` (
 
 CREATE TABLE `ai_generated_contents` (
   `id` int NOT NULL,
-  `content_type` enum('question','part','exam','vocabulary') DEFAULT NULL,
+  `type` enum('question','part','exam','vocabulary','dictionary') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `content_id` varchar(255) DEFAULT NULL,
   `generated_text` text,
   `prompt_used` text,
-  `created_at` datetime NOT NULL
+  `created_at` datetime NOT NULL,
+  `slug` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -172,7 +173,17 @@ CREATE TABLE `flashcards` (
 --
 
 INSERT INTO `flashcards` (`id`, `user_id`, `vocabulary_id`, `mastery_level`, `next_review_date`, `review_count`, `created_at`, `updated_at`) VALUES
-(3, 1, 3, 1, '2025-06-09 22:32:48', 1, '2025-06-08 15:29:30', '2025-06-08 15:29:30');
+(5, 2, 6, NULL, '2025-06-21 13:52:52', NULL, '2025-06-21 20:05:10', '2025-06-21 20:05:10'),
+(6, 2, 7, NULL, '2025-06-20 13:52:59', NULL, '2025-06-21 20:05:10', '2025-06-21 20:05:10'),
+(7, 2, 8, NULL, NULL, NULL, '2025-06-21 20:05:10', '2025-06-21 20:05:10'),
+(8, 2, 9, NULL, NULL, NULL, '2025-06-21 20:05:10', '2025-06-21 20:05:10'),
+(9, 2, 10, NULL, NULL, NULL, '2025-06-21 20:05:10', '2025-06-21 20:05:10'),
+(10, 2, 11, NULL, NULL, NULL, '2025-06-21 20:05:10', '2025-06-21 20:05:10'),
+(11, 2, 12, NULL, NULL, NULL, '2025-06-21 20:05:10', '2025-06-21 20:05:10'),
+(12, 2, 13, NULL, NULL, NULL, '2025-06-21 20:05:10', '2025-06-21 20:05:10'),
+(13, 2, 14, NULL, NULL, NULL, '2025-06-21 20:05:10', '2025-06-21 20:05:10'),
+(14, 2, 15, NULL, NULL, NULL, '2025-06-21 20:05:10', '2025-06-21 20:05:10'),
+(15, 2, 16, NULL, NULL, NULL, '2025-06-21 20:05:10', '2025-06-21 20:05:10');
 
 -- --------------------------------------------------------
 
@@ -385,9 +396,9 @@ CREATE TABLE `users` (
   `is_email_verified` tinyint(1) DEFAULT NULL,
   `auth_provider` enum('email','google') DEFAULT NULL,
   `auth_provider_id` varchar(255) DEFAULT NULL,
-  `role` enum('student','admin') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL,
+  `role` enum('student','admin') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT 'student',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `last_login` datetime DEFAULT NULL,
   `uuid` char(36) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -397,7 +408,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `email`, `password_hash`, `name`, `avatar`, `is_email_verified`, `auth_provider`, `auth_provider_id`, `role`, `created_at`, `updated_at`, `last_login`, `uuid`) VALUES
-(1, NULL, NULL, 'hoang', NULL, NULL, NULL, NULL, NULL, '2025-06-08 01:55:14', '2025-06-08 01:55:14', NULL, 'ugejkghbkjg94393'),
+(1, NULL, NULL, 'hoang', NULL, NULL, NULL, NULL, 'student', '2025-06-08 01:55:14', '2025-06-08 01:55:14', NULL, 'ugejkghbkjg94393'),
 (2, 'hoang@gmail.com', '$2b$10$8dYLg8xGhvGj6S23QKeUVu/iG6Z4u7n5X2OseI9z1.2GPaYVF9C4a', 'hoang', NULL, 0, 'email', NULL, 'student', '2025-06-16 22:37:36', '2025-06-16 22:37:36', NULL, 'c282a6be-20c2-4ec1-a90c-0f4b28538879');
 
 -- --------------------------------------------------------
@@ -539,7 +550,7 @@ CREATE TABLE `vocabularies` (
   `meaning` text,
   `example` text,
   `context` varchar(255) DEFAULT NULL,
-  `status` enum('pending','approved','rejected') DEFAULT NULL,
+  `status` enum('pending','approved','rejected') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT 'pending',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -549,7 +560,29 @@ CREATE TABLE `vocabularies` (
 --
 
 INSERT INTO `vocabularies` (`id`, `word`, `image_url`, `pronunciation`, `speech_audio_url`, `meaning`, `example`, `context`, `status`, `created_at`, `updated_at`) VALUES
-(3, 'efficient', NULL, NULL, NULL, NULL, 'She designed an efficient workflow that eliminated unnecessary steps and reduced errors.', NULL, 'pending', '2025-06-08 15:29:30', '2025-06-08 15:29:30');
+(4, 'efficient', NULL, NULL, NULL, 'hiệu quả', 'She designed an efficient workflow...', 'business', 'pending', '2025-06-20 13:51:25', '2025-06-20 13:51:25'),
+(5, 'She’s eating', NULL, NULL, NULL, 'Cô ấy đang ăn', 'She’s eating in a picnic area.', 'casual', 'pending', '2025-06-21 18:55:02', '2025-06-21 18:55:02'),
+(6, 'again', 'again.jpg', '/əˈɡen/', 'again.mp3', 'Once more; another time.', 'Can you say that again?', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(7, 'clean', 'clean.jpg', '/kliːn/', 'clean.mp3', 'Free from dirt or mess.', 'She likes to keep her room clean.', 'keeping things tidy', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(8, 'close', 'close.png', '/kloʊz/', 'close.mp3', 'To shut something.', 'Please close the door when you leave.', 'closing a door or window', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(9, 'cold', 'cold.jpg', '/koʊld/', 'cold.mp3', 'Having a low temperature.', 'It’s very cold outside today.', 'describing situations', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(10, 'come', 'come.jpg', '/kʌm/', 'come.mp3', 'To move toward someone or something.', 'Can you come here for a minute?', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(11, 'doctor', 'doctor.png', '/ˈdɒktər/', 'doctor.mp3', 'A person who treats sick people.', 'The doctor gave me medicine.', 'visiting a clinic', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(12, 'dream', 'dream.jpg', '/driːm/', 'dream.mp3', 'Thoughts during sleep or a goal.', 'I had a strange dream last night.', 'talking about sleep or goals', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(13, 'give', 'give.jpg', '/ɡɪv/', 'give.mp3', 'To offer something to someone.', 'She will give you a gift.', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(14, 'make', 'make.jpg', '/meɪk/', 'make.mp3', 'To create or build something.', 'Let’s make a cake together.', 'creating something', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(15, 'peace', 'peace.jpg', '/piːs/', 'peace.mp3', 'A state of calm and no war.', 'The world needs more peace.', 'talking about concepts', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(16, 'popular', 'popular.jpg', '/ˈpɒpjələr/', 'popular.mp3', 'Liked by many people.', 'He is very popular at school.', 'describing situations', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(17, 'right', 'right.jpg', '/raɪt/', 'right.mp3', 'Correct or a direction.', 'You were right about the answer.', 'location or direction', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(18, 'small', 'small.jpg', '/smɔːl/', 'small.mp3', 'Not large in size.', 'That’s a small dog.', 'talking about concepts', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(19, 'so', 'so.jpg', '/soʊ/', 'so.mp3', 'To a great extent.', 'I am so happy today.', 'expressing meaning', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(20, 'some', 'some.jpg', '/sʌm/', 'some.mp3', 'An unspecified amount.', 'I have some cookies to share.', 'talking about concepts', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(21, 'stone', 'stone.jpg', '/stoʊn/', 'stone.mp3', 'A hard, solid material.', 'He threw a stone into the lake.', 'describing situations', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(22, 'such', 'such.png', '/sʌtʃ/', 'such.mp3', 'Of a kind or degree.', 'It was such a nice day.', 'giving emphasis', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(23, 'there', 'there.jpg', '/ðer/', 'there.mp3', 'In that place.', 'The book is over there.', 'location or direction', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(24, 'think', 'think.jpg', '/θɪŋk/', 'think.mp3', 'To use your mind to consider.', 'I think it will rain today.', 'expressing meaning', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(25, 'wait', 'wait.jpg', '/weɪt/', 'wait.mp3', 'To stay until something happens.', 'Please wait for your turn.', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(26, 'The man', NULL, NULL, NULL, 'Người đàn ông', 'The man is standing in the snow beside a car.', 'business', 'pending', '2025-06-21 23:19:08', '2025-06-21 23:19:08');
 
 --
 -- Chỉ mục cho các bảng đã đổ
@@ -565,7 +598,9 @@ ALTER TABLE `ai_feedbacks`
 -- Chỉ mục cho bảng `ai_generated_contents`
 --
 ALTER TABLE `ai_generated_contents`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `slug` (`slug`),
+  ADD KEY `idx_ai_generated_contents_slug` (`slug`);
 
 --
 -- Chỉ mục cho bảng `answers`
@@ -823,7 +858,7 @@ ALTER TABLE `feedbacks`
 -- AUTO_INCREMENT cho bảng `flashcards`
 --
 ALTER TABLE `flashcards`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT cho bảng `leader_boards`
@@ -895,7 +930,7 @@ ALTER TABLE `translations`
 -- AUTO_INCREMENT cho bảng `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT cho bảng `user_answers`
@@ -937,7 +972,7 @@ ALTER TABLE `user_settings`
 -- AUTO_INCREMENT cho bảng `vocabularies`
 --
 ALTER TABLE `vocabularies`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- Ràng buộc đối với các bảng kết xuất

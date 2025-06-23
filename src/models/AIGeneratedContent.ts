@@ -5,40 +5,44 @@ import {
   DataType,
   PrimaryKey,
   AutoIncrement,
-  ForeignKey,
   // BelongsTo,
 } from "sequelize-typescript";
-import { User } from "./User";
+
+interface AIGeneratedContentCreationAttributes {
+  id?: number; // Optional vì là auto-increment
+  slug: string;
+  type: "flashcard" | "correction" | "explanation";
+  content_id: number;
+  generated_text?: string;
+  prompt_used: string;
+  created_at?: Date; // Optional vì có thể tự động tạo
+}
 
 @Table({ tableName: "ai_generated_contents", timestamps: false })
-export class AIGeneratedContent extends Model {
+export class AIGeneratedContent extends Model<
+  AIGeneratedContent,
+  AIGeneratedContentCreationAttributes
+> {
   @PrimaryKey
   @AutoIncrement
   @Column
   id!: number;
 
-  @ForeignKey(() => User)
-  @Column
-  user_id!: number;
-
-  // @BelongsTo(() => User)
-  // user?: User;
-
   @Column(DataType.STRING)
-  input!: string;
-
-  @Column(DataType.TEXT)
-  output!: string;
+  slug!: string;
 
   @Column(DataType.ENUM("flashcard", "correction", "explanation"))
   type!: "flashcard" | "correction" | "explanation";
 
-  @Column(DataType.ENUM("pending", "success", "failed"))
-  status!: "pending" | "success" | "failed";
+  @Column(DataType.NUMBER)
+  content_id!: number;
+
+  @Column(DataType.TEXT)
+  generated_text!: string;
+
+  @Column(DataType.TEXT)
+  prompt_used!: string;
 
   @Column(DataType.DATE)
   created_at!: Date;
-
-  @Column(DataType.DATE)
-  updated_at!: Date;
 }

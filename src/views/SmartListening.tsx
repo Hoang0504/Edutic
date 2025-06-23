@@ -46,7 +46,7 @@ function SmartListening({ audio_id }: { audio_id: string }) {
   };
 
   const fetchData = async (audio_id: string) => {
-    setRouteLoading(pathname, true);
+    setRouteLoading(pathname ?? `/luyen-nghe-thong-minh/${audio_id}`, true);
     try {
       const res = await fetch(`/api/listening-transcripts/${audio_id}`);
       const result = await res.json();
@@ -63,7 +63,7 @@ function SmartListening({ audio_id }: { audio_id: string }) {
       setNotFound(true);
       setData(null);
     } finally {
-      setRouteLoading(pathname, false);
+      setRouteLoading(pathname ?? `/luyen-nghe-thong-minh/${audio_id}`, false);
     }
   };
 
@@ -73,7 +73,7 @@ function SmartListening({ audio_id }: { audio_id: string }) {
     }
   }, [audio_id]);
 
-  if (routeLoading[pathname]) {
+  if (routeLoading[pathname ?? `/luyen-nghe-thong-minh/${audio_id}`]) {
     return <FullPageLoading />;
   }
 

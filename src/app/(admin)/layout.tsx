@@ -12,14 +12,14 @@ interface AdminLayoutProps {
   children?: ReactNode;
 }
 
-type MenuKey = 'dashboard' | 'users' | 'exams' | 'flashcard' | 'listenningTranscript';
+type MenuKey = 'dashboard' | 'users' | 'exams' | 'vocabulary' | 'listenningTranscript';
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [selectedMenu, setSelectedMenu] = useState<MenuKey>('dashboard');
 
   const handleMenuSelect = (menuKey: string) => {
     // Chuyển string thành MenuKey, chỉ chấp nhận các giá trị hợp lệ
-    if (['dashboard', 'users', 'exams','flashcard','listenningTranscript'].includes(menuKey)) {
+    if (['dashboard', 'users', 'exams','vocabulary','listenningTranscript'].includes(menuKey)) {
       setSelectedMenu(menuKey as MenuKey);
     }
   };
@@ -41,7 +41,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         return (
           <Exams />
         );
-      case 'flashcard':
+      case 'vocabulary':
         return (
           <Flashcard />
         );

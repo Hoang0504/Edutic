@@ -1,18 +1,8 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import EditVocabulary from './edit/EditVocabulary';
 
-// Định nghĩa kiểu cho flashcard
-interface Flashcard {
-  user_id: number;
-  vocabulary_id: number;
-  mastery_level: number;
-  next_review_date: string;
-  review_count: number;
-}
-
-// Định nghĩa kiểu cho vocabulary
 interface Vocabulary {
   id: number;
   word: string;
@@ -24,7 +14,6 @@ interface Vocabulary {
   context: string;
   status: string;
   created_at: string;
-  
 }
 
 const Flashcard = () => {
@@ -33,15 +22,31 @@ const Flashcard = () => {
   const [filterContext, setFilterContext] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
+  const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [selectedVocabulary, setSelectedVocabulary] = useState<Vocabulary | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data
-  const mockVocabularies: Vocabulary[] = [
-    { id: 1, word: 'Hello', image_url: '', pronunciation: '/həˈloʊ/', speech_audio_url: '', meaning: 'A greeting', example: 'Hello, how are you?', context: 'Daily conversation', status: 'Active', created_at: '2025-06-01' },
-    { id: 2, word: 'Meeting', image_url: '', pronunciation: '/ˈmiːtɪŋ/', speech_audio_url: '', meaning: 'A gathering', example: 'We have a meeting at 10 AM.', context: 'Meetings', status: 'Inactive', created_at: '2025-06-02' },
-    { id: 3, word: 'Travel', image_url: '', pronunciation: '/ˈtrævəl/', speech_audio_url: '', meaning: 'To journey', example: 'I love to travel abroad.', context: 'Travel', status: 'Active', created_at: '2025-06-03' },
-  ];
+  useEffect(() => {
+    const fetchVocabularies = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`http://localhost:3000/api/admin/vocabularies?page=${currentPage}&limit=10`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) throw new Error('Failed to fetch vocabularies');
+        const data = await response.json();
+        setVocabularies(data.data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchVocabularies();
+  }, [currentPage]);
 
   const handleKeywordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilterKeyword(e.target.value);
@@ -58,8 +63,7 @@ const Flashcard = () => {
     setCurrentPage(1);
   };
 
-  // Lọc vocabulary theo keyword, context, và status
-  const filteredVocabularies = mockVocabularies.filter((vocab: Vocabulary) => {
+  const filteredVocabularies = vocabularies.filter((vocab: Vocabulary) => {
     const keywordLower = filterKeyword.toLowerCase();
     const wordLower = vocab.word.toLowerCase();
     const contextMatch = filterContext === 'All' || vocab.context === filterContext;
@@ -86,15 +90,18 @@ const Flashcard = () => {
 
   const handleSaveVocabulary = (e: React.FormEvent, data: Vocabulary) => {
     e.preventDefault();
-    console.log('Vocabulary saved:', data); // Debug
+    console.log('Vocabulary saved:', data);
     setIsDetailModalVisible(false);
   };
+
+  if (loading) return <div className="text-center p-4">Loading...</div>;
+  if (error) return <div className="text-center p-4 text-red-500">Error: {error}</div>;
 
   return (
     <div className="min-h-screen flex flex-col">
       <header className="bg-[#006494] text-white">
         <div className="text-center py-2">
-          <h1 className="text-2xl font-semibold">Flashcard Management</h1>
+          <h1 className="text-2xl font-semibold">Vocabulary Management</h1>
         </div>
         <div className="flex justify-between items-center p-4">
           <div className="flex space-x-4 items-center">
@@ -211,16 +218,14 @@ const Flashcard = () => {
         </div>
       </main>
 
-      <div className="modal">
-        <div className={isDetailModalVisible ? 'modal-content' : 'hidden'}>
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-6 w-1/3 relative">
-              <EditVocabulary
-                initialData={selectedVocabulary}
-                onSave={handleSaveVocabulary}
-                onCancel={handleModalCancel}
-              />
-            </div>
+      <div className={isDetailModalVisible ? 'modal-content' : 'hidden'}>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-6 w-1/3 relative">
+            <EditVocabulary
+              initialData={selectedVocabulary}
+              onSave={handleSaveVocabulary}
+              onCancel={handleModalCancel}
+            />
           </div>
         </div>
       </div>

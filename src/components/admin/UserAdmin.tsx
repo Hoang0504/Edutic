@@ -1,13 +1,11 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import AddUserPage from '@/components/admin/add/AddUser';
 import EditUserPage from '@/components/admin/edit/EditUser';
 import UserProfile from '@/components/admin/UserProfile';
 
-
-// Định nghĩa kiểu cho user
 interface User {
   id: number;
   email: string;
@@ -19,24 +17,41 @@ const UserAdmin = () => {
   const router = useRouter();
   const [filterName, setFilterName] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [users, setUsers] = useState<User[]>([]);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isEditUserModalVisible, setIsEditUserModalVisible] = useState(false);
   const [isProfileVisible, setIsProfileVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data
-  const mockData: User[] = [
-    { id: 1, email: 'user1@example.com', avatar: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', role: 'Admin' },
-    { id: 2, email: 'user2@example.com', avatar: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', role: 'User' },
-    { id: 3, email: 'user3@example.com', avatar: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', role: 'Moderator' },
-  ];
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`http://localhost:3000/api/admin/users?page=${currentPage}&limit=10`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) throw new Error('Failed to fetch users');
+        const data = await response.json();
+        console.log('Fetched users:', data);
+        setUsers(data.data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+  }, [currentPage]);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilterName(e.target.value);
     setCurrentPage(1);
   };
 
-  const filteredUsers = mockData.filter((user: User) => {
+  const filteredUsers = users.filter((user: User) => {
     const searchLower = filterName.toLowerCase();
     const emailLower = user.email.toLowerCase();
     return emailLower.includes(searchLower);
@@ -79,12 +94,14 @@ const UserAdmin = () => {
     setIsAddModalVisible(false);
   };
 
+  const handleUpdateUser = (e: React.FormEvent, formData: { email: string; role: string; avatar: string; avatarFile?: File }) => {
+    e.preventDefault();
+    console.log('Update User submitted', formData, formData.avatarFile);
+    setIsEditUserModalVisible(false);
+  };
 
-const handleUpdateUser = (e: React.FormEvent, formData: { email: string; role: string; avatar: string; avatarFile?: File }) => {
-  e.preventDefault();
-  console.log('Update User submitted', formData, formData.avatarFile); // Xử lý avatarFile nếu cần
-  setIsEditUserModalVisible(false);
-};
+  if (loading) return <div className="text-center p-4">Loading...</div>;
+  if (error) return <div className="text-center p-4 text-red-500">Error: {error}</div>;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -165,7 +182,7 @@ const handleUpdateUser = (e: React.FormEvent, formData: { email: string; role: s
                         className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
                         onClick={() => handleEditUser(user)}
                       >
-                        Edit 
+                        Edit
                       </button>
                       <button
                         className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"

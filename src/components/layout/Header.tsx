@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { BellIcon, UserCircleIcon, ChevronDownIcon, DocumentTextIcon, CalendarIcon, AcademicCapIcon, BookOpenIcon, ClipboardDocumentListIcon, Bars3Icon, XMarkIcon, PlayIcon, PauseIcon, StopIcon } from '@heroicons/react/24/outline';
+import { BellIcon, UserCircleIcon, ChevronDownIcon, DocumentTextIcon, CalendarIcon, AcademicCapIcon, BookOpenIcon, ClipboardDocumentListIcon, Bars3Icon, XMarkIcon, PlayIcon, PauseIcon, StopIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
 import { usePomodoro } from '@/contexts/PomodoroContext';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
@@ -385,6 +385,13 @@ export default function Header({ user }: HeaderProps) {
                       className="block px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Thông tin cá nhân
+                    </a>
+                    <a
+                      href="/add-music"
+                      className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      <MusicalNoteIcon className="h-4 w-4 mr-2" />
+                      Thêm nhạc
                     </a>
                     <a
                       href="/settings"

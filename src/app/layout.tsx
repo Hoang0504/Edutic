@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { Toaster } from "react-hot-toast";
+import { AuthProvider } from "@/contexts/AuthContext";
 import "./globals.css";
 
 import { MusicProvider } from "@/contexts/MusicContext";
@@ -26,23 +27,25 @@ function AppContent({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <RouteLoadingProvider>
-      <MusicProvider>
-        <PomodoroProvider>
-          <div className="min-h-screen bg-gray-50 flex flex-col">
-            <Header user={user} />
-            <main className="flex-1 py-6">{children}</main>
-            <Footer />
-            <RightSidebar />
-            <MusicBreakModal />
-            <BreakEndModal />
-            <StudyModal />
-            <StudyEndModal />
-            <MusicControl />
-          </div>
-        </PomodoroProvider>
-      </MusicProvider>
-    </RouteLoadingProvider>
+    <AuthProvider>
+      <RouteLoadingProvider>
+        <MusicProvider>
+          <PomodoroProvider>
+            <div className="min-h-screen bg-gray-50 flex flex-col">
+              <Header user={user} />
+              <main className="flex-1 py-6">{children}</main>
+              <Footer />
+              <RightSidebar />
+              <MusicBreakModal />
+              <BreakEndModal />
+              <StudyModal />
+              <StudyEndModal />
+              <MusicControl />
+            </div>
+          </PomodoroProvider>
+        </MusicProvider>
+      </RouteLoadingProvider>
+    </AuthProvider>
   );
 }
 

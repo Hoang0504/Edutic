@@ -41,9 +41,7 @@ export function useExcelProcessor() {
       // Process based on exam type
       let result: ExamImportData;
       
-      if (examType === 'speaking_practice' || examType === 'writing_practice') {
-        result = processPracticeExam(workbook, examType, file.name);
-      } else if (examType === 'full_toeic') {
+      if (examType === 'full_toeic') {
         result = processFullToeicExam(workbook, file.name);
       } else if (examType === 'speaking' || examType === 'writing') {
         result = processStructuredExam(workbook, examType, file.name);
@@ -116,21 +114,13 @@ export function useExcelProcessor() {
     }
   };
 
-  const determineExamType = (fileName: string, sheetNames: string[], workbook: XLSX.WorkBook): 'speaking_practice' | 'writing_practice' | 'full_toeic' | 'speaking' | 'writing' => {
+  const determineExamType = (fileName: string, sheetNames: string[], workbook: XLSX.WorkBook): 'full_toeic' | 'speaking' | 'writing' => {
     // Check file name first
     if (fileName.toLowerCase().includes('speaking')) {
-      // Check if it's practice or actual test
-      if (fileName.toLowerCase().includes('practice')) {
-        return 'speaking_practice';
-      }
       return 'speaking';
     }
     
     if (fileName.toLowerCase().includes('writing')) {
-      // Check if it's practice or actual test
-      if (fileName.toLowerCase().includes('practice')) {
-        return 'writing_practice';
-      }
       return 'writing';
     }
     
@@ -144,98 +134,8 @@ export function useExcelProcessor() {
       return 'full_toeic';
     }
     
-    // Check for practice types by sheet content
-    if (sheetNames.includes('Topics') || sheetNames[0] === 'Topics') {
-      // Assume speaking practice as default for topics
-      return 'speaking_practice';
-    }
-    
-    // Default to speaking practice for single sheet files
-    return 'speaking_practice';
-  };
-
-  const processPracticeExam = (workbook: XLSX.WorkBook, examType: 'speaking_practice' | 'writing_practice', fileName: string): ExamImportData => {
-    const config = EXAM_TYPE_CONFIGS[examType];
-    if (!config) throw new Error('Cấu hình exam type không hợp lệ');
-
-    // Try different possible sheet names
-    const possibleSheetNames = ['Topics', 'Sheet1', 'Questions', workbook.SheetNames[0]];
-    let worksheet = null;
-
-    for (const name of possibleSheetNames) {
-      if (workbook.Sheets[name]) {
-        worksheet = workbook.Sheets[name];
-        break;
-      }
-    }
-
-    if (!worksheet) {
-      throw new Error('Không tìm thấy sheet dữ liệu trong file Excel');
-    }
-
-    const jsonData = XLSX.utils.sheet_to_json(worksheet) as any[];
-    
-    if (jsonData.length === 0) {
-      throw new Error('Sheet không có dữ liệu');
-    }
-
-    // Create exam info
-    const exam: ExamInfo = {
-      title: `${config.description} - ${new Date().toLocaleDateString()}`,
-      description: config.description,
-      difficulty: 'medium' as const,
-      estimated_time: config.defaultDuration,
-      exam_type: examType
-    };
-
-    // Create single part for practice exam
-    const part: ExamPart = {
-      part_number: 1,
-      title: config.questionStructure[0].title,
-      description: config.description,
-      instruction: config.description,
-      difficulty_level: 'medium',
-      time_limit: config.defaultDuration,
-      type: 'reading' // Practice types use 'reading' as default
-    };
-
-    // Process questions
-    const questions: ExamQuestion[] = [];
-    const translations: Translation[] = [];
-
-    jsonData.forEach((row, index) => {
-      const questionNumber = index + 1;
-      
-      // Try different possible column names
-      const content = row['Topic'] || row['Question'] || row['Content'] || row['Đề bài'] || '';
-      const vietnameseTranslation = row['Vietnamese'] || row['Tiếng Việt'] || row['Bản dịch'] || '';
-
-      if (content) {
-        questions.push({
-          part_number: 1,
-          question_number: questionNumber,
-          content: content.toString(),
-          question_type: 'essay' as const, // Use essay for practice types
-          vietnamese_translation: vietnameseTranslation?.toString() || ''
-        });
-
-        if (vietnameseTranslation) {
-          translations.push({
-            question_id: questionNumber,
-            type: 'question',
-            vietnamese_text: vietnameseTranslation.toString()
-          });
-        }
-      }
-    });
-
-    return {
-      exam,
-      parts: [part],
-      questions,
-      answers: [], // No answers for practice exams
-      translations
-    };
+    // Default to full_toeic for unrecognized files
+    return 'full_toeic';
   };
 
   const processFullToeicExam = (workbook: XLSX.WorkBook, fileName: string): ExamImportData => {
@@ -403,7 +303,7 @@ export function useExcelProcessor() {
       part_number: row.part_number,
       question_number: row.question_number,
       content: row.content,
-      question_type: examType === 'speaking' ? 'essay' : 'essay', // Both use essay type
+      question_type: examType, // Use 'speaking' or 'writing' directly
       vietnamese_translation: row.vietnamese_translation || ''
     }));
 

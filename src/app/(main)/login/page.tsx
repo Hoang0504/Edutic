@@ -5,10 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import AuthCard from "@/components/auth/AuthCard";
 import AuthInput from "@/components/auth/AuthInput";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { login, isLoggedIn } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -16,6 +18,13 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isLoggedIn) {
+      router.push("/");
+    }
+  }, [isLoggedIn, router]);
 
   useEffect(() => {
     const message = searchParams?.get("message");
@@ -69,7 +78,13 @@ export default function LoginPage() {
         return;
       }
 
-      router.push("/");
+      // Success - use the login function from context
+      if (data.success && data.data.token && data.data.user) {
+        login(data.data.token, data.data.user);
+      } else {
+        setErrors({ submit: "Login response is missing required data" });
+      }
+
     } catch (error) {
       console.error("Login error:", error);
       setErrors({ submit: "An error occurred. Please try again." });
@@ -82,6 +97,11 @@ export default function LoginPage() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  // Show loading if already logged in (will redirect)
+  if (isLoggedIn) {
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  }
 
   return (
     <AuthCard title="Sign in to your account">

@@ -66,3 +66,4 @@ export default withErrorHandler(
   handler,
   "Có lỗi xảy ra trong quá trình đăng ký"
 );
+ 

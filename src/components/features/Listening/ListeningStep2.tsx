@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 
+import FlashcardPopover from "./FlashcardPopover";
+import SelectableTranscript from "./SelectableTranscript";
+import { getContextLine } from "@/utils";
+
 export default function ListeningStep2({
   transcript,
   transcriptVi,
@@ -10,8 +14,29 @@ export default function ListeningStep2({
   transcriptVi?: string;
 }) {
   const [openSection, setOpenSection] = useState<"en" | "vi" | null>(null);
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(
+    null
+  );
+
   const handleToggle = (section: "en" | "vi") => {
     setOpenSection((prev) => (prev === section ? null : section));
+  };
+
+  const handleSelectWord = (
+    word: string,
+    position: { x: number; y: number }
+  ) => {
+    console.log("Selected word:", word);
+    console.log("Popup position:", position);
+    setSelectedWord(word);
+    setPosition(position);
+    // Show FlashcardPopover here or trigger state
+  };
+
+  const handleClosePopover = () => {
+    setSelectedWord(null);
+    setPosition(null);
   };
 
   return (
@@ -26,8 +51,20 @@ export default function ListeningStep2({
             Hiện / Ẩn Transcript Tiếng Anh
           </button>
           {openSection === "en" && (
-            <div className="mt-2 bg-gray-50 p-4 rounded text-gray-800 whitespace-pre-wrap border">
-              {transcript.replace(/\\n/g, "\n")}
+            <div className="relative">
+              <SelectableTranscript
+                text={transcript}
+                onSelectWord={handleSelectWord}
+              />
+
+              {selectedWord && position && (
+                <FlashcardPopover
+                  word={selectedWord}
+                  contextEn={getContextLine(transcript, selectedWord)}
+                  position={position}
+                  onClose={handleClosePopover}
+                />
+              )}
             </div>
           )}
         </div>

@@ -1,9 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import { applyCors } from "./middleware/cors";
 
 type HandlerFunction = (
   req: NextApiRequest,
   res: NextApiResponse
-) => Promise<void>;
+) => Promise<void | NextApiResponse<unknown>>;
 
 export function withErrorHandler(
   handler: HandlerFunction,
@@ -11,6 +12,7 @@ export function withErrorHandler(
 ) {
   return async function (req: NextApiRequest, res: NextApiResponse) {
     try {
+      await applyCors(req, res); // Apply CORS middleware
       await handler(req, res);
     } catch (error: Error | unknown) {
       console.error("API Error:", error);
@@ -22,7 +24,7 @@ export function withErrorHandler(
             process.env.NODE_ENV === "development" && error instanceof Error
               ? error.message
               : undefined,
-        }
+        },
       });
     }
   };

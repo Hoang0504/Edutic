@@ -8,9 +8,11 @@ import {
   AutoIncrement,
   ForeignKey,
   BelongsTo,
+  HasMany,
 } from "sequelize-typescript";
 import { Part } from "./Part";
 import type { Part as PartType } from "./Part";
+import type { ListeningTranscript as ListeningTranscriptType } from "./ListeningTranscript";
 
 interface AudioFileCreationAttributes {
   id?: number; // Optional vì là auto-increment
@@ -43,6 +45,9 @@ export class AudioFile extends Model<AudioFile, AudioFileCreationAttributes> {
 
   @Column(DataType.DATE)
   created_at!: Date;
+
+  @HasMany(() => require("./ListeningTranscript").ListeningTranscript)
+  listeningTranscripts!: ListeningTranscriptType[];
 
   @BelongsTo(() => require("./Part").Part)
   question!: PartType;

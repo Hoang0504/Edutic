@@ -15,6 +15,8 @@ import {
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import ConfirmModal from "../ui/ConfirmModal";
+import { useAuth } from "@/contexts/AuthContext";
+import { usePomodoro } from "@/contexts/PomodoroContext";
 
 interface HeaderProps {
   user?: {

@@ -42,6 +42,16 @@ const AdminSidebar = ({ onMenuSelect }: AdminSidebarProps) => {
       icon: <DocumentTextIcon className="h-5 w-5" />,
     },
     {
+      key: "exams_2",
+      label: "Exams 2",
+      icon: <DocumentTextIcon className="h-5 w-5" />,
+    },
+    {
+      key: "exams_import",
+      label: "Exams Import",
+      icon: <DocumentTextIcon className="h-5 w-5" />,
+    },
+    {
       key: "flashcard",
       label: "Flashcard",
       icon: <ClipboardIcon className="h-5 w-5" />,

@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+// import { useEffect, useState } from "react";
 
 import API_ENDPOINTS from "@/constants/api";
 import { FlashcardOverviewProps } from "@/interfaces";
 import FlashcardOverview from "@/components/features/flashcards/FlashcardOverview";
+import { useState, useEffect } from "react";
 
-export default function DashboardPage() {
+function DashboardPage() {
   const [targetScores, setTargetScores] = useState({
     listening: 400,
     speaking: 150,
@@ -16,16 +17,6 @@ export default function DashboardPage() {
   const [isEditingTarget, setIsEditingTarget] = useState(false);
   const [flashcardOverviewData, setFlashcardOverviewData] =
     useState<FlashcardOverviewProps | null>(null);
-
-  // const flashcardSchedule = [
-  //   { day: "t2", date: "24/12/2015", completed: true },
-  //   { day: "t3", date: "25/12/2025", completed: false },
-  //   { day: "t4", date: "26/12/2025", completed: false },
-  //   { day: "t5", date: "27/12/2025", completed: false },
-  //   { day: "t6", date: "28/12/2025", completed: false },
-  //   { day: "t7", date: "29/12/2025", completed: false },
-  //   { day: "CN", date: "30/12/2025", completed: false },
-  // ];
 
   const recentTests = [
     { id: 1, title: "Bài 1", status: "Xem chi tiết" },
@@ -300,3 +291,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+export default DashboardPage;

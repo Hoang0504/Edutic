@@ -1,12 +1,17 @@
 "use client";
+
 import React, { ReactNode, useState } from "react";
+
 import AdminSidebar from "@/components/admin/AdminSidebar";
-import { Squares2X2Icon } from "@heroicons/react/24/outline";
-import { AdminProvider } from "@/context/AdminContext";
 import UserAdmin from "@/components/admin/UserAdmin";
 import Exams from "@/components/admin/Exams";
 import Flashcard from "@/components/admin/Flashcard";
+import AdminExamsPage from "@/components/admin/exams/AdminExamsPage";
+import ExamImportPage from "@/components/admin/import/ExamImportPage";
 import ListeningTranscript from "@/components/admin/ListeningTranscript";
+
+import { AdminProvider } from "@/context/AdminContext";
+import { Squares2X2Icon } from "@heroicons/react/24/outline";
 
 interface AdminLayoutProps {
   children?: ReactNode;
@@ -16,6 +21,8 @@ type MenuKey =
   | "dashboard"
   | "users"
   | "exams"
+  | "exams_2"
+  | "exams_import"
   | "flashcard"
   | "listenningTranscript";
 
@@ -29,6 +36,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         "dashboard",
         "users",
         "exams",
+        "exams_2",
+        "exams_import",
         "flashcard",
         "listenningTranscript",
       ].includes(menuKey)
@@ -50,6 +59,10 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         return <UserAdmin />;
       case "exams":
         return <Exams />;
+      case "exams_2":
+        return <AdminExamsPage />;
+      case "exams_import":
+        return <ExamImportPage />;
       case "flashcard":
         return <Flashcard />;
       case "listenningTranscript":

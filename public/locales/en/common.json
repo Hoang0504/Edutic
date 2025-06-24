@@ -1,0 +1,44 @@
+{
+  "header": {
+    "home": "Home",
+    "dashboard": "Dashboard", 
+    "studyMode": "Study Mode",
+    "examMode": "Exam Mode",
+    "flashcards": "My Flashcards",
+    "exams": "Online Exams",
+    "addMusic": "Add Music",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout",
+    "timer": "Timer",
+    "study": "Study",
+    "break": "Break",
+    "pause": "Pause",
+    "continue": "Continue",
+    "stop": "Stop",
+    "musicControl": "Music Control",
+    "language": "Language"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "all": "All",
+    "unread": "Unread", 
+    "read": "Read",
+    "empty": "No notifications"
+  },
+  "timer": {
+    "studySession": "Study Session",
+    "breakTime": "Break Time",
+    "continueStudy": "Continue Study",
+    "close": "Close"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  }
+} 

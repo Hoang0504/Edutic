@@ -1,306 +1,432 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { 
   CloudArrowUpIcon, 
   MusicalNoteIcon, 
-  TrashIcon, 
-  PlusIcon
+  CheckCircleIcon,
+  ExclamationCircleIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 
-interface MusicFile {
+interface FormData {
+  title: string;
+  file: File | null;
+  duration: number; // in seconds
+}
+
+interface FormErrors {
+  title?: string;
+  file?: string;
+}
+
+interface ExistingMusic {
   id: string;
-  file?: File;
   title: string;
   artist: string;
   duration: string;
-  isUploading: boolean;
-  uploadProgress: number;
-  isValid: boolean;
-  error?: string;
-  isExisting?: boolean; // To differentiate between existing and new songs
+  fileUrl: string;
+  source: 'public' | 'upload';
 }
 
 export default function AddMusicPage() {
-  // Initialize with existing songs
-  const [musicFiles, setMusicFiles] = useState<MusicFile[]>([
-    {
-      id: '1',
-      title: 'Blue Boi',
-      artist: 'LAKEY INSPIRED',
-      duration: '1:36',
-      isUploading: false,
-      uploadProgress: 100,
-      isValid: true,
-      isExisting: true
-    },
-    {
-      id: '2',
-      title: 'Chill Day',
-      artist: 'LAKEY INSPIRED',
-      duration: '2:54',
-      isUploading: false,
-      uploadProgress: 100,
-      isValid: true,
-      isExisting: true
-    },
-    {
-      id: '3',
-      title: 'In My Dreams',
-      artist: 'LAKEY INSPIRED',
-      duration: '2:30',
-      isUploading: false,
-      uploadProgress: 100,
-      isValid: true,
-      isExisting: true
-    }
-  ]);
+  const [formData, setFormData] = useState<FormData>({
+    title: '',
+    file: null,
+    duration: 0
+  });
   
-  const [dragActive, setDragActive] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const supportedFormats = ['mp3', 'wav', 'ogg', 'm4a'];
-  const maxFileSize = 50 * 1024 * 1024; // 50MB
+  // Existing music list
+  const [existingMusic, setExistingMusic] = useState<ExistingMusic[]>([]);
+  const [loadingMusic, setLoadingMusic] = useState(true);
 
-  const validateFile = (file: File): { isValid: boolean; error?: string } => {
-    const extension = file.name.split('.').pop()?.toLowerCase();
-    
-    if (!extension || !supportedFormats.includes(extension)) {
-      return { 
-        isValid: false, 
-        error: `Định dạng không hỗ trợ. Chỉ chấp nhận: ${supportedFormats.join(', ')}` 
-      };
+  // Load existing music from API
+  useEffect(() => {
+    const fetchMusic = async () => {
+      try {
+        const response = await fetch('/api/music');
+        const data = await response.json();
+        if (data.music) {
+          setExistingMusic(data.music);
+        }
+      } catch (error) {
+        console.error('Error fetching music:', error);
+      } finally {
+        setLoadingMusic(false);
+      }
+    };
+
+    fetchMusic();
+  }, []);
+
+  const validateTitle = (title: string): string | undefined => {
+    if (title.length < 3) {
+      return 'Tiêu đề phải có ít nhất 3 ký tự';
     }
-    
-    if (file.size > maxFileSize) {
-      return { 
-        isValid: false, 
-        error: 'File quá lớn. Kích thước tối đa: 50MB' 
-      };
+    if (title.length > 100) {
+      return 'Tiêu đề không được vượt quá 100 ký tự';
     }
-    
-    return { isValid: true };
+    return undefined;
   };
 
-  const generateId = () => Math.random().toString(36).substr(2, 9);
+  const validateFile = (file: File | null): string | undefined => {
+    if (!file) {
+      return 'Vui lòng chọn file nhạc';
+    }
+    
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    if (extension !== 'mp3') {
+      return 'Chỉ chấp nhận file .mp3';
+    }
+    
+    return undefined;
+  };
 
-  const extractMetadata = (file: File): Promise<{ title: string; artist: string; duration: string }> => {
-    return new Promise((resolve) => {
+  const extractDuration = (file: File): Promise<number> => {
+    return new Promise((resolve, reject) => {
       const audio = new Audio();
       const url = URL.createObjectURL(file);
       
       audio.onloadedmetadata = () => {
-        const duration = Math.floor(audio.duration);
-        const minutes = Math.floor(duration / 60);
-        const seconds = duration % 60;
-        const formattedDuration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-        
-        // Extract filename without extension as title
-        const title = file.name.replace(/\.[^/.]+$/, '');
-        
+        const duration = Math.floor(audio.duration) || 0;
         URL.revokeObjectURL(url);
-        resolve({
-          title,
-          artist: 'Unknown Artist',
-          duration: formattedDuration
-        });
+        resolve(duration);
       };
       
       audio.onerror = () => {
         URL.revokeObjectURL(url);
-        resolve({
-          title: file.name.replace(/\.[^/.]+$/, ''),
-          artist: 'Unknown Artist',
-          duration: '0:00'
-        });
+        reject(new Error('Không thể đọc file âm thanh'));
       };
       
       audio.src = url;
     });
   };
 
-  const handleFiles = async (files: FileList) => {
-    const newFiles: MusicFile[] = [];
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const title = e.target.value;
+    setFormData(prev => ({ ...prev, title }));
     
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const validation = validateFile(file);
-      const metadata = await extractMetadata(file);
-      
-      const musicFile: MusicFile = {
-        id: generateId(),
-        file,
-        title: metadata.title,
-        artist: metadata.artist,
-        duration: metadata.duration,
-        isUploading: false,
-        uploadProgress: 0,
-        isValid: validation.isValid,
-        error: validation.error,
-        isExisting: false
-      };
-      
-      newFiles.push(musicFile);
+    // Clear error when user starts typing
+    if (errors.title) {
+      setErrors(prev => ({ ...prev, title: undefined }));
     }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
     
-    setMusicFiles(prev => [...prev, ...newFiles]);
+    if (file) {
+      try {
+        const duration = await extractDuration(file);
+        setFormData(prev => ({ 
+          ...prev, 
+          file, 
+          duration 
+        }));
+        
+        // Clear file error
+        if (errors.file) {
+          setErrors(prev => ({ ...prev, file: undefined }));
+        }
+      } catch (error) {
+        setErrors(prev => ({ 
+          ...prev, 
+          file: 'File âm thanh không hợp lệ' 
+        }));
+        setFormData(prev => ({ 
+          ...prev, 
+          file: null, 
+          duration: 0 
+        }));
+      }
+    } else {
+      setFormData(prev => ({ 
+        ...prev, 
+        file: null, 
+        duration: 0 
+      }));
+    }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const formatDuration = (seconds: number): string => {
+    if (seconds === 0) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const removeMusic = async (id: string) => {
+    try {
+      const music = existingMusic.find(m => m.id === id);
+      if (!music || music.source !== 'upload') {
+        return;
+      }
+
+      // Extract filename from fileUrl
+      const filename = music.fileUrl.split('/').pop();
+      if (!filename) {
+        return;
+      }
+
+      const response = await fetch(`/api/delete-music?filename=${encodeURIComponent(filename)}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        // Refresh music list from server
+        const musicResponse = await fetch('/api/music');
+        const musicData = await musicResponse.json();
+        if (musicData.music) {
+          setExistingMusic(musicData.music);
+        }
+      } else {
+        const error = await response.json();
+        console.error('Failed to delete music:', error.error);
+      }
+    } catch (error) {
+      console.error('Error deleting music:', error);
+    }
+  };
+
+  const generateId = () => Math.random().toString(36).substr(2, 9);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setDragActive(false);
     
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFiles(e.dataTransfer.files);
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragActive(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragActive(false);
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      handleFiles(e.target.files);
-    }
-  };
-
-  const removeFile = (id: string) => {
-    setMusicFiles(prev => prev.filter(file => file.id !== id));
-  };
-
-  const simulateUpload = async (fileId: string) => {
-    const fileIndex = musicFiles.findIndex(f => f.id === fileId);
-    if (fileIndex === -1) return;
-
-    // Simulate upload progress
-    for (let progress = 0; progress <= 100; progress += 10) {
-      await new Promise(resolve => setTimeout(resolve, 200));
-      setMusicFiles(prev => 
-        prev.map(file => 
-          file.id === fileId 
-            ? { ...file, uploadProgress: progress, isUploading: true }
-            : file
-        )
-      );
+    // Validate form
+    const titleError = validateTitle(formData.title);
+    const fileError = validateFile(formData.file);
+    
+    if (titleError || fileError) {
+      setErrors({
+        title: titleError,
+        file: fileError
+      });
+      return;
     }
 
-    // Mark as completed
-    setMusicFiles(prev => 
-      prev.map(file => 
-        file.id === fileId 
-          ? { ...file, isUploading: false, uploadProgress: 100 }
-          : file
-      )
-    );
-  };
-
-  const uploadAll = async () => {
     setIsUploading(true);
-    const validFiles = musicFiles.filter(f => f.isValid && f.uploadProgress === 0 && !f.isExisting);
+    setUploadSuccess(false);
     
-    for (const file of validFiles) {
-      await simulateUpload(file.id);
-    }
-    
-    setIsUploading(false);
-  };
+    try {
+      // Upload file to server
+      const formDataToSend = new FormData();
+      formDataToSend.append('file', formData.file!);
+      formDataToSend.append('title', formData.title);
 
-  const validNewFiles = musicFiles.filter(f => f.isValid && !f.isExisting);
-  const pendingUploads = validNewFiles.filter(f => f.uploadProgress === 0);
+      const response = await fetch('/api/upload-music', {
+        method: 'POST',
+        body: formDataToSend
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Upload failed');
+      }
+      
+      setUploadSuccess(true);
+      
+      // Refresh music list from server
+      const musicResponse = await fetch('/api/music');
+      const musicData = await musicResponse.json();
+      if (musicData.music) {
+        setExistingMusic(musicData.music);
+      }
+      
+      // Reset form
+      setFormData({
+        title: '',
+        file: null,
+        duration: 0
+      });
+      
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      
+    } catch (error) {
+      console.error('Upload failed:', error);
+      setErrors({
+        file: error instanceof Error ? error.message : 'Lỗi khi upload file'
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <MusicalNoteIcon className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Kho nhạc của tôi</h1>
-              <p className="text-gray-600 mt-1">Quản lý thư viện nhạc của bạn</p>
-            </div>
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="p-2 bg-blue-100 rounded-lg">
+            <MusicalNoteIcon className="w-6 h-6 text-blue-600" />
           </div>
-          
-          {/* Add Music Button */}
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <PlusIcon className="w-5 h-5" />
-            <span>Thêm nhạc</span>
-          </button>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Thêm nhạc mới</h1>
+            <p className="text-gray-600 mt-1">Tải lên nhạc học tập của bạn</p>
+          </div>
         </div>
       </div>
 
-      {/* Hidden File Input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        multiple
-        accept="audio/*"
-        onChange={handleFileSelect}
-        className="hidden"
-      />
-
-      {/* Upload Progress */}
-      {pendingUploads.length > 0 && (
-        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-blue-900">
-              {pendingUploads.length} file chờ tải lên
-            </h3>
-            <button
-              onClick={uploadAll}
-              disabled={isUploading}
-              className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isUploading ? 'Đang tải...' : 'Tải lên tất cả'}
-            </button>
-          </div>
-          
-          {/* Show pending files with progress */}
-          <div className="space-y-2">
-            {pendingUploads.map((file) => (
-              <div key={file.id} className="flex items-center justify-between text-sm">
-                <span className="text-gray-700 truncate flex-1 mr-4">{file.title}</span>
-                {file.isUploading ? (
-                  <div className="flex items-center space-x-2 min-w-[100px]">
-                    <div className="w-16 bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${file.uploadProgress}%` }}
-                      />
-                    </div>
-                    <span className="text-xs text-gray-500">{file.uploadProgress}%</span>
-                  </div>
-                ) : (
-                  <span className="text-gray-500 text-xs">Chờ tải lên</span>
-                )}
-              </div>
-            ))}
-          </div>
+      {/* Success Message */}
+      {uploadSuccess && (
+        <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center space-x-3">
+          <CheckCircleIcon className="w-5 h-5 text-green-600 flex-shrink-0" />
+          <p className="text-green-800">Tải lên nhạc thành công!</p>
         </div>
       )}
 
-      {/* Music Table */}
+      {/* Form */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Title Input */}
+          <div>
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+              Tiêu đề bài hát <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="title"
+              value={formData.title}
+              onChange={handleTitleChange}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                errors.title ? 'border-red-300' : 'border-gray-300'
+              }`}
+              placeholder="Nhập tiêu đề bài hát (3-100 ký tự)"
+              maxLength={100}
+            />
+            {errors.title && (
+              <div className="mt-1 flex items-center space-x-1 text-red-600 text-sm">
+                <ExclamationCircleIcon className="w-4 h-4" />
+                <span>{errors.title}</span>
+              </div>
+            )}
+            <div className="mt-1 text-xs text-gray-500">
+              {formData.title.length}/100 ký tự
+            </div>
+          </div>
+
+          {/* File Input */}
+          <div>
+            <label htmlFor="file" className="block text-sm font-medium text-gray-700 mb-2">
+              File nhạc (.mp3) <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <input
+                ref={fileInputRef}
+                type="file"
+                id="file"
+                accept=".mp3,audio/mp3"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className={`w-full border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors hover:border-blue-400 hover:bg-blue-50 ${
+                  errors.file ? 'border-red-300 bg-red-50' : formData.file ? 'border-green-300 bg-green-50' : 'border-gray-300'
+                }`}
+              >
+                {formData.file ? (
+                  <div className="space-y-2">
+                    <CheckCircleIcon className="w-8 h-8 text-green-600 mx-auto" />
+                    <p className="text-green-800 font-medium">{formData.file.name}</p>
+                    <p className="text-sm text-green-600">
+                      Kích thước: {(formData.file.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <CloudArrowUpIcon className="w-8 h-8 text-gray-400 mx-auto" />
+                    <p className="text-gray-600">Click để chọn file .mp3</p>
+                    <p className="text-sm text-gray-500">Chỉ chấp nhận file .mp3</p>
+                  </div>
+                )}
+              </div>
+            </div>
+            {errors.file && (
+              <div className="mt-1 flex items-center space-x-1 text-red-600 text-sm">
+                <ExclamationCircleIcon className="w-4 h-4" />
+                <span>{errors.file}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Duration Input (Read-only) */}
+          <div>
+            <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-2">
+              Thời lượng
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                id="duration"
+                value={`${formData.duration} giây (${formatDuration(formData.duration)})`}
+                readOnly
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
+                placeholder="Tự động tính khi tải file"
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                <MusicalNoteIcon className="w-4 h-4 text-gray-400" />
+              </div>
+            </div>
+            <div className="mt-1 text-xs text-gray-500">
+              Thời lượng sẽ được tự động tính khi bạn tải file lên
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="flex justify-end pt-4">
+            <button
+              type="submit"
+              disabled={isUploading || !formData.title || !formData.file}
+              className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isUploading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Đang tải lên...</span>
+                </div>
+              ) : (
+                'Thêm nhạc'
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Instructions */}
+      <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h3 className="font-medium text-blue-900 mb-2">Hướng dẫn:</h3>
+        <ul className="text-blue-800 text-sm space-y-1">
+          <li>• Tiêu đề phải có từ 3-100 ký tự</li>
+          <li>• Chỉ chấp nhận file .mp3</li>
+          <li>• Thời lượng sẽ được tự động tính toán</li>
+          <li>• File nhạc sẽ được sử dụng trong chế độ Pomodoro</li>
+        </ul>
+      </div>
+
+      {/* Existing Music Table */}
+      <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
           <h2 className="text-lg font-semibold text-gray-900">
-            Danh sách nhạc ({musicFiles.length})
+            Kho nhạc hiện có {!loadingMusic && `(${existingMusic.length})`}
           </h2>
         </div>
 
-        {musicFiles.length > 0 ? (
+        {loadingMusic ? (
+          <div className="text-center py-12">
+            <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-500">Đang tải danh sách nhạc...</p>
+          </div>
+        ) : existingMusic.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
@@ -314,76 +440,57 @@ export default function AddMusicPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                     Thời lượng
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                    Nguồn
+                  </th>
                   <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-                    Xóa bài hát
+                    Thao tác
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {musicFiles.map((musicFile, index) => (
-                  <tr key={musicFile.id} className="hover:bg-gray-50 transition-colors">
+                {existingMusic.map((music, index) => (
+                  <tr key={music.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {index + 1}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-3">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          musicFile.uploadProgress === 100 
-                            ? 'bg-green-100' 
-                            : musicFile.isUploading 
-                            ? 'bg-blue-100' 
-                            : musicFile.isValid 
-                            ? 'bg-gray-100' 
-                            : 'bg-red-100'
+                          music.source === 'public' ? 'bg-blue-100' : 'bg-green-100'
                         }`}>
                           <MusicalNoteIcon className={`w-4 h-4 ${
-                            musicFile.uploadProgress === 100 
-                              ? 'text-green-600' 
-                              : musicFile.isUploading 
-                              ? 'text-blue-600' 
-                              : musicFile.isValid 
-                              ? 'text-gray-600' 
-                              : 'text-red-600'
+                            music.source === 'public' ? 'text-blue-600' : 'text-green-600'
                           }`} />
                         </div>
                         <div>
                           <div className="text-sm font-medium text-gray-900">
-                            {musicFile.title}
+                            {music.title}
                           </div>
-                          {musicFile.artist && (
-                            <div className="text-sm text-gray-500">
-                              {musicFile.artist}
-                            </div>
-                          )}
-                          {!musicFile.isValid && musicFile.error && (
-                            <div className="text-xs text-red-600 mt-1">
-                              {musicFile.error}
-                            </div>
-                          )}
-                          {musicFile.isUploading && (
-                            <div className="mt-2">
-                              <div className="w-40 bg-gray-200 rounded-full h-1.5">
-                                <div 
-                                  className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
-                                  style={{ width: `${musicFile.uploadProgress}%` }}
-                                />
-                              </div>
-                            </div>
-                          )}
+                          <div className="text-sm text-gray-500">
+                            {music.artist}
+                          </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {musicFile.duration}
+                      {music.duration}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {music.source === 'public' ? 'Công khai' : 'Từ tải lên'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <button
-                        onClick={() => removeFile(musicFile.id)}
-                        className="inline-flex items-center justify-center w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-full transition-colors"
-                        title="Xóa bài hát"
-                      >
-                        <TrashIcon className="w-4 h-4" />
-                      </button>
+                      {music.source === 'upload' ? (
+                        <button
+                          onClick={() => removeMusic(music.id)}
+                          className="inline-flex items-center justify-center w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-full transition-colors"
+                          title="Xóa bài hát"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        <span className="text-gray-400 text-sm">Không thể xóa</span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -394,46 +501,9 @@ export default function AddMusicPage() {
           <div className="text-center py-12">
             <MusicalNoteIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">Chưa có bài hát nào</h3>
-            <p className="text-gray-500 mb-4">Thêm nhạc để bắt đầu xây dựng thư viện của bạn</p>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <PlusIcon className="w-5 h-5" />
-              <span>Thêm nhạc đầu tiên</span>
-            </button>
+            <p className="text-gray-500">Thêm nhạc để bắt đầu xây dựng thư viện của bạn</p>
           </div>
         )}
-      </div>
-
-      {/* Alternative Upload Area (Drag & Drop) */}
-      <div className="mt-8">
-        <div
-          className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200 ${
-            dragActive
-              ? 'border-blue-500 bg-blue-50'
-              : 'border-gray-300 hover:border-gray-400'
-          }`}
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-        >
-          <input
-            type="file"
-            multiple
-            accept="audio/*"
-            onChange={handleFileSelect}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          />
-          
-          <CloudArrowUpIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            Hoặc kéo thả file nhạc vào đây
-          </h3>
-          <p className="text-sm text-gray-500">
-            Hỗ trợ: {supportedFormats.join(', ')} • Tối đa 50MB/file
-          </p>
-        </div>
       </div>
     </div>
   );

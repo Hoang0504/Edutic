@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { BellIcon, UserCircleIcon, ChevronDownIcon, DocumentTextIcon, CalendarIcon, BookOpenIcon, ClipboardDocumentListIcon, Bars3Icon, XMarkIcon, PlayIcon, PauseIcon, StopIcon, MusicalNoteIcon, SpeakerWaveIcon, SpeakerXMarkIcon, BackwardIcon, ForwardIcon } from '@heroicons/react/24/outline';
+import { BellIcon, UserCircleIcon, ChevronDownIcon, DocumentTextIcon, CalendarIcon, BookOpenIcon, ClipboardDocumentListIcon, Bars3Icon, XMarkIcon, PlayIcon, PauseIcon, StopIcon, MusicalNoteIcon, SpeakerWaveIcon, SpeakerXMarkIcon, BackwardIcon, ForwardIcon, LanguageIcon } from '@heroicons/react/24/outline';
 import { usePomodoro } from '@/contexts/PomodoroContext';
 import { useMusic } from '@/contexts/MusicContext';
+import { useTranslation } from '@/contexts/I18nContext';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import MarqueeText from '@/components/ui/MarqueeText';
 
@@ -19,6 +20,7 @@ export default function Header({ user }: HeaderProps) {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMusicDropdownOpen, setIsMusicDropdownOpen] = useState(false);
+  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [activeNotificationTab, setActiveNotificationTab] = useState<'all' | 'unread' | 'read'>('all');
   const [showStopConfirm, setShowStopConfirm] = useState(false);
 
@@ -56,11 +58,15 @@ export default function Header({ user }: HeaderProps) {
     formatTime: formatMusicTime
   } = useMusic();
 
+  // Translation context
+  const { t, locale, changeLanguage } = useTranslation();
+
   // Refs for dropdowns
   const notificationRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const musicDropdownRef = useRef<HTMLDivElement>(null);
+  const languageDropdownRef = useRef<HTMLDivElement>(null);
 
   // Click outside handler
   useEffect(() => {
@@ -73,6 +79,9 @@ export default function Header({ user }: HeaderProps) {
       }
       if (musicDropdownRef.current && !musicDropdownRef.current.contains(event.target as Node)) {
         setIsMusicDropdownOpen(false);
+      }
+      if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target as Node)) {
+        setIsLanguageDropdownOpen(false);
       }
     }
 
@@ -211,13 +220,13 @@ export default function Header({ user }: HeaderProps) {
               href="/flashcards" 
               className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
             >
-              Flashcard của tôi
+              {t('header.flashcards', 'Flashcard của tôi')}
             </a>
             <a 
               href="/exams" 
               className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
             >
-              Đề thi online
+              {t('header.exams', 'Đề thi online')}
             </a>
           </div>
 
@@ -246,7 +255,7 @@ export default function Header({ user }: HeaderProps) {
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <BookOpenIcon className="h-5 w-5 mr-3 text-gray-400" />
-                      Flashcard của tôi
+                      {t('header.flashcards', 'Flashcard của tôi')}
                     </a>
                     <a
                       href="/exams"
@@ -254,7 +263,7 @@ export default function Header({ user }: HeaderProps) {
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <ClipboardDocumentListIcon className="h-5 w-5 mr-3 text-gray-400" />
-                      Đề thi online
+                      {t('header.exams', 'Đề thi online')}
                     </a>
                   </div>
                 </div>
@@ -267,12 +276,12 @@ export default function Header({ user }: HeaderProps) {
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                   <div className="text-sm font-medium text-gray-800">
-                    {isStudyMode ? 'Học' : 'Nghỉ'}
+                    {isStudyMode ? t('header.study', 'Học') : t('header.break', 'Nghỉ')}
                   </div>
                   <button
                     onClick={handleTimerClick}
                     className="text-lg font-bold text-blue-600 min-w-[4rem] hover:text-blue-700 cursor-pointer transition-colors"
-                    title={`Click để mở modal ${isStudyMode ? 'học' : 'nghỉ ngơi'}`}
+                    title={`Click để mở modal ${isStudyMode ? t('header.study', 'học') : 'nghỉ ngơi'}`}
                   >
                     {formatTime(currentTime)}
                   </button>
@@ -286,7 +295,7 @@ export default function Header({ user }: HeaderProps) {
                           ? 'bg-red-500 hover:bg-red-600 text-white' 
                           : 'bg-green-500 hover:bg-green-600 text-white'
                       }`}
-                      title={isRunning ? 'Tạm dừng' : 'Tiếp tục'}
+                      title={isRunning ? t('header.pause', 'Tạm dừng') : t('header.continue', 'Tiếp tục')}
                     >
                       {isRunning ? (
                         <PauseIcon className="w-4 h-4" />
@@ -298,7 +307,7 @@ export default function Header({ user }: HeaderProps) {
                     <button
                       onClick={handleStopClick}
                       className="w-7 h-7 rounded-full bg-gray-500 hover:bg-gray-600 text-white flex items-center justify-center transition-colors"
-                      title="Dừng"
+                      title={t('header.stop', 'Dừng')}
                     >
                       <StopIcon className="w-4 h-4" />
                     </button>
@@ -312,7 +321,7 @@ export default function Header({ user }: HeaderProps) {
                             ? 'bg-purple-500 hover:bg-purple-600 text-white' 
                             : 'bg-blue-500 hover:bg-blue-600 text-white'
                         }`}
-                        title="Điều khiển nhạc"
+                        title={t('header.musicControl', 'Điều khiển nhạc')}
                       >
                         <MusicalNoteIcon className="w-4 h-4" />
                       </button>
@@ -322,7 +331,7 @@ export default function Header({ user }: HeaderProps) {
                         <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                           {/* Header */}
                           <div className="px-4 py-3 border-b border-gray-200">
-                            <h3 className="text-base font-semibold text-gray-900">Điều khiển nhạc</h3>
+                            <h3 className="text-base font-semibold text-gray-900">{t('header.musicControl', 'Điều khiển nhạc')}</h3>
                           </div>
 
                           {/* Music Player Content */}
@@ -478,7 +487,7 @@ export default function Header({ user }: HeaderProps) {
                 <div className="absolute right-0 mt-2 w-80 sm:w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-w-[calc(100vw-1.5rem)] mx-3 sm:mx-0">
                   {/* Header */}
                   <div className="px-4 py-3 border-b border-gray-200">
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">Thông báo</h3>
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">{t('notifications.title', 'Thông báo')}</h3>
                   </div>
 
                   {/* Tabs */}
@@ -491,7 +500,7 @@ export default function Header({ user }: HeaderProps) {
                           : 'text-gray-500 hover:text-gray-700'
                       }`}
                     >
-                      Tất cả
+                      {t('notifications.all', 'Tất cả')}
                     </button>
                     <button
                       onClick={() => setActiveNotificationTab('unread')}
@@ -501,7 +510,7 @@ export default function Header({ user }: HeaderProps) {
                           : 'text-gray-500 hover:text-gray-700'
                       }`}
                     >
-                      Chưa đọc
+                      {t('notifications.unread', 'Chưa đọc')}
                     </button>
                     <button
                       onClick={() => setActiveNotificationTab('read')}
@@ -511,7 +520,7 @@ export default function Header({ user }: HeaderProps) {
                           : 'text-gray-500 hover:text-gray-700'
                       }`}
                     >
-                      Đã đọc
+                      {t('notifications.read', 'Đã đọc')}
                     </button>
                   </div>
 
@@ -550,9 +559,57 @@ export default function Header({ user }: HeaderProps) {
                       })
                     ) : (
                       <div className="px-4 py-8 text-center">
-                        <p className="text-gray-500 text-xs sm:text-sm">Không có thông báo nào</p>
+                        <p className="text-gray-500 text-xs sm:text-sm">{t('notifications.empty', 'Không có thông báo nào')}</p>
                       </div>
                     )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Language Selector */}
+            <div className="relative" ref={languageDropdownRef}>
+              <button
+                onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                className="flex items-center space-x-1 p-2 sm:p-1 text-gray-600 hover:text-gray-800 transition-colors"
+                title={t('header.language')}
+              >
+                <LanguageIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                <span className="text-xs font-medium hidden sm:inline">
+                  {locale === 'vi' ? 'VI' : 'EN'}
+                </span>
+              </button>
+
+              {/* Language Dropdown */}
+              {isLanguageDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                  <div className="py-1">
+                    <button
+                      onClick={() => {
+                        changeLanguage('en');
+                        setIsLanguageDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                        locale === 'en' 
+                          ? 'bg-blue-50 text-blue-600 font-medium' 
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      🇺🇸 English
+                    </button>
+                    <button
+                      onClick={() => {
+                        changeLanguage('vi');
+                        setIsLanguageDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                        locale === 'vi' 
+                          ? 'bg-blue-50 text-blue-600 font-medium' 
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      🇻🇳 Tiếng Việt
+                    </button>
                   </div>
                 </div>
               )}

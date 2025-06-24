@@ -109,32 +109,22 @@ const Flashcard = () => {
     formData.append('context', data.context);
     formData.append('status', data.status);
 
-    // Chuyển đổi file ảnh thành base64
+  
     if (data.image_url && data.image_url.startsWith('blob:')) {
       const response = await fetch(data.image_url);
       const blob = await response.blob();
-      const reader = new FileReader();
-      reader.readAsDataURL(blob);
-      const base64Image = await new Promise<string>((resolve) => {
-        reader.onloadend = () => resolve(reader.result as string);
-      });
-      formData.append('image', base64Image.split(',')[1]); // Lấy phần base64 sau dấu phẩy
+      formData.append('image', blob, 'image.jpg');
     }
 
-    // Chuyển đổi file audio thành base64
+    
     if (data.speech_audio_url && data.speech_audio_url.startsWith('blob:')) {
       const response = await fetch(data.speech_audio_url);
       const blob = await response.blob();
-      const reader = new FileReader();
-      reader.readAsDataURL(blob);
-      const base64Audio = await new Promise<string>((resolve) => {
-        reader.onloadend = () => resolve(reader.result as string);
-      });
-      formData.append('audio', base64Audio.split(',')[1]); // Lấy phần base64 sau dấu phẩy
+      formData.append('audio', blob, 'audio.mp3');
     }
 
-    console.log('Sending FormData:', Array.from(formData.entries())); // Debug
-    const response = await fetch('http://localhost:3000/api/vocabularies/create', { // Cập nhật endpoint
+    console.log('Sending FormData:', Array.from(formData.entries())); 
+    const response = await fetch('http://localhost:3000/api/admin/vocabularies', { 
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,

@@ -7,6 +7,7 @@ import UserAdmin from "@/components/admin/UserAdmin";
 import Exams from "@/components/admin/Exams";
 import Flashcard from "@/components/admin/Flashcard";
 import ListeningTranscript from "@/components/admin/ListeningTranscript";
+import Dashboard from "@/components/admin/Dashboard";
 
 interface AdminLayoutProps {
   children?: ReactNode;
@@ -28,10 +29,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     switch (selectedMenu) {
       case "dashboard":
         return (
-          <div>
-            <h1 className="text-2xl font-semibold">Dashboard</h1>
-            <p>Đây là trang quản lý Dashboard.</p>
-          </div>
+          <Dashboard />
         );
       case 'users':
         return (

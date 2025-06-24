@@ -29,7 +29,7 @@ interface UserCreationAttributes {
   auth_provider?: "email" | "google";
   auth_provider_id?: string | null; // Có thể null
   created_at?: Date;
-  role?: "user" | "admin";
+  role?: "student" | "admin";
   uuid?: string; // UUID cho người dùng
   updated_at?: Date;
   last_login?: Date | null; // Có thể null
@@ -63,7 +63,7 @@ export class User extends Model<User, UserCreationAttributes> {
   @Column(DataType.STRING)
   auth_provider_id!: string;
 
-  @Column({ type: DataType.ENUM("user", "admin"), defaultValue: "user" })
+  @Column({ type: DataType.ENUM("student", "admin"), defaultValue: "student" })
   role!: string;
 
   @Column(DataType.STRING)

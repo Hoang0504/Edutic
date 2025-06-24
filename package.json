@@ -25,6 +25,7 @@
     "dotenv": "^16.5.0",
     "form-data": "^4.0.3",
     "google-auth-library": "^9.15.1",
+    "google-one-tap": "^1.0.6",
     "jose": "^6.0.11",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.1",

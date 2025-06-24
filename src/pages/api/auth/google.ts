@@ -4,6 +4,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { User } from '@/models/User';
 import sequelize from '@/lib/db';
 import { withErrorHandler } from '@/lib/withErrorHandler';
+import { randomUUID } from 'crypto';
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -18,6 +19,13 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   await sequelize.authenticate();
 
   const { token } = req.body;
+
+  if (!token) {
+    return res.status(400).json({ 
+      success: false, 
+      data: { message: 'Token is required' } 
+    });
+  }
 
   // Verify Google token
   const ticket = await client.verifyIdToken({
@@ -35,6 +43,13 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
   const { email, name, sub: googleId } = payload;
 
+  if (!email || !name) {
+    return res.status(400).json({ 
+      success: false, 
+      data: { message: 'Required user information not available from Google' } 
+    });
+  }
+
   // Find or create user
   let user = await User.findOne({
     where: { 
@@ -47,18 +62,19 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     user = await User.create({
       email,
       name,
+      password_hash: '', // Google users don't need password
       auth_provider: 'google',
       auth_provider_id: googleId,
       is_email_verified: true, // Google emails are pre-verified
-      role: 'student',
-      uuid: crypto.randomUUID(),
+      role: 'student', // Changed from 'user' to 'student' to match database enum
+      uuid: randomUUID(),
       created_at: new Date(),
       updated_at: new Date(),
     } as any);
   } else if (user.auth_provider !== 'google') {
     return res.status(400).json({ 
       success: false,
-      data: { message: 'This email is already registered with a different authentication method' }
+      data: { message: 'Email này đã được đăng ký bằng phương thức khác. Vui lòng đăng nhập bằng email/password.' }
     });
   }
 
@@ -78,16 +94,20 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     { expiresIn: '7d' }
   );
 
+  // Set cookie
+  res.setHeader('Set-Cookie', `auth-token=${jwtToken}; HttpOnly; Path=/; Max-Age=${7 * 24 * 60 * 60}; SameSite=Strict`);
+
   return res.status(200).json({
     success: true,
     data: {
-      message: 'Login successful',
+      message: 'Đăng nhập Google thành công',
       token: jwtToken,
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role
+        role: user.role,
+        is_email_verified: user.is_email_verified
       }
     }
   });

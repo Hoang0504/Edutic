@@ -20,9 +20,10 @@ import {
 import DownloadTemplate from "./DownloadTemplate";
 import { useExcelProcessor } from "@/hooks/useExcelProcessor";
 import { ExamImportData, EXAM_TYPE_CONFIGS } from "@/types/exam";
+import { useSelectedMenu } from "@/contexts/SelectedAminMenuContext";
 
 const ExamImportPage: React.FC = () => {
-  const router = useRouter();
+  const { handleMenuSelect } = useSelectedMenu();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioFileRef = useRef<HTMLInputElement>(null);
   const imageFileRef = useRef<HTMLInputElement>(null);
@@ -587,7 +588,7 @@ const ExamImportPage: React.FC = () => {
           </p>
         </div>
         <button
-          onClick={() => router.push("/admin/exams")}
+          onClick={() => handleMenuSelect("import-exam")}
           className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
         >
           <ArrowLeftIcon className="h-4 w-4 mr-2" />

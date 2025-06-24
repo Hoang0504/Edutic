@@ -12,7 +12,7 @@ import {
   SpeakerXMarkIcon,
 } from "@heroicons/react/24/outline";
 import Dictionary from "../features/Dictionary";
-import { useDictionary } from "@/context/DictionaryContext";
+import { useDictionary } from "@/contexts/DictionaryContext";
 import PomodoroModal from "../features/PomodoroModal";
 import { usePomodoro } from "@/contexts/PomodoroContext";
 

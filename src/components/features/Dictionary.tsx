@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-import { useDictionary } from "@/context/DictionaryContext";
-import { useRouteLoading } from "@/context/RouteLoadingContext";
+import { useDictionary } from "@/contexts/DictionaryContext";
+import { useRouteLoading } from "@/contexts/RouteLoadingContext";
 import { SpeakerWaveIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 import FullPageLoading from "../features/FullPageLoading";

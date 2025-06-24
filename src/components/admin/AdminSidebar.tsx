@@ -9,7 +9,7 @@ import {
   ClipboardIcon,
   MegaphoneIcon,
 } from "@heroicons/react/24/outline";
-import { useAdminContext } from "@/context/AdminContext";
+import { useAdminContext } from "@/contexts/AdminContext";
 import { useRouter } from "next/navigation";
 import logo from "@/components/admin/assetadmin/logo.jpg";
 
@@ -44,11 +44,6 @@ const AdminSidebar = ({ onMenuSelect }: AdminSidebarProps) => {
     {
       key: "exams_2",
       label: "Exams 2",
-      icon: <DocumentTextIcon className="h-5 w-5" />,
-    },
-    {
-      key: "exams_import",
-      label: "Exams Import",
       icon: <DocumentTextIcon className="h-5 w-5" />,
     },
     {

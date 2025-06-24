@@ -3,8 +3,8 @@ import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { MusicProvider } from "@/contexts/MusicContext";
 import { PomodoroProvider } from "@/contexts/PomodoroContext";
-import { DictionaryProvider } from "@/context/DictionaryContext";
-import { RouteLoadingProvider } from "@/context/RouteLoadingContext";
+import { DictionaryProvider } from "@/contexts/DictionaryContext";
+import { RouteLoadingProvider } from "@/contexts/RouteLoadingContext";
 
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";

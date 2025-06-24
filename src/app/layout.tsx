@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import "./globals.css";
+import { SelectedMenuProvider } from "@/contexts/SelectedAminMenuContext";
 
 export const metadata: Metadata = {
   title: "Edutic - Ôn là trúng, Luyện là đạt",
@@ -13,7 +14,9 @@ export default function DashboardLayout({
 }) {
   return (
     <html lang="vi">
-      <body>{children}</body>
+      <body>
+        <SelectedMenuProvider>{children}</SelectedMenuProvider>
+      </body>
     </html>
   );
 }

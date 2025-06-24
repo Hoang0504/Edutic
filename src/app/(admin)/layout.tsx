@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode } from "react";
 
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import UserAdmin from "@/components/admin/UserAdmin";
@@ -10,41 +10,17 @@ import AdminExamsPage from "@/components/admin/exams/AdminExamsPage";
 import ExamImportPage from "@/components/admin/import/ExamImportPage";
 import ListeningTranscript from "@/components/admin/ListeningTranscript";
 
-import { AdminProvider } from "@/context/AdminContext";
+import { AdminProvider } from "@/contexts/AdminContext";
 import { Squares2X2Icon } from "@heroicons/react/24/outline";
+import { useSelectedMenu } from "@/contexts/SelectedAminMenuContext";
 
 interface AdminLayoutProps {
   children?: ReactNode;
 }
 
-type MenuKey =
-  | "dashboard"
-  | "users"
-  | "exams"
-  | "exams_2"
-  | "exams_import"
-  | "flashcard"
-  | "listenningTranscript";
-
 const AdminLayout = ({ children }: AdminLayoutProps) => {
-  const [selectedMenu, setSelectedMenu] = useState<MenuKey>("dashboard");
+  const { selectedMenu, handleMenuSelect } = useSelectedMenu();
 
-  const handleMenuSelect = (menuKey: string) => {
-    // Chuyển string thành MenuKey, chỉ chấp nhận các giá trị hợp lệ
-    if (
-      [
-        "dashboard",
-        "users",
-        "exams",
-        "exams_2",
-        "exams_import",
-        "flashcard",
-        "listenningTranscript",
-      ].includes(menuKey)
-    ) {
-      setSelectedMenu(menuKey as MenuKey);
-    }
-  };
   // Nội dung tương ứng với mỗi menu
   const renderContent = () => {
     switch (selectedMenu) {
@@ -61,7 +37,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         return <Exams />;
       case "exams_2":
         return <AdminExamsPage />;
-      case "exams_import":
+      case "import-exam":
         return <ExamImportPage />;
       case "flashcard":
         return <Flashcard />;

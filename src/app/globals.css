@@ -106,6 +106,8 @@ textarea:focus,
 select:focus {
   color: #111827 !important;
   background-color: #ffffff !important;
+}
+
 /* Music Player Slider Styles */
 .slider::-webkit-slider-thumb {
   appearance: none;
@@ -125,5 +127,4 @@ select:focus {
   cursor: pointer;
   border: none;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
 }

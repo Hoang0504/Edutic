@@ -10,7 +10,6 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import StudyModal from "@/components/features/StudyModal";
 import RightSidebar from "@/components/layout/RightSideBar";
-import MusicControl from "@/components/features/MusicControl";
 import StudyEndModal from "@/components/features/StudyEndModal";
 import BreakEndModal from "@/components/features/BreakEndModal";
 import MusicBreakModal from "@/components/features/MusicBreakModal";
@@ -32,7 +31,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
                 <BreakEndModal />
                 <StudyModal />
                 <StudyEndModal />
-                <MusicControl />
               </div>
             </PomodoroProvider>
           </MusicProvider>

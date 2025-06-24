@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { BellIcon, UserCircleIcon, ChevronDownIcon, DocumentTextIcon, CalendarIcon, AcademicCapIcon, BookOpenIcon, ClipboardDocumentListIcon, Bars3Icon, XMarkIcon, PlayIcon, PauseIcon, StopIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
+import { BellIcon, UserCircleIcon, ChevronDownIcon, DocumentTextIcon, CalendarIcon, BookOpenIcon, ClipboardDocumentListIcon, Bars3Icon, XMarkIcon, PlayIcon, PauseIcon, StopIcon, MusicalNoteIcon, SpeakerWaveIcon, SpeakerXMarkIcon, BackwardIcon, ForwardIcon } from '@heroicons/react/24/outline';
 import { usePomodoro } from '@/contexts/PomodoroContext';
+import { useMusic } from '@/contexts/MusicContext';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import MarqueeText from '@/components/ui/MarqueeText';
 
 interface HeaderProps {
   user?: {
@@ -16,6 +18,7 @@ export default function Header({ user }: HeaderProps) {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMusicDropdownOpen, setIsMusicDropdownOpen] = useState(false);
   const [activeNotificationTab, setActiveNotificationTab] = useState<'all' | 'unread' | 'read'>('all');
   const [showStopConfirm, setShowStopConfirm] = useState(false);
 
@@ -28,13 +31,36 @@ export default function Header({ user }: HeaderProps) {
     formatTime, 
     startTimer, 
     pauseTimer, 
-    stopFocusMode 
+    stopFocusMode,
+    openStudyModal,
+    openBreakModal
   } = usePomodoro();
+
+  // Music context
+  const {
+    isPlaying: isMusicPlaying,
+    isMuted,
+    currentTime: musicCurrentTime,
+    duration: musicDuration,
+    volume,
+    currentTrack,
+    isLoaded: isMusicLoaded,
+    isStudyMusicActive,
+    togglePlay: toggleMusicPlay,
+    toggleMute,
+    nextTrack,
+    previousTrack,
+    setVolume,
+    seekTo,
+    stopStudyMusic,
+    formatTime: formatMusicTime
+  } = useMusic();
 
   // Refs for dropdowns
   const notificationRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const musicDropdownRef = useRef<HTMLDivElement>(null);
 
   // Click outside handler
   useEffect(() => {
@@ -44,6 +70,9 @@ export default function Header({ user }: HeaderProps) {
       }
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setIsUserMenuOpen(false);
+      }
+      if (musicDropdownRef.current && !musicDropdownRef.current.contains(event.target as Node)) {
+        setIsMusicDropdownOpen(false);
       }
     }
 
@@ -74,6 +103,14 @@ export default function Header({ user }: HeaderProps) {
     }
   };
 
+  const handleTimerClick = () => {
+    if (isStudyMode) {
+      openStudyModal();
+    } else {
+      openBreakModal();
+    }
+  };
+
   const handleStopClick = () => {
     setShowStopConfirm(true);
   };
@@ -81,6 +118,13 @@ export default function Header({ user }: HeaderProps) {
   const handleStopConfirm = () => {
     stopFocusMode();
   };
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVolume = parseFloat(e.target.value);
+    setVolume(newVolume);
+  };
+
+  const musicProgressPercentage = musicDuration > 0 ? (musicCurrentTime / musicDuration) * 100 : 0;
 
   // Sample notifications data
   const notifications = [
@@ -225,9 +269,13 @@ export default function Header({ user }: HeaderProps) {
                   <div className="text-sm font-medium text-gray-800">
                     {isStudyMode ? 'Học' : 'Nghỉ'}
                   </div>
-                  <div className="text-lg font-bold text-blue-600 min-w-[4rem]">
+                  <button
+                    onClick={handleTimerClick}
+                    className="text-lg font-bold text-blue-600 min-w-[4rem] hover:text-blue-700 cursor-pointer transition-colors"
+                    title={`Click để mở modal ${isStudyMode ? 'học' : 'nghỉ ngơi'}`}
+                  >
                     {formatTime(currentTime)}
-                  </div>
+                  </button>
                   
                   {/* Timer Controls */}
                   <div className="flex items-center space-x-1">
@@ -254,6 +302,159 @@ export default function Header({ user }: HeaderProps) {
                     >
                       <StopIcon className="w-4 h-4" />
                     </button>
+
+                    {/* Music Control Icon */}
+                    <div className="relative" ref={musicDropdownRef}>
+                      <button
+                        onClick={() => setIsMusicDropdownOpen(!isMusicDropdownOpen)}
+                        className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
+                          isStudyMusicActive && isMusicPlaying
+                            ? 'bg-purple-500 hover:bg-purple-600 text-white' 
+                            : 'bg-blue-500 hover:bg-blue-600 text-white'
+                        }`}
+                        title="Điều khiển nhạc"
+                      >
+                        <MusicalNoteIcon className="w-4 h-4" />
+                      </button>
+
+                      {/* Music Control Dropdown */}
+                      {isMusicDropdownOpen && (
+                        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                          {/* Header */}
+                          <div className="px-4 py-3 border-b border-gray-200">
+                            <h3 className="text-base font-semibold text-gray-900">Điều khiển nhạc</h3>
+                          </div>
+
+                          {/* Music Player Content */}
+                          <div className="p-4 space-y-4">
+                            {isStudyMusicActive ? (
+                              <>
+                                {/* Current Track Info */}
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                                    <MusicalNoteIcon className="w-5 h-5 text-white" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="max-w-[200px]">
+                                      <MarqueeText 
+                                        text={currentTrack.title}
+                                        className="text-sm font-medium text-gray-800"
+                                        speed={40}
+                                        pauseOnHover={true}
+                                        pauseDuration={1000}
+                                      />
+                                    </div>
+                                    <p className="text-xs text-gray-500 truncate">{currentTrack.artist}</p>
+                                  </div>
+                                </div>
+
+                                {/* Progress Bar */}
+                                <div className="space-y-1">
+                                  <div className="flex justify-between text-xs text-gray-500">
+                                    <span>{formatMusicTime(musicCurrentTime)}</span>
+                                    <span>{musicDuration > 0 ? formatMusicTime(musicDuration) : currentTrack.duration}</span>
+                                  </div>
+                                  <div 
+                                    className="w-full bg-gray-200 rounded-full h-1.5 cursor-pointer"
+                                    onClick={(e) => {
+                                      const rect = e.currentTarget.getBoundingClientRect();
+                                      const percentage = ((e.clientX - rect.left) / rect.width) * 100;
+                                      seekTo(percentage);
+                                    }}
+                                  >
+                                    <div 
+                                      className="bg-gradient-to-r from-blue-500 to-purple-500 h-1.5 rounded-full transition-all duration-300"
+                                      style={{ width: `${musicProgressPercentage}%` }}
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* Music Controls */}
+                                <div className="flex items-center justify-center space-x-4">
+                                  <button
+                                    onClick={previousTrack}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                    title="Bài trước"
+                                  >
+                                    <BackwardIcon className="w-4 h-4 text-gray-600" />
+                                  </button>
+
+                                  <button
+                                    onClick={toggleMusicPlay}
+                                    disabled={!isMusicLoaded}
+                                    className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-full disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                                    title={isMusicPlaying ? "Tạm dừng" : "Phát"}
+                                  >
+                                    {isMusicPlaying ? (
+                                      <PauseIcon className="w-5 h-5" />
+                                    ) : (
+                                      <PlayIcon className="w-5 h-5" />
+                                    )}
+                                  </button>
+
+                                  <button
+                                    onClick={nextTrack}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                    title="Bài tiếp theo"
+                                  >
+                                    <ForwardIcon className="w-4 h-4 text-gray-600" />
+                                  </button>
+                                </div>
+
+                                {/* Volume Control */}
+                                <div className="flex items-center space-x-2">
+                                  <button
+                                    onClick={toggleMute}
+                                    className="p-1 hover:bg-gray-100 rounded transition-colors flex-shrink-0"
+                                  >
+                                    {isMuted || volume === 0 ? (
+                                      <SpeakerXMarkIcon className="w-4 h-4 text-gray-600" />
+                                    ) : (
+                                      <SpeakerWaveIcon className="w-4 h-4 text-gray-600" />
+                                    )}
+                                  </button>
+                                  
+                                  <input
+                                    type="range"
+                                    min="0"
+                                    max="1"
+                                    step="0.1"
+                                    value={isMuted ? 0 : volume}
+                                    onChange={handleVolumeChange}
+                                    className="flex-1 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                                    title="Âm lượng"
+                                  />
+                                </div>
+
+                                {/* Stop Music Button */}
+                                <button
+                                  onClick={() => {
+                                    stopStudyMusic();
+                                    setIsMusicDropdownOpen(false);
+                                  }}
+                                  className="w-full px-4 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors text-sm font-medium"
+                                >
+                                  Dừng nhạc
+                                </button>
+
+                                {/* Loading Indicator */}
+                                {!isMusicLoaded && (
+                                  <div className="text-center text-xs text-gray-500">
+                                    Đang tải nhạc...
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <div className="text-center py-4">
+                                <MusicalNoteIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                                <p className="text-sm text-gray-500 mb-4">Chưa có nhạc đang phát</p>
+                                <p className="text-xs text-gray-400">Nhạc sẽ tự động phát khi bạn bắt đầu học hoặc nghỉ ngơi</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

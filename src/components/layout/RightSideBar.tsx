@@ -8,8 +8,6 @@ import {
   ChevronRightIcon,
   ChevronLeftIcon,
   // EyeSlashIcon,
-  SpeakerWaveIcon,
-  SpeakerXMarkIcon,
 } from "@heroicons/react/24/outline";
 import Dictionary from "../features/Dictionary";
 import { useDictionary } from "@/contexts/DictionaryContext";
@@ -19,11 +17,10 @@ import { usePomodoro } from "@/contexts/PomodoroContext";
 function RightSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isPomodoroOpen, setIsPomodoroOpen] = useState(false);
-  const [isMusicOn, setIsMusicOn] = useState(true);
   // const [isFocusMode, setIsFocusMode] = useState(false);
   const { showDictionary, toggleDictionary } = useDictionary();
 
-  const { isActive, isStudyMode, openStudyModal } = usePomodoro();
+  const { isActive, isStudyMode, openStudyModal, openBreakModal } = usePomodoro();
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
@@ -37,16 +34,14 @@ function RightSidebar() {
       // If already in focus mode, open the appropriate modal
       if (isStudyMode) {
         openStudyModal();
+      } else {
+        // For break mode, open the break modal so user can continue studying
+        openBreakModal();
       }
-      // For break mode, the break modal is handled by MusicBreakModal component
     } else {
       // If not in focus mode, open the setup modal
       setIsPomodoroOpen(true);
     }
-  };
-
-  const toggleMusic = () => {
-    setIsMusicOn(!isMusicOn);
   };
 
   const closePomodoro = () => {
@@ -85,15 +80,7 @@ function RightSidebar() {
         : "bg-purple-500 hover:bg-purple-600",
       onClick: handleFocusModeClick,
     },
-    {
-      id: "music",
-      icon: isMusicOn ? SpeakerWaveIcon : SpeakerXMarkIcon,
-      label: isMusicOn ? "Tắt nhạc" : "Bật nhạc",
-      color: isMusicOn
-        ? "bg-orange-500 hover:bg-orange-600"
-        : "bg-gray-500 hover:bg-gray-600",
-      onClick: toggleMusic,
-    },
+
   ];
 
   if (isCollapsed) {

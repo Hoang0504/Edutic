@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 // import { useRouter } from 'next/navigation';
-import { PencilIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import {  XMarkIcon } from '@heroicons/react/24/outline';
 import AudioDetailEditor from './edit/AudioDetailEditor'; 
 
 interface AudioItem {
@@ -33,7 +33,11 @@ const ListeningTranscript = () => {
   const [newTranscript, setNewTranscript] = useState('');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedAudio, setSelectedAudio] = useState<AudioItem | null>(null);
-  const [transcripts, setTranscripts] = useState<Transcript[]>([]);
+const [transcripts, setTranscripts] = useState<Transcript[]>([
+    { audioFileId: 1, level: 'easy', blanks: [], fullText: 'She is eating in a picnic area.', vietnameseTranslation: '' },
+    { audioFileId: 1, level: 'medium', blanks: [], fullText: 'She is eating in a picnic area with friends.', vietnameseTranslation: '' },
+    { audioFileId: 1, level: 'hard', blanks: [], fullText: 'She is eating in a picnic area with friends and family.', vietnameseTranslation: '' },
+  ]); 
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -48,16 +52,16 @@ const ListeningTranscript = () => {
     if (file) setNewAudioFile(file);
   };
 
-  const handleSaveNewAudio = () => {
-    if (newAudioFile && newTranscript) {
-      const newId = audioItems.length + 1;
-      setAudioItems([...audioItems, { id: newId, fileName: newAudioFile.name, duration: '00:00', levels: 0, updatedAt: new Date().toLocaleDateString() }]);
-      setTranscripts([...transcripts, { audioFileId: newId, level: 'easy', blanks: [], fullText: newTranscript, vietnameseTranslation: '' }]);
-      setIsAddModalOpen(false);
-      setNewAudioFile(null);
-      setNewTranscript('');
-    }
-  };
+ const handleSaveNewAudio = () => {
+  if (newAudioFile && newTranscript) {
+    const newId = audioItems.length + 1;
+    setAudioItems([...audioItems, { id: newId, fileName: newAudioFile.name, duration: '00:00', levels: 0, updatedAt: new Date().toLocaleDateString() }]);
+    setTranscripts([...transcripts, { audioFileId: newId, level: 'easy', blanks: [], fullText: newTranscript, vietnameseTranslation: '' }]);
+    setIsAddModalOpen(false);
+    setNewAudioFile(null);
+    setNewTranscript('');
+  }
+};
 
   const handleEditAudio = (audio: AudioItem) => {
     setSelectedAudio(audio);
@@ -120,16 +124,16 @@ const ListeningTranscript = () => {
                     <td className="p-2 border">{item.updatedAt}</td>
                     <td className="p-2 border flex space-x-2">
                       <button
-                        className="text-blue-500 hover:text-blue-700"
+                        className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
                         onClick={() => handleEditAudio(item)}
                       >
-                        <PencilIcon className="h-5 w-5" />
+                        Edit
                       </button>
                       <button
-                        className="text-red-500 hover:text-red-700"
+                       className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
                         onClick={() => handleDeleteAudio(item.id)}
                       >
-                        <TrashIcon className="h-5 w-5" />
+                       Delete
                       </button>
                     </td>
                   </tr>

@@ -1,13 +1,11 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import AddUserPage from '@/components/admin/add/AddUser';
 import EditUserPage from '@/components/admin/edit/EditUser';
 import UserProfile from '@/components/admin/UserProfile';
 
-
-// Định nghĩa kiểu cho user
 interface User {
   id: number;
   email: string;
@@ -19,30 +17,47 @@ const UserAdmin = () => {
   const router = useRouter();
   const [filterName, setFilterName] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [users, setUsers] = useState<User[]>([]);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isEditUserModalVisible, setIsEditUserModalVisible] = useState(false);
   const [isProfileVisible, setIsProfileVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data
-  const mockData: User[] = [
-    { id: 1, email: 'user1@example.com', avatar: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', role: 'Admin' },
-    { id: 2, email: 'user2@example.com', avatar: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', role: 'User' },
-    { id: 3, email: 'user3@example.com', avatar: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', role: 'Moderator' },
-  ];
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/admin/users', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) throw new Error('Failed to fetch users');
+        const data = await response.json();
+        console.log('Fetched users:', data);
+        setUsers(data.data || []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+  }, []);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilterName(e.target.value);
     setCurrentPage(1);
   };
 
-  const filteredUsers = mockData.filter((user: User) => {
+  const filteredUsers = users.filter((user: User) => {
     const searchLower = filterName.toLowerCase();
     const emailLower = user.email.toLowerCase();
     return emailLower.includes(searchLower);
   });
 
-  const pageSize = 2;
+  const pageSize = 5;
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const totalUsers = filteredUsers.length;
 
@@ -66,25 +81,121 @@ const UserAdmin = () => {
     setIsProfileVisible(true);
   };
 
-  const handleAddUser = (e: React.FormEvent, formData: { email: string; role: string; avatarFile?: File }) => {
+  const handleAddUser = async (
+    e: React.FormEvent,
+    formData: { email: string; role: string; avatarFile?: File; password: string }
+  ) => {
     e.preventDefault();
-    console.log('Add User submitted', formData);
-    if (formData.avatarFile) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        console.log('Avatar base64:', reader.result);
-      };
-      reader.readAsDataURL(formData.avatarFile);
+    setLoading(true);
+    setError(null);
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('password', formData.password); // Gửi password thay vì password_hash
+      formDataToSend.append('role', formData.role);
+      if (formData.avatarFile) {
+        formDataToSend.append('avatar', formData.avatarFile);
+      }
+
+      console.log('Payload sent:', {
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        avatarFile: formData.avatarFile ? 'uploaded' : 'none',
+      });
+
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/admin/users/create', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formDataToSend,
+      });
+
+      const data = await response.json();
+      console.log('Response data:', data);
+      if (!response.ok) throw new Error(data.message || 'Failed to add user');
+
+      setUsers((prev) => [...prev, data]);
+      setIsAddModalVisible(false);
+    } catch (err) {
+      console.error('Error:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
     }
-    setIsAddModalVisible(false);
   };
 
+  const handleUpdateUser = async (
+    e: React.FormEvent,
+    formData: { email?: string; role?: string; avatar?: string; avatarFile?: File; password?: string }
+  ) => {
+    e.preventDefault();
+    if (!selectedUser) return;
+    setLoading(true);
+    setError(null);
 
-const handleUpdateUser = (e: React.FormEvent, formData: { email: string; role: string; avatar: string; avatarFile?: File }) => {
-  e.preventDefault();
-  console.log('Update User submitted', formData, formData.avatarFile); // Xử lý avatarFile nếu cần
-  setIsEditUserModalVisible(false);
-};
+    try {
+      const formDataToSend = new FormData();
+      if (formData.email) formDataToSend.append('email', formData.email);
+      if (formData.role) formDataToSend.append('role', formData.role);
+      if (formData.password) formDataToSend.append('password', formData.password);
+      if (formData.avatarFile) formDataToSend.append('avatar', formData.avatarFile);
+
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formDataToSend,
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to update user');
+
+      setUsers((prev) =>
+        prev.map((u) => (u.id === data.id ? { ...u, ...data } : u))
+      );
+      setIsEditUserModalVisible(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId: number) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 204) {
+        setUsers((prev) => prev.filter((u) => u.id !== userId));
+      } else {
+        const data = await response.json();
+        throw new Error(data.message || 'Failed to delete user');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) return <div className="text-center p-4">Loading...</div>;
+  if (error) return <div className="text-center p-4 text-red-500">Error: {error}</div>;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -153,9 +264,8 @@ const handleUpdateUser = (e: React.FormEvent, formData: { email: string; role: s
                         <Image
                           src={user.avatar}
                           alt={user.email}
-                          width={50}
-                          height={50}
-                          className="rounded-full"
+                          width={100}
+                          height={100}
                         />
                       )}
                     </td>
@@ -165,11 +275,14 @@ const handleUpdateUser = (e: React.FormEvent, formData: { email: string; role: s
                         className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
                         onClick={() => handleEditUser(user)}
                       >
-                        Edit 
+                        Edit
                       </button>
                       <button
                         className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                        onClick={() => {}}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteUser(user.id);
+                        }}
                       >
                         Delete
                       </button>

@@ -1,48 +1,51 @@
 "use client";
-
 import React, { ReactNode } from "react";
-
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import { Squares2X2Icon } from "@heroicons/react/24/outline";
+import { AdminProvider } from "@/contexts/AdminContext";
 import UserAdmin from "@/components/admin/UserAdmin";
 import Exams from "@/components/admin/Exams";
 import Flashcard from "@/components/admin/Flashcard";
 import AdminExamsPage from "@/components/admin/exams/AdminExamsPage";
 import ExamImportPage from "@/components/admin/import/ExamImportPage";
 import ListeningTranscript from "@/components/admin/ListeningTranscript";
-
-import { AdminProvider } from "@/contexts/AdminContext";
-import { Squares2X2Icon } from "@heroicons/react/24/outline";
+import Dashboard from "@/components/admin/Dashboard";
 import { useSelectedMenu } from "@/contexts/SelectedAminMenuContext";
-
 interface AdminLayoutProps {
   children?: ReactNode;
 }
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
-  const { selectedMenu, handleMenuSelect } = useSelectedMenu();
+    const { selectedMenu, handleMenuSelect } = useSelectedMenu();
 
+ 
   // Nội dung tương ứng với mỗi menu
   const renderContent = () => {
     switch (selectedMenu) {
       case "dashboard":
         return (
-          <div>
-            <h1 className="text-2xl font-semibold">Dashboard</h1>
-            <p>Đây là trang quản lý Dashboard.</p>
-          </div>
+          <Dashboard />
         );
-      case "users":
-        return <UserAdmin />;
-      case "exams":
-        return <Exams />;
+      case 'users':
+        return (
+          <UserAdmin />
+        );
+      case 'exams':
+        return (
+          <Exams />
+        );
       case "exams_2":
         return <AdminExamsPage />;
       case "import-exam":
         return <ExamImportPage />;
-      case "flashcard":
-        return <Flashcard />;
-      case "listenningTranscript":
-        return <ListeningTranscript />;
+      case 'flashcard':
+        return (
+          <Flashcard />
+        );
+      case 'listenningTranscript':
+        return (
+          <ListeningTranscript />
+        );
       default:
         return children || null; // Nếu không khớp, giữ nguyên children (nếu có)
     }

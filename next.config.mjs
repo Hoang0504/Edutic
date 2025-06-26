@@ -3,20 +3,28 @@ const nextConfig = {
   webpack: (config, { isServer }) => {
     if (isServer) {
       // Add mysql2 as external to prevent bundling issues
-      config.externals.push('mysql2');
-      
+      config.externals.push("mysql2");
+
       // Also add sequelize related externals
-      config.externals.push('sequelize');
-      config.externals.push('sequelize-typescript');
-      
+      config.externals.push("sequelize");
+      config.externals.push("sequelize-typescript");
+
       // Add reflect-metadata
-      config.externals.push('reflect-metadata');
+      config.externals.push("reflect-metadata");
     }
-    
+
     return config;
   },
   experimental: {
-    serverComponentsExternalPackages: ['mysql2', 'sequelize', 'sequelize-typescript'],
+    serverComponentsExternalPackages: [
+      "mysql2",
+      "sequelize",
+      "sequelize-typescript",
+    ],
+  },
+  reactStrictMode: true,
+  images: {
+    domains: ["images.unsplash.com"],
   },
 };
 

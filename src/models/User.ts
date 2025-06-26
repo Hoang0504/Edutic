@@ -51,8 +51,8 @@ export class User extends Model<User, UserCreationAttributes> {
   @Column(DataType.STRING)
   name!: string;
 
-  @Column(DataType.STRING)
-  avatar!: string;
+  @Column(DataType.TEXT)
+  avatar!: string | null;
 
   @Column({ type: DataType.BOOLEAN, defaultValue: false })
   is_email_verified!: boolean;

@@ -34,6 +34,7 @@ interface PomodoroContextType {
   startNextSession: () => void;
   extendBreak: () => void;
   openStudyModal: () => void;
+  openBreakModal: () => void;
   closeStudyModal: () => void;
   closeStudyEndModal: () => void;
   startBreakFromStudy: () => void;
@@ -159,12 +160,8 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
 
   const closeBreakModal = () => {
     setIsBreakModalOpen(false);
-    // If break time is still running, stop it and reset to study mode
-    if (!isStudyMode) {
-      setIsStudyMode(true);
-      setCurrentTime(studyTime);
-      setIsRunning(false);
-    }
+    // Chỉ đóng modal, không thay đổi trạng thái timer
+    // Người dùng phải ấn "Tiếp tục học bài" để bắt đầu phiên mới
   };
 
   const continueStudying = () => {
@@ -195,6 +192,16 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
 
   const openStudyModal = () => {
     setIsStudyModalOpen(true);
+  };
+
+  const openBreakModal = () => {
+    // Chỉ mở modal nghỉ ngơi nếu đang ở chế độ nghỉ và còn thời gian
+    if (!isStudyMode && currentTime > 0) {
+      setIsBreakModalOpen(true);
+    } else if (!isStudyMode && currentTime === 0) {
+      // Nếu hết thời gian nghỉ, mở modal break end
+      setIsBreakEndModalOpen(true);
+    }
   };
 
   const closeStudyModal = () => {
@@ -248,6 +255,7 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
     startNextSession,
     extendBreak,
     openStudyModal,
+    openBreakModal,
     closeStudyModal,
     closeStudyEndModal,
     startBreakFromStudy,

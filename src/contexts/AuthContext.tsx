@@ -13,6 +13,7 @@ interface User {
   id: number;
   email: string;
   name: string;
+  avatar: string;
   role: string;
   is_email_verified: boolean;
 }

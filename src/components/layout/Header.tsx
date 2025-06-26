@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 import {
   BellIcon,
@@ -22,13 +23,6 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { usePomodoro } from "@/contexts/PomodoroContext";
 import ConfirmModal from "../ui/ConfirmModal";
-
-interface HeaderProps {
-  user?: {
-    name: string;
-    avatar?: string;
-  };
-}
 
 export default function Header() {
   const { user, isLoggedIn, logout } = useAuth();
@@ -182,16 +176,23 @@ export default function Header() {
       : readNotifications;
 
   return (
-    <header className="bg-white border-b border-gray-200 shadow-sm">
+    <header className="bg-white border-b border-gray-200 shadow-sm fixed top-0 start-0 right-0 z-10">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14 sm:h-16">
+        <div className="flex items-center justify-between md:h-14 sm:h-16">
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center h-full">
             <Link
               href="/"
-              className="bg-blue-600 text-white px-2 sm:px-3 py-1 rounded text-xs sm:text-sm font-semibold"
+              className="text-white rounded text-xs sm:text-sm font-semibold inline-flex items-center h-full"
             >
-              Edutic
+              <div className="relative h-full aspect-square">
+                <Image
+                  src="/logo.png"
+                  alt="Edutic logo"
+                  fill
+                  className="object-contain"
+                />
+              </div>
             </Link>
           </div>
 
@@ -458,7 +459,7 @@ export default function Header() {
 
                 {/* User Dropdown Menu */}
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                  <div className="absolute right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                     <div className="py-1">
                       <div className="px-4 py-3 border-b border-gray-100">
                         <p className="text-sm font-medium text-gray-900">

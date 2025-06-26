@@ -1,21 +1,22 @@
+import { Sequelize } from "sequelize";
 import { NextApiRequest, NextApiResponse } from "next";
 
-import { Sequelize } from "sequelize";
+import sequelize from "@/lib/db";
+
 import { Flashcard } from "@/models/Flashcard";
 import { Vocabulary } from "@/models/Vocabulary";
 import { withErrorHandler } from "@/lib/withErrorHandler";
-import sequelize from "@/lib/db";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  try {
-    await sequelize.authenticate();
-    const { user_id } = req.query;
+  await sequelize.authenticate();
 
-    if (!user_id || isNaN(+user_id)) {
-      return res.status(400).json({ message: "Invalid or missing user_id" });
-    }
+  if (req.method !== "GET") return res.status(405).end();
 
-    const grouped = await Flashcard.findAll({
+  const { user_id } = req.query;
+  let grouped;
+
+  if (user_id) {
+    grouped = await Flashcard.findAll({
       where: { user_id },
       attributes: [
         [Sequelize.fn("COUNT", Sequelize.col("Flashcard.id")), "count"],
@@ -33,19 +34,26 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       order: [["vocabulary", "context", "ASC"]],
       raw: true,
     });
-
-    const data = grouped.map((item: any) => ({
-      key: item.context,
-      label: item.context?.replace(/_/g, " ").toUpperCase(),
-      count: Number(item.count),
-      type: "context",
-    }));
-
-    return res.status(200).json(data);
-  } catch (error: any) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+  } else {
+    grouped = await Vocabulary.findAll({
+      where: { status: "approved" },
+      attributes: [
+        "context",
+        [Sequelize.fn("COUNT", Sequelize.col("id")), "count"],
+      ],
+      group: ["context"],
+      order: [["context", "ASC"]],
+      raw: true,
+    });
   }
-};
 
+  const data = grouped.map((item: any) => ({
+    key: item.context,
+    label: item.context?.replace(/_/g, " ").toUpperCase(),
+    count: item.count,
+    type: "context",
+  }));
+
+  return res.status(200).json(data);
+};
 export default withErrorHandler(handler);

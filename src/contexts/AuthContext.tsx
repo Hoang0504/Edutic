@@ -1,7 +1,13 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { useRouter } from "next/navigation";
 
 interface User {
   id: number;
@@ -31,18 +37,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Khởi tạo từ localStorage khi component mount
   useEffect(() => {
-    const savedToken = localStorage.getItem('mytoeic_token');
-    const savedUser = localStorage.getItem('mytoeic_user');
+    const savedToken = localStorage.getItem("mytoeic_token");
+    const savedUser = localStorage.getItem("mytoeic_user");
 
     if (savedToken && savedUser) {
       try {
         const userData = JSON.parse(savedUser);
+
         setToken(savedToken);
         setUser(userData);
       } catch (error) {
-        console.error('Error parsing saved user data:', error);
-        localStorage.removeItem('mytoeic_token');
-        localStorage.removeItem('mytoeic_user');
+        console.error("Error parsing saved user data:", error);
+        localStorage.removeItem("mytoeic_token");
+        localStorage.removeItem("mytoeic_user");
       }
     }
     setIsLoading(false);
@@ -51,23 +58,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = (newToken: string, userData: User) => {
     setToken(newToken);
     setUser(userData);
-    localStorage.setItem('mytoeic_token', newToken);
-    localStorage.setItem('mytoeic_user', JSON.stringify(userData));
+    localStorage.setItem("mytoeic_token", newToken);
+    localStorage.setItem("mytoeic_user", JSON.stringify(userData));
 
     // Chuyển hướng theo role
-    if (userData.role === 'admin') {
-      router.push('/admin');
+    if (userData.role === "admin") {
+      router.push("/admin");
     } else {
-      router.push('/');
+      router.push("/");
     }
   };
 
   const logout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem('mytoeic_token');
-    localStorage.removeItem('mytoeic_user');
-    router.push('/login');
+    localStorage.removeItem("mytoeic_token");
+    localStorage.removeItem("mytoeic_user");
+    router.push("/login");
   };
 
   const value: AuthContextType = {
@@ -86,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-} 
+}

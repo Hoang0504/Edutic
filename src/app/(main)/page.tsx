@@ -1,11 +1,8 @@
 "use client";
 
-// import { useEffect, useState } from "react";
+import { useState } from "react";
 
-import API_ENDPOINTS from "@/constants/api";
-import { FlashcardOverviewProps } from "@/interfaces";
 import FlashcardOverview from "@/components/features/flashcards/FlashcardOverview";
-import { useState, useEffect } from "react";
 
 function DashboardPage() {
   const [targetScores, setTargetScores] = useState({
@@ -15,8 +12,6 @@ function DashboardPage() {
     writing: 150,
   });
   const [isEditingTarget, setIsEditingTarget] = useState(false);
-  const [flashcardOverviewData, setFlashcardOverviewData] =
-    useState<FlashcardOverviewProps | null>(null);
 
   const recentTests = [
     { id: 1, title: "Bài 1", status: "Xem chi tiết" },
@@ -33,31 +28,6 @@ function DashboardPage() {
     { id: 6, title: "Bài 1", status: "Xem chi tiết" },
   ];
 
-  const fetchFlashcardOverview = async () => {
-    try {
-      const res = await fetch(API_ENDPOINTS.VOCABULARIES.DASHBOARD("2"));
-      const result = await res.json();
-
-      console.log(result);
-
-      if (!res.ok || !result) {
-        setFlashcardOverviewData(null);
-      } else {
-        const mappedData: FlashcardOverviewProps = {
-          approvedCount: result.approved_vocab_count,
-          userCount: result.user_vocab_count,
-          dueCount: result.user_vocab_due_count,
-          contextGroups: result.context_groups,
-        };
-
-        setFlashcardOverviewData(mappedData);
-      }
-    } catch (error) {
-      console.error("Error fetching flashcard overview:", error);
-      setFlashcardOverviewData(null);
-    }
-  };
-
   const updateTargetScore = (
     skill: keyof typeof targetScores,
     value: number
@@ -68,17 +38,11 @@ function DashboardPage() {
     }));
   };
 
-  useEffect(() => {
-    fetchFlashcardOverview();
-  }, []);
-
   return (
-    <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 pb-20 sm:pb-6">
+    <div>
       {/* User */}
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
-          Xin chào, Tên
-        </h1>
+        <h2 className="text-2xl font-semibold text-gray-900">Xin chào, Tên</h2>
       </div>
 
       {/* Flash card gần nhất */}
@@ -87,7 +51,7 @@ function DashboardPage() {
           {/* Next Exam */}
           <div className="text-center">
             <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-2">
-              Flash card gần nhất
+              Flashcard gần nhất
             </h3>
             <p className="text-xl sm:text-2xl font-bold text-gray-900">
               5 ngày
@@ -192,47 +156,39 @@ function DashboardPage() {
         </div>
       </div>
 
-      {/* Flashcard Section */}
+      {/* Đề thi mới nhất */}
       <div className="mb-6 sm:mb-8">
-        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">
-          flashcard của tôi
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4 sm:mb-6">
+          Đề thi mới nhất
         </h2>
 
-        {/* Calendar  */}
-        {/* <div className="grid grid-cols-7 gap-2 sm:gap-4 mb-6">
-          {flashcardSchedule.map((item, index) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
+          {latestTests.map((test) => (
             <div
-              key={index}
-              className={`
-                relative p-2 sm:p-4 rounded-lg text-center cursor-pointer transition-all
-                ${
-                  item.completed
-                    ? "bg-green-100 border-2 border-green-300 text-green-800"
-                    : "bg-gray-100 border-2 border-gray-300 text-gray-600 hover:bg-gray-200"
-                }
-              `}
+              key={test.id}
+              className="bg-gray-400 rounded-lg p-4 sm:p-6 text-center text-white hover:bg-gray-500 transition-colors cursor-pointer"
             >
-              <div className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2">{item.day}</div>
-              <div className="text-xs sm:text-sm leading-tight">{item.date}</div>
-              {item.completed && (
-                <div className="absolute top-1 right-1">
-                  <svg
-                    className="w-3 h-3 sm:w-4 sm:h-4 text-green-600"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-              )}
+              <h3 className="text-base sm:text-lg font-semibold mb-2">
+                {test.title}
+              </h3>
+              <p className="text-xs sm:text-sm">{test.status}</p>
             </div>
           ))}
-        </div> */}
-        <FlashcardOverview data={flashcardOverviewData} />
+        </div>
+
+        <div className="text-center">
+          <button className="text-blue-500 hover:text-blue-700 font-medium text-sm sm:text-base">
+            Xem tất cả &gt;&gt;&gt; :
+          </button>
+        </div>
+      </div>
+
+      {/* Flashcard Section */}
+      <div className="mb-6 sm:mb-8">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4 sm:mb-6">
+          Flashcard
+        </h2>
+        <FlashcardOverview />
       </div>
 
       {/* Kết quả thi gần nhất */}
@@ -258,33 +214,6 @@ function DashboardPage() {
         <div className="text-center">
           <button className="text-blue-500 hover:text-blue-700 font-medium text-sm sm:text-base">
             Xem tất cả &gt;&gt;&gt;
-          </button>
-        </div>
-      </div>
-
-      {/* Đề thi mới nhất */}
-      <div className="mb-6 sm:mb-8">
-        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">
-          Đề thi mới nhất
-        </h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
-          {latestTests.map((test) => (
-            <div
-              key={test.id}
-              className="bg-gray-400 rounded-lg p-4 sm:p-6 text-center text-white hover:bg-gray-500 transition-colors cursor-pointer"
-            >
-              <h3 className="text-base sm:text-lg font-semibold mb-2">
-                {test.title}
-              </h3>
-              <p className="text-xs sm:text-sm">{test.status}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="text-center">
-          <button className="text-blue-500 hover:text-blue-700 font-medium text-sm sm:text-base">
-            Xem tất cả &gt;&gt;&gt; :
           </button>
         </div>
       </div>

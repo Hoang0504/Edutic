@@ -25,7 +25,9 @@ function AppContent({ children }: { children: React.ReactNode }) {
               <div className="min-h-screen bg-gray-50 flex flex-col">
                 {/* user={user} */}
                 <Header />
-                <main className="flex-1 py-6">{children}</main>
+                <main className="flex-1 w-full max-w-7xl mx-auto sm:mt-16 md:mt-14 sm:px-8 py-16">
+                  {children}
+                </main>
                 <Footer />
                 <RightSidebar />
                 <MusicBreakModal />

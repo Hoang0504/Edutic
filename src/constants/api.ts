@@ -8,10 +8,19 @@ const API_ENDPOINTS = {
     },
   },
 
+  FLASHCARDS: {
+    DASHBOARD: (user_id: string | undefined) =>
+      `${BASE_URL}/flashcards/dashboard/vocab-stats?user_id=${user_id}`,
+    GROUP_BY_CONTEXT: (user_id?: string) =>
+      `${BASE_URL}/flashcards/group-by-context${
+        user_id ? `?user_id=${user_id}` : ""
+      }`,
+    DUE_GROUP_BY_DATE: (user_id: string) =>
+      `${BASE_URL}/flashcards/due-group-by-date?user_id=${user_id}`,
+  },
+
   VOCABULARIES: {
     BASE: `${BASE_URL}/vocabularies`,
-    DASHBOARD: (user_id: string) =>
-      `${BASE_URL}/dashboard/vocab-stats?user_id=${user_id}`,
     CREATE: `${BASE_URL}/vocabularies`,
     GET_ALL: `${BASE_URL}/vocabularies`,
     GET_BY_ID: (id: string) => `${BASE_URL}/vocabularies/${id}`,

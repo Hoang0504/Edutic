@@ -12,24 +12,29 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
     const { user_id } = req.query;
 
-    if (!user_id || isNaN(+user_id)) {
-      return res.status(400).json({ message: "Missing or invalid user_id" });
-    }
+    let user_vocab_count = null;
+    let user_vocab_due_count = null;
+
+    // if (!user_id || isNaN(+user_id)) {
+    //   return res.status(400).json({ message: "Missing or invalid user_id" });
+    // }
 
     const approved_vocab_count = await Vocabulary.count({
       where: { status: "approved" },
     });
 
-    const user_vocab_count = await Flashcard.count({
-      where: { user_id },
-    });
+    if (user_id) {
+      user_vocab_count = await Flashcard.count({
+        where: { user_id },
+      });
 
-    const user_vocab_due_count = await Flashcard.count({
-      where: {
-        user_id,
-        next_review_date: { [Op.lte]: new Date() },
-      },
-    });
+      user_vocab_due_count = await Flashcard.count({
+        where: {
+          user_id,
+          next_review_date: { [Op.lte]: new Date() },
+        },
+      });
+    }
 
     const contexts = await Vocabulary.findAll({
       where: { status: "approved" },
@@ -37,12 +42,11 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       group: ["context"],
     });
 
-    const context_groups = contexts.map((item) => item.context);
+    const context_groups = contexts.map((item) => item.context.toUpperCase());
 
     return res.status(200).json({
       approved_vocab_count,
-      user_vocab_count,
-      user_vocab_due_count,
+      ...(user_id ? { user_vocab_count, user_vocab_due_count } : {}),
       context_groups,
     });
   }

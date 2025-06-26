@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: localhost:3306
--- Thời gian đã tạo: Th6 22, 2025 lúc 05:06 PM
+-- Thời gian đã tạo: Th6 26, 2025 lúc 12:22 AM
 -- Phiên bản máy phục vụ: 8.4.3
 -- Phiên bản PHP: 8.3.16
 
@@ -124,6 +124,13 @@ CREATE TABLE `exams` (
   `updated_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Đang đổ dữ liệu cho bảng `exams`
+--
+
+INSERT INTO `exams` (`id`, `title`, `year_of_release`, `type`, `description`, `estimated_time`, `is_published`, `created_at`, `updated_at`) VALUES
+(1, 'Speaking Test - Assessment', 2025, 'full_test', 'Đề thi Speaking - 11 câu hỏi theo chuẩn đánh giá năng lực nói', 20, 0, '2025-06-24 08:27:59', '2025-06-24 08:27:59');
+
 -- --------------------------------------------------------
 
 --
@@ -136,6 +143,15 @@ CREATE TABLE `exam_parts` (
   `part_id` int NOT NULL,
   `order_index` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `exam_parts`
+--
+
+INSERT INTO `exam_parts` (`id`, `exam_id`, `part_id`, `order_index`) VALUES
+(1, 1, 2, 1),
+(2, 1, 3, 2),
+(3, 1, 4, 3);
 
 -- --------------------------------------------------------
 
@@ -246,7 +262,10 @@ CREATE TABLE `parts` (
 --
 
 INSERT INTO `parts` (`id`, `part_number`, `title`, `description`, `instruction`, `difficulty_level`, `time_limit`, `created_at`, `updated_at`) VALUES
-(1, 1, 'part 1', NULL, NULL, 'easy', NULL, '2025-06-18 14:26:47', '2025-06-18 14:26:47');
+(1, 1, 'part 1', NULL, NULL, 'easy', NULL, '2025-06-18 14:26:47', '2025-06-18 14:26:47'),
+(2, 1, 'Part 1 - Personal Introduction', 'Giới thiệu bản thân và trả lời câu hỏi cá nhân', 'Answer the questions about yourself and your background', 'medium', 5, '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(3, 2, 'Part 2 - Describe & Express', 'Mô tả hình ảnh và diễn đạt ý kiến', 'Describe the picture and express your thoughts', 'medium', 7, '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(4, 3, 'Part 3 - Express Opinion', 'Trình bày quan điểm về các chủ đề', 'Express your opinion on the given topics', 'hard', 8, '2025-06-24 08:27:59', '2025-06-24 08:27:59');
 
 -- --------------------------------------------------------
 
@@ -266,6 +285,23 @@ CREATE TABLE `questions` (
   `updated_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Đang đổ dữ liệu cho bảng `questions`
+--
+
+INSERT INTO `questions` (`id`, `part_id`, `question_number`, `group_id`, `content`, `question_type`, `image_url`, `created_at`, `updated_at`) VALUES
+(1, 2, 1, 1, 'Tell me about yourself. What is your name and where are you from?', 'speaking', '', '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(2, 2, 2, 2, 'What do you do for work or study? Can you describe your daily routine?', 'speaking', '', '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(3, 2, 3, 3, 'What are your hobbies and interests? Why do you enjoy them?', 'speaking', '', '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(4, 3, 4, 4, 'Describe this picture in detail. What do you see and what is happening?', 'speaking', '', '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(5, 3, 5, 5, 'How does this picture make you feel? What memories or thoughts does it bring?', 'speaking', '', '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(6, 3, 6, 6, 'If you were in this situation, what would you do? Explain your choice.', 'speaking', '', '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(7, 4, 7, 7, 'Do you think technology has more positive or negative effects on communication? Explain your view.', 'speaking', '', '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(8, 4, 8, 8, 'What is the most important quality in a good friend? Give reasons and examples.', 'speaking', '', '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(9, 4, 9, 9, 'Should students be required to learn a foreign language? Why or why not?', 'speaking', '', '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(10, 4, 10, 10, 'How do you think cities will change in the next 20 years? What improvements would you like to see?', 'speaking', '', '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(11, 4, 11, 11, 'What advice would you give to someone who wants to improve their English speaking skills?', 'speaking', '', '2025-06-24 08:27:59', '2025-06-24 08:27:59');
+
 -- --------------------------------------------------------
 
 --
@@ -279,6 +315,23 @@ CREATE TABLE `question_groups` (
   `content` text,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `question_groups`
+--
+
+INSERT INTO `question_groups` (`id`, `part_id`, `image_url`, `content`, `created_at`) VALUES
+(1, 2, NULL, 'Question group for part 1', '2025-06-24 01:27:59'),
+(2, 2, NULL, 'Question group for part 1', '2025-06-24 01:27:59'),
+(3, 2, NULL, 'Question group for part 1', '2025-06-24 01:27:59'),
+(4, 3, NULL, 'Question group for part 2', '2025-06-24 01:27:59'),
+(5, 3, NULL, 'Question group for part 2', '2025-06-24 01:27:59'),
+(6, 3, NULL, 'Question group for part 2', '2025-06-24 01:27:59'),
+(7, 4, NULL, 'Question group for part 3', '2025-06-24 01:27:59'),
+(8, 4, NULL, 'Question group for part 3', '2025-06-24 01:27:59'),
+(9, 4, NULL, 'Question group for part 3', '2025-06-24 01:27:59'),
+(10, 4, NULL, 'Question group for part 3', '2025-06-24 01:27:59'),
+(11, 4, NULL, 'Question group for part 3', '2025-06-24 01:27:59');
 
 -- --------------------------------------------------------
 
@@ -379,7 +432,18 @@ CREATE TABLE `translations` (
 --
 
 INSERT INTO `translations` (`id`, `content_type`, `content_id`, `vietnamese_text`, `created_at`, `updated_at`) VALUES
-(1, 'audio_transcript', 1, '1. (A) Cô ấy đang ăn trong khu vực dã ngoại.\n(B) Cô ấy đang xếp hàng tại một xe bán đồ ăn.\n(C) Cô ấy đang lau ghế dài.\n(D) Cô ấy đang vứt đĩa đi.\n\n2. (A) Người đàn ông đang phủi tuyết khỏi mái xe.\n(B) Người đàn ông đang đứng trong tuyết bên cạnh một chiếc xe.\n(C) Người đàn ông đang xúc tuyết khỏi lối đi.\n(D) Người đàn ông đang chạy qua tuyết.\n\n3. (A) Một số công nhân đang treo tranh trong một phòng trưng bày.\n(B) Hai người trong số họ đang trò chuyện.\n(C) Một trong những người đàn ông đang sắp xếp lại gối trên ghế sofa.\n(D) Một trong những người đàn ông đang vẽ tranh.\n\n4. (A) Các phương tiện đang vào một bãi đỗ xe.\n(B) Móc treo quần áo bị vứt rải rác trên mặt đất.\n(C) Các giá treo quần áo trống được xếp hàng cạnh một tòa nhà.\n(D) Quần áo được trưng bày dưới một chiếc lều.\n\n5. (A) Cây cảnh đã được treo từ trần nhà.\n(B) Ghế đã được xếp chồng lên nhau trước lối vào.\n(C) Một trạm máy tính đã được thiết lập trên bàn.\n(D) Một tấm thảm đã được cuộn lại dựa vào tường.\n\n6. (A) Một trong những người đàn ông đang quét sân.\n(B) Một trong những người đàn ông đang thay thế sàn nhà.\n(C) Cửa đã được tháo khỏi khung.\n(D) Một thiết bị chiếu sáng đã được để lại trên mặt đất.', '2025-06-18 15:02:03', '2025-06-18 15:02:03');
+(1, 'audio_transcript', 1, '1. (A) Cô ấy đang ăn trong khu vực dã ngoại.\n(B) Cô ấy đang xếp hàng tại một xe bán đồ ăn.\n(C) Cô ấy đang lau ghế dài.\n(D) Cô ấy đang vứt đĩa đi.\n\n2. (A) Người đàn ông đang phủi tuyết khỏi mái xe.\n(B) Người đàn ông đang đứng trong tuyết bên cạnh một chiếc xe.\n(C) Người đàn ông đang xúc tuyết khỏi lối đi.\n(D) Người đàn ông đang chạy qua tuyết.\n\n3. (A) Một số công nhân đang treo tranh trong một phòng trưng bày.\n(B) Hai người trong số họ đang trò chuyện.\n(C) Một trong những người đàn ông đang sắp xếp lại gối trên ghế sofa.\n(D) Một trong những người đàn ông đang vẽ tranh.\n\n4. (A) Các phương tiện đang vào một bãi đỗ xe.\n(B) Móc treo quần áo bị vứt rải rác trên mặt đất.\n(C) Các giá treo quần áo trống được xếp hàng cạnh một tòa nhà.\n(D) Quần áo được trưng bày dưới một chiếc lều.\n\n5. (A) Cây cảnh đã được treo từ trần nhà.\n(B) Ghế đã được xếp chồng lên nhau trước lối vào.\n(C) Một trạm máy tính đã được thiết lập trên bàn.\n(D) Một tấm thảm đã được cuộn lại dựa vào tường.\n\n6. (A) Một trong những người đàn ông đang quét sân.\n(B) Một trong những người đàn ông đang thay thế sàn nhà.\n(C) Cửa đã được tháo khỏi khung.\n(D) Một thiết bị chiếu sáng đã được để lại trên mặt đất.', '2025-06-18 15:02:03', '2025-06-18 15:02:03'),
+(2, 'question', 1, 'Hãy giới thiệu về bản thân. Tên bạn là gì và bạn đến từ đâu?', '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(3, 'question', 2, 'Bạn làm công việc gì hoặc học tập như thế nào? Bạn có thể mô tả thói quen hàng ngày của mình không?', '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(4, 'question', 3, 'Sở thích và mối quan tâm của bạn là gì? Tại sao bạn thích những điều đó?', '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(5, 'question', 4, 'Mô tả chi tiết bức tranh này. Bạn nhìn thấy gì và chuyện gì đang xảy ra?', '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(6, 'question', 5, 'Bức tranh này khiến bạn cảm thấy như thế nào? Nó gợi lên những kỷ niệm hay suy nghĩ gì?', '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(7, 'question', 6, 'Nếu bạn ở trong tình huống này, bạn sẽ làm gì? Giải thích lựa chọn của bạn.', '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(8, 'question', 7, 'Bạn có nghĩ rằng công nghệ có tác động tích cực hay tiêu cực hơn đến giao tiếp? Giải thích quan điểm của bạn.', '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(9, 'question', 8, 'Đặc điểm quan trọng nhất của một người bạn tốt là gì? Đưa ra lý do và ví dụ.', '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(10, 'question', 9, 'Có nên bắt buộc học sinh học ngoại ngữ không? Tại sao có hoặc tại sao không?', '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(11, 'question', 10, 'Bạn nghĩ các thành phố sẽ thay đổi như thế nào trong 20 năm tới? Bạn muốn thấy những cải tiến nào?', '2025-06-24 08:27:59', '2025-06-24 08:27:59'),
+(12, 'question', 11, 'Bạn sẽ khuyên gì cho ai đó muốn cải thiện kỹ năng nói tiếng Anh của mình?', '2025-06-24 08:27:59', '2025-06-24 08:27:59');
 
 -- --------------------------------------------------------
 
@@ -409,7 +473,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `email`, `password_hash`, `name`, `avatar`, `is_email_verified`, `auth_provider`, `auth_provider_id`, `role`, `created_at`, `updated_at`, `last_login`, `uuid`) VALUES
 (1, NULL, NULL, 'hoang', NULL, NULL, NULL, NULL, 'student', '2025-06-08 01:55:14', '2025-06-08 01:55:14', NULL, 'ugejkghbkjg94393'),
-(2, 'hoang@gmail.com', '$2b$10$8dYLg8xGhvGj6S23QKeUVu/iG6Z4u7n5X2OseI9z1.2GPaYVF9C4a', 'hoang', NULL, 0, 'email', NULL, 'student', '2025-06-16 22:37:36', '2025-06-16 22:37:36', NULL, 'c282a6be-20c2-4ec1-a90c-0f4b28538879');
+(2, 'ngochoanghuy0504@gmail.com', '$2b$10$ozcMaOTHw8E2LbbC8oeOCuwzHEHWhw4OURSFKB2kWBviJjLZvNM4a', 'hoang', NULL, 1, 'email', NULL, 'student', '2025-06-16 22:37:36', '2025-06-25 20:34:39', '2025-06-25 20:34:39', 'c282a6be-20c2-4ec1-a90c-0f4b28538879');
 
 -- --------------------------------------------------------
 
@@ -563,25 +627,25 @@ INSERT INTO `vocabularies` (`id`, `word`, `image_url`, `pronunciation`, `speech_
 (4, 'efficient', NULL, NULL, NULL, 'hiệu quả', 'She designed an efficient workflow...', 'business', 'pending', '2025-06-20 13:51:25', '2025-06-20 13:51:25'),
 (5, 'She’s eating', NULL, NULL, NULL, 'Cô ấy đang ăn', 'She’s eating in a picnic area.', 'casual', 'pending', '2025-06-21 18:55:02', '2025-06-21 18:55:02'),
 (6, 'again', 'again.jpg', '/əˈɡen/', 'again.mp3', 'Once more; another time.', 'Can you say that again?', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(7, 'clean', 'clean.jpg', '/kliːn/', 'clean.mp3', 'Free from dirt or mess.', 'She likes to keep her room clean.', 'keeping things tidy', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(8, 'close', 'close.png', '/kloʊz/', 'close.mp3', 'To shut something.', 'Please close the door when you leave.', 'closing a door or window', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(9, 'cold', 'cold.jpg', '/koʊld/', 'cold.mp3', 'Having a low temperature.', 'It’s very cold outside today.', 'describing situations', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(7, 'clean', 'clean.jpg', '/kliːn/', 'clean.mp3', 'Free from dirt or mess.', 'She likes to keep her room clean.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(8, 'close', 'close.png', '/kloʊz/', 'close.mp3', 'To shut something.', 'Please close the door when you leave.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(9, 'cold', 'cold.jpg', '/koʊld/', 'cold.mp3', 'Having a low temperature.', 'It’s very cold outside today.', 'health', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
 (10, 'come', 'come.jpg', '/kʌm/', 'come.mp3', 'To move toward someone or something.', 'Can you come here for a minute?', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(11, 'doctor', 'doctor.png', '/ˈdɒktər/', 'doctor.mp3', 'A person who treats sick people.', 'The doctor gave me medicine.', 'visiting a clinic', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(12, 'dream', 'dream.jpg', '/driːm/', 'dream.mp3', 'Thoughts during sleep or a goal.', 'I had a strange dream last night.', 'talking about sleep or goals', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(11, 'doctor', 'doctor.png', '/ˈdɒktər/', 'doctor.mp3', 'A person who treats sick people.', 'The doctor gave me medicine.', 'career', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(12, 'dream', 'dream.jpg', '/driːm/', 'dream.mp3', 'Thoughts during sleep or a goal.', 'I had a strange dream last night.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
 (13, 'give', 'give.jpg', '/ɡɪv/', 'give.mp3', 'To offer something to someone.', 'She will give you a gift.', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(14, 'make', 'make.jpg', '/meɪk/', 'make.mp3', 'To create or build something.', 'Let’s make a cake together.', 'creating something', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(15, 'peace', 'peace.jpg', '/piːs/', 'peace.mp3', 'A state of calm and no war.', 'The world needs more peace.', 'talking about concepts', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(16, 'popular', 'popular.jpg', '/ˈpɒpjələr/', 'popular.mp3', 'Liked by many people.', 'He is very popular at school.', 'describing situations', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(17, 'right', 'right.jpg', '/raɪt/', 'right.mp3', 'Correct or a direction.', 'You were right about the answer.', 'location or direction', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(18, 'small', 'small.jpg', '/smɔːl/', 'small.mp3', 'Not large in size.', 'That’s a small dog.', 'talking about concepts', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(19, 'so', 'so.jpg', '/soʊ/', 'so.mp3', 'To a great extent.', 'I am so happy today.', 'expressing meaning', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(20, 'some', 'some.jpg', '/sʌm/', 'some.mp3', 'An unspecified amount.', 'I have some cookies to share.', 'talking about concepts', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(21, 'stone', 'stone.jpg', '/stoʊn/', 'stone.mp3', 'A hard, solid material.', 'He threw a stone into the lake.', 'describing situations', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(22, 'such', 'such.png', '/sʌtʃ/', 'such.mp3', 'Of a kind or degree.', 'It was such a nice day.', 'giving emphasis', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(23, 'there', 'there.jpg', '/ðer/', 'there.mp3', 'In that place.', 'The book is over there.', 'location or direction', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(24, 'think', 'think.jpg', '/θɪŋk/', 'think.mp3', 'To use your mind to consider.', 'I think it will rain today.', 'expressing meaning', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(25, 'wait', 'wait.jpg', '/weɪt/', 'wait.mp3', 'To stay until something happens.', 'Please wait for your turn.', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(14, 'make', 'make.jpg', '/meɪk/', 'make.mp3', 'To create or build something.', 'Let’s make a cake together.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(15, 'peace', 'peace.jpg', '/piːs/', 'peace.mp3', 'A state of calm and no war.', 'The world needs more peace.', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(16, 'popular', 'popular.jpg', '/ˈpɒpjələr/', 'popular.mp3', 'Liked by many people.', 'He is very popular at school.', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(17, 'right', 'right.jpg', '/raɪt/', 'right.mp3', 'Correct or a direction.', 'You were right about the answer.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(18, 'small', 'small.jpg', '/smɔːl/', 'small.mp3', 'Not large in size.', 'That’s a small dog.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(19, 'so', 'so.jpg', '/soʊ/', 'so.mp3', 'To a great extent.', 'I am so happy today.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(20, 'some', 'some.jpg', '/sʌm/', 'some.mp3', 'An unspecified amount.', 'I have some cookies to share.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(21, 'stone', 'stone.jpg', '/stoʊn/', 'stone.mp3', 'A hard, solid material.', 'He threw a stone into the lake.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(22, 'such', 'such.png', '/sʌtʃ/', 'such.mp3', 'Of a kind or degree.', 'It was such a nice day.', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(23, 'there', 'there.jpg', '/ðer/', 'there.mp3', 'In that place.', 'The book is over there.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(24, 'think', 'think.jpg', '/θɪŋk/', 'think.mp3', 'To use your mind to consider.', 'I think it will rain today.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(25, 'wait', 'wait.jpg', '/weɪt/', 'wait.mp3', 'To stay until something happens.', 'Please wait for your turn.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
 (26, 'The man', NULL, NULL, NULL, 'Người đàn ông', 'The man is standing in the snow beside a car.', 'business', 'pending', '2025-06-21 23:19:08', '2025-06-21 23:19:08');
 
 --
@@ -840,13 +904,13 @@ ALTER TABLE `audio_files`
 -- AUTO_INCREMENT cho bảng `exams`
 --
 ALTER TABLE `exams`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT cho bảng `exam_parts`
 --
 ALTER TABLE `exam_parts`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT cho bảng `feedbacks`
@@ -876,19 +940,19 @@ ALTER TABLE `listening_transcripts`
 -- AUTO_INCREMENT cho bảng `parts`
 --
 ALTER TABLE `parts`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT cho bảng `questions`
 --
 ALTER TABLE `questions`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT cho bảng `question_groups`
 --
 ALTER TABLE `question_groups`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT cho bảng `skills`
@@ -924,7 +988,7 @@ ALTER TABLE `study_sessions`
 -- AUTO_INCREMENT cho bảng `translations`
 --
 ALTER TABLE `translations`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT cho bảng `users`

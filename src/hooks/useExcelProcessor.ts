@@ -167,6 +167,23 @@ export function useExcelProcessor() {
       type: [1, 2, 3, 4].includes(row.part_number) ? 'listening' : 'reading'
     }));
 
+    // Process Question Groups sheet (optional)
+    let questionGroups: ExamQuestionGroup[] = [];
+    if (workbook.Sheets['QuestionGroups'] || workbook.Sheets['Question Groups']) {
+      const groupsSheetName = workbook.Sheets['QuestionGroups'] ? 'QuestionGroups' : 'Question Groups';
+      const groupsData = XLSX.utils.sheet_to_json(workbook.Sheets[groupsSheetName]) as any[];
+      
+      questionGroups = groupsData.map(row => ({
+        group_id: row.group_id || row.id,
+        part_number: row.part_number,
+        passage: row.passage || row.content,
+        image_url: row.image_url,
+        instruction: row.instruction,
+        question_range: [row.start_question || row.question_start, row.end_question || row.question_end],
+        vietnamese_translation: row.vietnamese_translation
+      }));
+    }
+
     // Process Questions sheet
     const questionsSheet = workbook.Sheets['Questions'];
     if (!questionsSheet) throw new Error('Thiếu sheet "Questions"');
@@ -175,6 +192,7 @@ export function useExcelProcessor() {
     const questions: ExamQuestion[] = questionsData.map(row => ({
       part_number: row.part_number,
       question_number: row.question_number,
+      group_id: row.group_id || row.question_group_id, // Lấy group_id từ Excel
       content: row.content,
       question_type: 'multiple_choice' as const,
       vietnamese_translation: row.vietnamese_translation || ''
@@ -259,6 +277,7 @@ export function useExcelProcessor() {
     return {
       exam,
       parts,
+      question_groups: questionGroups, // Thêm question groups vào return
       questions,
       answers,
       translations

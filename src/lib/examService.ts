@@ -33,6 +33,7 @@ interface ExamData {
     content: string;
     question_type: string;
     vietnamese_translation?: string;
+    group_id?: number;
   }>;
   answers: Array<{
     part_number: number;
@@ -41,6 +42,12 @@ interface ExamData {
     is_correct: boolean;
     explanation?: string;
     vietnamese_translation?: string;
+  }>;
+  question_groups?: Array<{
+    group_id: number;
+    part_number: number;
+    passage: string;
+    image_url?: string;
   }>;
 }
 
@@ -134,8 +141,9 @@ export async function createExamWithData(
       }
     }
 
-    // 3. Create question groups and questions
-    const questionMap = new Map<string, number>(); // part_number:question_number -> question_id
+    // 3. Create questions and question groups
+    const questionMap = new Map<string, number>();
+    const createdGroups = new Map<string, number>(); // Track created groups by part_number:group_id
 
     // Handle specific question numbers
     const processedQuestions = new Set<number>();
@@ -154,17 +162,47 @@ export async function createExamWithData(
       const partId = partMap.get(partNumber);
       if (!partId) continue;
 
-      // Create a default question group for each part
-      const group = await QuestionGroup.create({
-        part_id: partId,
-        content: `Question group for part ${partNumber}`,
-        created_at: new Date()
-      }, { transaction });
+      // Xử lý question groups cho reading comprehension
+      let groupId: number;
+      
+      if (questionData.group_id) {
+        // Nếu có group_id từ Excel, tạo hoặc sử dụng group đã tồn tại
+        const groupKey = `${partNumber}:${questionData.group_id}`;
+        
+        if (createdGroups.has(groupKey)) {
+          // Group đã tồn tại, sử dụng lại
+          groupId = createdGroups.get(groupKey)!;
+        } else {
+          // Tạo group mới từ question_groups data hoặc default
+          const groupData = examData.question_groups?.find(g => 
+            g.group_id === questionData.group_id && g.part_number === partNumber
+          );
+          
+          const group = await QuestionGroup.create({
+            part_id: partId,
+            content: groupData?.passage || `Reading passage for questions in group ${questionData.group_id}`,
+            image_url: groupData?.image_url || null,
+            created_at: new Date()
+          }, { transaction });
+          
+          groupId = group.id;
+          createdGroups.set(groupKey, groupId);
+        }
+      } else {
+        // Không có group_id, tạo group riêng (cho listening hoặc single questions)
+        const group = await QuestionGroup.create({
+          part_id: partId,
+          content: `Question group for part ${partNumber}, question ${questionData.question_number}`,
+          created_at: new Date()
+        }, { transaction });
+        
+        groupId = group.id;
+      }
 
       // Create question
       const question = await Question.create({
         part_id: partId,
-        group_id: group.id,
+        group_id: groupId,
         question_number: questionData.question_number,
         content: questionData.content,
         question_type: questionData.question_type as any,

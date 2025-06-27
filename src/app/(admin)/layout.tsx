@@ -11,6 +11,7 @@ import ExamImportPage from "@/components/admin/import/ExamImportPage";
 import ListeningTranscript from "@/components/admin/ListeningTranscript";
 import Dashboard from "@/components/admin/Dashboard";
 import { useSelectedMenu } from "@/contexts/SelectedAminMenuContext";
+import UserAnalytics from "@/components/admin/UserAnalytics";
 interface AdminLayoutProps {
   children?: ReactNode;
 }
@@ -45,6 +46,10 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       case 'listenningTranscript':
         return (
           <ListeningTranscript />
+        );
+         case 'userAnalytics':
+        return (
+          <UserAnalytics />
         );
       default:
         return children || null; // Nếu không khớp, giữ nguyên children (nếu có)

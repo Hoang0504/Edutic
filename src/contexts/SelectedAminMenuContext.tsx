@@ -9,7 +9,8 @@ type MenuKey =
   | "exams_2"
   | "import-exam"
   | "flashcard"
-  | "listenningTranscript";
+  | "listenningTranscript"
+  | "userAnalytics";
 
 interface SelectedMenuContextProps {
   selectedMenu: MenuKey;
@@ -32,6 +33,7 @@ export const SelectedMenuProvider = ({ children }: { children: ReactNode }) => {
       "import-exam",
       "flashcard",
       "listenningTranscript",
+      "userAnalytics",
     ];
     if (validKeys.includes(menuKey as MenuKey)) {
       setSelectedMenu(menuKey as MenuKey);

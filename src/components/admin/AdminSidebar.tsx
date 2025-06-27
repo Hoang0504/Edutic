@@ -45,6 +45,7 @@ const AdminSidebar = ({ onMenuSelect }: AdminSidebarProps) => {
       icon: <ClipboardIcon className="h-5 w-5" />,
     },
     { key: 'listenningTranscript', label: 'ListenningTranscript', icon: <MegaphoneIcon className="h-5 w-5" /> },
+    { key: 'userAnalytics', label: 'UserAnalytics', icon: <UserIcon className="h-5 w-5" /> },
     { key: 'logout', label: <button onClick={handleLogout}>Logout</button>, icon: <PowerIcon className="h-5 w-5" /> },
   ];
 

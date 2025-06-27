@@ -16,12 +16,6 @@ interface FlashcardGroup {
   count: number;
 }
 
-// interface Props {
-//   userId?: string;
-//   byDate?: boolean;
-// }
-
-// { userId, byDate }: Props
 function FlashcardList() {
   const router = useRouter();
 
@@ -42,13 +36,13 @@ function FlashcardList() {
       const res = await fetch(url);
       const result = await res.json();
 
-      console.log(result);
+      // console.log(result);
 
       if (!res.ok || !result) {
         setData(null);
       } else {
         const mappedData: FlashcardGroup[] = result.map((item: any) => ({
-          label: byDate ? item.date : item.label,
+          label: item.label,
           count: item.count,
         }));
 
@@ -82,7 +76,17 @@ function FlashcardList() {
         return (
           <motion.div
             key={`${item.label}-${pageIdx}`}
-            onClick={() => router.push(ROUTES.VOCABULARIES.QUIZLET)}
+            onClick={() =>
+              router.push(
+                `${ROUTES.VOCABULARIES.QUIZLET}?${
+                  byDate
+                    ? `date=${item.label}&user_id=${user_id}`
+                    : `context=${item.label}${
+                        user_id ? `&user_id=${user_id}` : ""
+                      }`
+                }${pageIdx > 0 ? `&set=${pageIdx + 1}` : ""}`
+              )
+            }
             className="flex items-center justify-between rounded-2xl p-4 bg-gradient-to-br from-white to-slate-50 shadow-md group hover:shadow-xl transition hover:ring-2 hover:ring-blue-300 hover:ring-offset-1 cursor-pointer"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

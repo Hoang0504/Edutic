@@ -24,6 +24,14 @@ const API_ENDPOINTS = {
     CREATE: `${BASE_URL}/vocabularies`,
     GET_ALL: `${BASE_URL}/vocabularies`,
     GET_BY_ID: (id: string) => `${BASE_URL}/vocabularies/${id}`,
+    BY_CONTEXT: (context: string, user_id?: string, set?: string) =>
+      `${BASE_URL}/vocabularies/by-context?context=${context}${
+        user_id ? `&user_id=${user_id}` : ""
+      }${set ? `&set=${set}` : ""}`,
+    BY_DATE: (user_id: string, date: string, set?: string) =>
+      `${BASE_URL}/vocabularies/by-date?user_id=${user_id}&date=${date}${
+        set ? `&set=${set}` : ""
+      }`,
   },
   // Add other endpoints
   AUTH: {

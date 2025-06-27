@@ -1,20 +1,23 @@
 "use client";
 
-import "./FlashcardQuizlet.css";
-
-import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import {
   Volume2,
   RefreshCcw,
   SkipBack,
   SkipForward,
-  RotateCcw,
   Play,
   Pause,
   Star,
 } from "lucide-react";
-import Image from "next/image";
-import { useEffect, useState } from "react";
+
+import API_ENDPOINTS from "@/constants/api";
+
+import FullPageLoading from "../FullPageLoading";
+
+import { useQueryParams } from "@/hooks";
 
 interface Flashcard {
   id: number;
@@ -27,103 +30,13 @@ interface Flashcard {
 }
 
 export default function FlashcardQuizlet() {
-  //   const [flashcards, setFlashcards] = useState<Flashcard[] | null>(null);
-  const flashcards: Flashcard[] = [
-    {
-      id: 7,
-      word: "clean",
-      meaning: "Free from dirt or mess.",
-      example: "She likes to keep her room clean.",
-      image_url: "clean.jpg",
-      pronunciation: "/kliːn/",
-      speech_audio_url: "clean.mp3",
-    },
-    {
-      id: 8,
-      word: "close",
-      meaning: "To shut something.",
-      example: "Please close the door when you leave.",
-      image_url: "close.png",
-      pronunciation: "/kloʊz/",
-      speech_audio_url: "close.mp3",
-    },
-    {
-      id: 12,
-      word: "dream",
-      meaning: "Thoughts during sleep or a goal.",
-      example: "I had a strange dream last night.",
-      image_url: "dream.jpg",
-      pronunciation: "/driːm/",
-      speech_audio_url: "dream.mp3",
-    },
-    {
-      id: 14,
-      word: "make",
-      meaning: "To create or build something.",
-      example: "Let’s make a cake together.",
-      image_url: "make.jpg",
-      pronunciation: "/meɪk/",
-      speech_audio_url: "make.mp3",
-    },
-    {
-      id: 17,
-      word: "right",
-      meaning: "Correct or a direction.",
-      example: "You were right about the answer.",
-      image_url: "right.jpg",
-      pronunciation: "/raɪt/",
-      speech_audio_url: "right.mp3",
-    },
-    {
-      id: 18,
-      word: "small",
-      meaning: "Not large in size.",
-      example: "That’s a small dog.",
-      image_url: "small.jpg",
-      pronunciation: "/smɔːl/",
-      speech_audio_url: "small.mp3",
-    },
-    {
-      id: 19,
-      word: "so",
-      meaning: "To a great extent.",
-      example: "I am so happy today.",
-      image_url: "so.jpg",
-      pronunciation: "/soʊ/",
-      speech_audio_url: "so.mp3",
-    },
-    {
-      id: 20,
-      word: "some",
-      meaning: "An unspecified amount.",
-      example: "I have some cookies to share.",
-      image_url: "some.jpg",
-      pronunciation: "/sʌm/",
-      speech_audio_url: "some.mp3",
-    },
-    {
-      id: 21,
-      word: "stone",
-      meaning: "A hard, solid material.",
-      example: "He threw a stone into the lake.",
-      image_url: "stone.jpg",
-      pronunciation: "/stoʊn/",
-      speech_audio_url: "stone.mp3",
-    },
-    {
-      id: 23,
-      word: "there",
-      meaning: "In that place.",
-      example: "The book is over there.",
-      image_url: "there.jpg",
-      pronunciation: "/ðer/",
-      speech_audio_url: "there.mp3",
-    },
-  ];
+  const { context, user_id, date, set } = useQueryParams();
+
   const [index, setIndex] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [shuffled, setShuffled] = useState(false);
   const [autoPlay, setautoPlay] = useState(false);
+  const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
 
   const current = flashcards[index];
 
@@ -133,11 +46,12 @@ export default function FlashcardQuizlet() {
     let flipTimer: NodeJS.Timeout;
     let nextTimer: NodeJS.Timeout;
 
-    flipTimer = setTimeout(() => {
+    flipTimer = setTimeout(async () => {
+      await handleSpeak();
       setIsFlipped(true);
 
       nextTimer = setTimeout(() => {
-        setIndex((prev) => prev + 1);
+        setIndex((prev) => (prev + 1) % flashcards.length);
         setIsFlipped(false); // reset flip cho thẻ mới
       }, 3000); // thời gian chờ sau khi flip
     }, 3000); // thời gian chờ trước khi flip
@@ -147,6 +61,37 @@ export default function FlashcardQuizlet() {
       clearTimeout(nextTimer);
     };
   }, [index, autoPlay]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if ((!context && !date) || (date && !user_id)) {
+        setError("Không có từ vựng nào tồn tại");
+        return;
+      }
+
+      try {
+        const url = context
+          ? API_ENDPOINTS.VOCABULARIES.BY_CONTEXT(context, user_id || "", set)
+          : API_ENDPOINTS.VOCABULARIES.BY_DATE(user_id, date, set);
+
+        const res = await fetch(url);
+        const result = await res.json();
+
+        // console.log(result);
+
+        if (!res.ok || result.length === 0) {
+          setError("Không có từ vựng nào tồn tại");
+        }
+
+        setFlashcards(result);
+        setError(null);
+      } catch (error) {
+        console.error("Error fetching flashcard data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleNext = () => {
     setIndex((prev) => (prev + 1) % flashcards.length);
@@ -159,79 +104,35 @@ export default function FlashcardQuizlet() {
   };
 
   const handleShuffle = () => {
-    // const shuffledCards = [...cards].sort(() => Math.random() - 0.5);
+    const shuffledCards = [...flashcards].sort(() => Math.random() - 0.5);
+    setFlashcards(shuffledCards);
     setIndex(0);
     setIsFlipped(false);
-    setShuffled(true);
   };
 
-  const handleSpeak = () => {
+  const handleSpeak = async () => {
     const audio = new Audio(`/flashcards/${current.speech_audio_url}`);
-    audio.play();
+    await audio.play();
   };
+
+  if (error) {
+    return (
+      <div className="text-red-600 font-semibold text-center">{error}</div>
+    );
+  }
+
+  if (!flashcards.length || !current) {
+    return <FullPageLoading />;
+  }
 
   return (
     <div className="max-w-3xl mx-auto px-4">
       {/* Flashcard */}
-      {/* <div
-        className="relative h-96 rounded-3xl shadow-lg bg-white text-center select-none"
-        onClick={() => setIsFlipped((f) => !f)}
-      >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={isFlipped ? "back" : "front"}
-            initial={{ rotateX: -90 }}
-            animate={{ rotateX: 0 }}
-            exit={{ rotateX: -90 }}
-            transition={{ duration: 0.5 }}
-            className="absolute inset-0 flex flex-col justify-between p-6 backface-hidden"
-          >
-            {!isFlipped ? (
-              <>
-                <div className="flex justify-end text-sm text-gray-500">
-                  <Volume2
-                    className="w-5 h-5 cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSpeak();
-                    }}
-                  />
-                </div>
-                <div className="flex-1 flex items-center justify-center">
-                  <h2 className="text-3xl font-semibold">{current.word}</h2>
-                </div>
-                <div className="flex justify-end text-gray-400">
-                  <Star className="w-5 h-5" />
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="text-sm text-gray-500">
-                  {current.pronunciation}
-                </div>
-                <div className="text-lg font-semibold text-gray-800">
-                  {current.meaning}
-                </div>
-                <div className="text-gray-500 italic">"{current.example}"</div>
-                <div className="flex justify-center">
-                  <Image
-                    src={`/flashcards/${current.image_url}`}
-                    width={0}
-                    height={0}
-                    sizes="100vw"
-                    className="w-auto h-40 object-contain rounded-xl"
-                    alt="flashcard visual"
-                  />
-                </div>
-              </>
-            )}
-          </motion.div>
-        </AnimatePresence>
-      </div> */}
       <motion.div
+        key={`${index}-${isFlipped}`}
         animate={{ rotateX: isFlipped ? 180 : 0 }}
         transition={{ duration: 0.6 }}
-        className="relative h-96 w-full rounded-3xl shadow-lg bg-white text-center select-none perspective preserve-3d"
+        className="relative h-96 w-full rounded-3xl shadow-lg bg-white text-center select-none perspective preserve-3d cursor-pointer"
         onClick={() => setIsFlipped((f) => !f)}
       >
         {/* Mặt trước */}

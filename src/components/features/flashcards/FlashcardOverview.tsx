@@ -88,13 +88,16 @@ function FlashcardOverview() {
                 {userCount}
               </div>
             </Link>
-            <div className="rounded-2xl shadow bg-gradient-to-r from-yellow-100 to-yellow-200 p-4 flex flex-col items-center text-center space-y-2">
+            <Link
+              href={`${ROUTES.FLASHCARDS.CONTEXT_LIST}?user_id=${user.id}&byDate=true`}
+              className="rounded-2xl shadow bg-gradient-to-r from-yellow-100 to-yellow-200 p-4 flex flex-col items-center text-center space-y-2"
+            >
               <CircleStackIcon className="w-8 h-8 text-yellow-700" />
               <div className="text-xl font-semibold">Cần ôn tập</div>
               <div className="text-3xl font-bold text-yellow-700">
                 {dueCount}
               </div>
-            </div>
+            </Link>
           </>
         )}
       </div>

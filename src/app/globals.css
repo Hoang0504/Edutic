@@ -128,3 +128,20 @@ select:focus {
   border: none;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
+
+/* Quizlet */
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.perspective {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.rotate-x-180 {
+  transform: rotateX(180deg);
+}

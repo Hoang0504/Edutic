@@ -10,9 +10,14 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (req.method !== "GET") return res.status(405).end();
 
-  const { user_id, context } = req.query;
+  const { user_id, context, set } = req.query;
 
   if (!context) return res.status(400).json({ message: "Missing context" });
+
+  const limit = 10;
+  const offset = set ? (Number(set) - 1) * limit : 0;
+
+  let data = [];
 
   if (user_id) {
     const flashcards = await Flashcard.findAll({
@@ -23,6 +28,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
           where: { context },
         },
       ],
+      limit,
+      offset,
     });
 
     const data = flashcards.map((fc) => ({
@@ -44,9 +51,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       status: "approved",
     },
     order: [["created_at", "DESC"]],
+    limit,
+    offset,
   });
 
-  const data = vocabularies.map((vocab) => ({
+  data = vocabularies.map((vocab) => ({
     id: vocab.id,
     word: vocab.word,
     meaning: vocab.meaning,
@@ -55,6 +64,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     pronunciation: vocab.pronunciation,
     speech_audio_url: vocab.speech_audio_url,
   }));
+
+  if (data.length === 0) {
+    return res.status(404).json({ message: "No data found for this set" });
+  }
 
   return res.status(200).json(data);
 };

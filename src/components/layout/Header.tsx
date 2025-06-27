@@ -23,6 +23,7 @@ import {
   SpeakerXMarkIcon,
   SpeakerWaveIcon,
   LanguageIcon,
+  NewspaperIcon,
 } from "@heroicons/react/24/outline";
 
 import { useAuth } from "@/contexts/AuthContext";
@@ -276,6 +277,12 @@ export default function Header() {
             >
               {t("header.exams", "Đề thi online")}
             </a>
+            <a
+              href="/blog"
+              className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+            >
+              {t("header.blog", "Kiến thức TOEIC")}
+            </a>
           </div>
 
           {/*  Mobile Menu, Pomodoro Timer, Notifications & User Menu */}
@@ -312,6 +319,14 @@ export default function Header() {
                     >
                       <ClipboardDocumentListIcon className="h-5 w-5 mr-3 text-gray-400" />
                       {t("header.exams", "Đề thi online")}
+                    </a>
+                    <a
+                      href="/blog"
+                      className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <NewspaperIcon className="h-5 w-5 mr-3 text-gray-400" />
+                      {t("header.blog", "Kiến thức TOEIC")}
                     </a>
                   </div>
                 </div>

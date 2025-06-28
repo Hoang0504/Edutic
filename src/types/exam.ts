@@ -22,9 +22,20 @@ export interface ExamPart {
   };
 }
 
+export interface ExamQuestionGroup {
+  group_id: number;
+  part_number: number;
+  passage?: string; // Đoạn văn cho reading comprehension
+  image_url?: string; // Hình ảnh đi kèm passage
+  instruction?: string; // Hướng dẫn riêng cho nhóm câu hỏi này
+  question_range: [number, number]; // [start_question, end_question]
+  vietnamese_translation?: string; // Bản dịch passage
+}
+
 export interface ExamQuestion {
   part_number: number;
   question_number: number;
+  group_id?: number; // ID nhóm câu hỏi (cho reading comprehension)
   content: string;
   question_type: 'multiple_choice' | 'fill_in_blank' | 'matching' | 'speaking' | 'writing'; // Updated to match database ENUM
   image_url?: string;
@@ -51,6 +62,7 @@ export interface Translation {
 export interface ExamImportData {
   exam: ExamInfo;
   parts: ExamPart[];
+  question_groups?: ExamQuestionGroup[]; // Thêm question groups
   questions: ExamQuestion[];
   answers: ExamAnswer[];
   translations?: Translation[];

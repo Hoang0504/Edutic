@@ -265,24 +265,27 @@ export default function Header() {
 
           {/* Navigation Menu - Hidden on mobile, shown on sm+ */}
           <div className="hidden sm:flex items-center space-x-8">
-            <a
-              href="/flashcards"
-              className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
-            >
-              {t("header.flashcards", "Flashcard của tôi")}
-            </a>
-            <a
+            {isLoggedIn && (
+              <Link
+                href="/flashcards"
+                className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+              >
+                {t("header.flashcards", "Flashcard của tôi")}
+              </Link>
+            )}
+
+            <Link
               href="/exams"
               className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
             >
               {t("header.exams", "Đề thi online")}
-            </a>
-            <a
+            </Link>
+            <Link
               href="/blog"
               className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
             >
               {t("header.blog", "Kiến thức TOEIC")}
-            </a>
+            </Link>
           </div>
 
           {/*  Mobile Menu, Pomodoro Timer, Notifications & User Menu */}
@@ -679,66 +682,6 @@ export default function Header() {
                 </span>
               </button>
 
-              {/* User Dropdown Menu */}
-              {isUserMenuOpen && (
-                <div className="absolute right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                  <div className="py-1">
-                    <div className="px-4 py-3 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-900">
-                        {user?.name}
-                      </p>
-                      <p className="text-sm text-gray-500">{user?.email}</p>
-                      <p className="text-xs text-blue-600 capitalize">
-                        {user?.role}
-                      </p>
-                    </div>
-
-                    <Link
-                      href="/profile"
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      <UserCircleIcon className="h-4 w-4 mr-3 text-gray-400" />
-                      Thông tin cá nhân
-                    </Link>
-
-                    {user?.role === "admin" && (
-                      <Link
-                        href="/admin"
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsUserMenuOpen(false)}
-                      >
-                        <AcademicCapIcon className="h-4 w-4 mr-3 text-gray-400" />
-                        Quản trị
-                      </Link>
-                    )}
-
-                    <button
-                      onClick={() => {
-                        logout();
-                        setIsUserMenuOpen(false);
-                      }}
-                      className="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                    >
-                      <svg
-                        className="h-4 w-4 mr-3"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                        />
-                      </svg>
-                      Đăng xuất
-                    </button>
-                  </div>
-                </div>
-              )}
-
               {/* Language Dropdown */}
               {isLanguageDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
@@ -775,66 +718,80 @@ export default function Header() {
             </div>
 
             {/* User Menu */}
-            <div className="relative" ref={userMenuRef}>
-              <button
-                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex items-center space-x-1 sm:space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
-              >
-                {user?.avatar ? (
-                  <Image
-                    src={user.avatar}
-                    alt={user.name}
-                    width={0}
-                    height={0}
-                    sizes="100vw"
-                    className="h-6 w-6 sm:h-8 sm:w-8 object-contain rounded-full"
-                  />
-                ) : (
-                  <UserCircleIcon className="h-6 w-6 sm:h-8 sm:w-8" />
-                )}
-                <span className="font-medium text-sm sm:text-base hidden sm:inline">
-                  {user?.name || "Null"}
-                </span>
-                <ChevronDownIcon className="h-3 w-3 sm:h-4 sm:w-4" />
-              </button>
+            {isLoggedIn ? (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center space-x-1 sm:space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
+                >
+                  {user?.avatar ? (
+                    <Image
+                      src={user.avatar}
+                      alt={user.name}
+                      width={0}
+                      height={0}
+                      sizes="100vw"
+                      className="h-6 w-6 sm:h-8 sm:w-8 object-contain rounded-full"
+                    />
+                  ) : (
+                    <UserCircleIcon className="h-6 w-6 sm:h-8 sm:w-8" />
+                  )}
+                  <span className="font-medium text-sm sm:text-base hidden sm:inline">
+                    {user?.name || "Null"}
+                  </span>
+                  <ChevronDownIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+                </button>
 
-              {/* Dropdown Menu */}
-              {isUserMenuOpen && (
-                <div className="absolute right-0 mt-2 w-44 sm:w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
-                  <div className="py-1">
-                    <a
-                      href="/profile"
-                      className="block px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Thông tin cá nhân
-                    </a>
-                    <a
-                      href="/add-music"
-                      className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      <MusicalNoteIcon className="h-4 w-4 mr-2" />
-                      Thêm nhạc
-                    </a>
-                    <a
-                      href="/settings"
-                      className="block px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Cài đặt
-                    </a>
-                    <div className="border-t border-gray-100"></div>
-                    <button
-                      onClick={() => {
-                        // Handle logout
-                        window.location.href = "/login";
-                      }}
-                      className="block w-full text-left px-3 sm:px-4 py-2 text-xs sm:text-sm text-red-600 hover:bg-gray-100"
-                    >
-                      Đăng xuất
-                    </button>
+                {/* Dropdown Menu */}
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-44 sm:w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+                    <div className="py-1">
+                      <a
+                        href="/profile"
+                        className="block px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Thông tin cá nhân
+                      </a>
+                      <a
+                        href="/add-music"
+                        className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <MusicalNoteIcon className="h-4 w-4 mr-2" />
+                        Thêm nhạc
+                      </a>
+                      <a
+                        href="/settings"
+                        className="block px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Cài đặt
+                      </a>
+                      <div className="border-t border-gray-100"></div>
+                      <button
+                        onClick={logout}
+                        className="block w-full text-left px-3 sm:px-4 py-2 text-xs sm:text-sm text-red-600 hover:bg-gray-100"
+                      >
+                        Đăng xuất
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Link
+                  href="/login"
+                  className="text-sm text-gray-700 hover:text-blue-600 font-medium"
+                >
+                  Đăng nhập
+                </Link>
+                <Link
+                  href="/register"
+                  className="bg-blue-600 text-white px-3 py-1.5 rounded text-sm font-medium hover:bg-blue-700"
+                >
+                  Đăng ký
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>

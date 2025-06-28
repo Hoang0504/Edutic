@@ -7,7 +7,7 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 interface User {
   id: number;
@@ -35,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
   // Khởi tạo từ localStorage khi component mount
   useEffect(() => {
@@ -56,18 +57,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
+  useEffect(() => {
+    const handleRedirect = () => {
+      if (pathname === "/login" || pathname === "/register") {
+        // Chuyển hướng theo role
+        if (user?.role === "admin") {
+          router.push("/admin");
+        } else {
+          router.push("/");
+        }
+      }
+    };
+
+    handleRedirect();
+  }, [user]);
+
   const login = (newToken: string, userData: User) => {
     setToken(newToken);
     setUser(userData);
     localStorage.setItem("mytoeic_token", newToken);
     localStorage.setItem("mytoeic_user", JSON.stringify(userData));
-
-    // Chuyển hướng theo role
-    if (userData.role === "admin") {
-      router.push("/admin");
-    } else {
-      router.push("/");
-    }
   };
 
   const logout = () => {

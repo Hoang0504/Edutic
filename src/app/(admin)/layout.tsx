@@ -1,56 +1,57 @@
 "use client";
+
 import React, { ReactNode } from "react";
-import AdminSidebar from "@/components/admin/AdminSidebar";
-import { Squares2X2Icon } from "@heroicons/react/24/outline";
-import { AdminProvider } from "@/contexts/AdminContext";
-import UserAdmin from "@/components/admin/UserAdmin";
+
+import NotFound from "../not-found";
 import Exams from "@/components/admin/Exams";
+import UserAdmin from "@/components/admin/UserAdmin";
 import Flashcard from "@/components/admin/Flashcard";
+import Dashboard from "@/components/admin/Dashboard";
+import AdminSidebar from "@/components/admin/AdminSidebar";
+import UserAnalytics from "@/components/admin/UserAnalytics";
+import FullPageLoading from "@/components/features/FullPageLoading";
 import AdminExamsPage from "@/components/admin/exams/AdminExamsPage";
 import ExamImportPage from "@/components/admin/import/ExamImportPage";
 import ListeningTranscript from "@/components/admin/ListeningTranscript";
-import Dashboard from "@/components/admin/Dashboard";
+
+import { useAuth } from "@/contexts/AuthContext";
+import { AdminProvider } from "@/contexts/AdminContext";
+import { Squares2X2Icon } from "@heroicons/react/24/outline";
 import { useSelectedMenu } from "@/contexts/SelectedAminMenuContext";
-import UserAnalytics from "@/components/admin/UserAnalytics";
+
 interface AdminLayoutProps {
   children?: ReactNode;
 }
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
-    const { selectedMenu, handleMenuSelect } = useSelectedMenu();
+  const { user, isLoading } = useAuth();
+  const { selectedMenu, handleMenuSelect } = useSelectedMenu();
 
- 
+  if (isLoading) {
+    return FullPageLoading();
+  }
+
+  if (!user || !user.role || user.role !== "admin") {
+    return NotFound();
+  }
+
   // Nội dung tương ứng với mỗi menu
   const renderContent = () => {
     switch (selectedMenu) {
       case "dashboard":
-        return (
-          <Dashboard />
-        );
-      case 'users':
-        return (
-          <UserAdmin />
-        );
-      case 'exams':
-        return (
-          <Exams />
-        );
-      case "exams_2":
+        return <Dashboard />;
+      case "users":
+        return <UserAdmin />;
+      case "exams":
         return <AdminExamsPage />;
       case "import-exam":
         return <ExamImportPage />;
-      case 'flashcard':
-        return (
-          <Flashcard />
-        );
-      case 'listenningTranscript':
-        return (
-          <ListeningTranscript />
-        );
-         case 'userAnalytics':
-        return (
-          <UserAnalytics />
-        );
+      case "flashcard":
+        return <Flashcard />;
+      case "listenningTranscript":
+        return <ListeningTranscript />;
+      case "userAnalytics":
+        return <UserAnalytics />;
       default:
         return children || null; // Nếu không khớp, giữ nguyên children (nếu có)
     }

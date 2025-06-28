@@ -1,7 +1,10 @@
 import { Metadata } from "next";
+
 import "./globals.css";
-import { SelectedMenuProvider } from "@/contexts/SelectedAminMenuContext";
+
 import { I18nProvider } from "@/contexts/I18nContext";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { SelectedMenuProvider } from "@/contexts/SelectedAminMenuContext";
 
 export const metadata: Metadata = {
   title: "Edutic - Ôn là trúng, Luyện là đạt",
@@ -17,9 +20,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <I18nProvider>
-          <SelectedMenuProvider>
-            {children}
-          </SelectedMenuProvider>
+          <AuthProvider>
+            <SelectedMenuProvider>{children}</SelectedMenuProvider>
+          </AuthProvider>
         </I18nProvider>
       </body>
     </html>

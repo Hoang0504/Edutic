@@ -1,7 +1,16 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { PlayIcon, PauseIcon, SpeakerWaveIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
+import React, { useState, useRef, useEffect } from "react";
+
+import {
+  PlayIcon,
+  PauseIcon,
+  SpeakerWaveIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "@heroicons/react/24/solid";
+
+import { useSelectedAnswers } from "@/contexts/SelectedAnswersContext";
 
 interface Question {
   id: number;
@@ -25,10 +34,10 @@ interface Part {
 
 interface ListeningExamProps {
   parts: Part[];
-  onAnswerSelect: (questionId: number, answer: string) => void;
 }
 
-const ListeningExam: React.FC<ListeningExamProps> = ({ parts, onAnswerSelect }) => {
+const ListeningExam: React.FC<ListeningExamProps> = ({ parts }) => {
+  const { selectedAnswers, setSelectedAnswers } = useSelectedAnswers();
   const [activeSection, setActiveSection] = useState(1);
   const [activePart, setActivePart] = useState(1);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -36,83 +45,88 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts, onAnswerSelect }) 
   const [volume, setVolume] = useState(50);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: string }>({});
-  
+  // const [selectedAnswers, setSelectedAnswers] = useState<{
+  //   [key: number]: string;
+  // }>({});
+
   const audioRef = useRef<HTMLAudioElement>(null);
 
   // Sample data for demonstration
   const sampleParts: Part[] = [
     {
       id: 1,
-      name: 'Part 1',
+      name: "Part 1",
       sections: [
         {
           id: 1,
-          name: 'Section 1',
+          name: "Section 1",
           questions: Array.from({ length: 6 }, (_, i) => ({
             id: i + 1,
             text: `Look at the picture and listen to the question. Choose the best answer.`,
             options: [
-              'A. The man is reading a book',
-              'B. The woman is typing on a computer',
-              'C. They are having a meeting',
-              'D. The office is empty'
+              "A. The man is reading a book",
+              "B. The woman is typing on a computer",
+              "C. They are having a meeting",
+              "D. The office is empty",
             ],
-            answered: false
-          }))
+            answered: false,
+          })),
         },
         {
           id: 2,
-          name: 'Section 2',
+          name: "Section 2",
           questions: Array.from({ length: 6 }, (_, i) => ({
             id: i + 7,
             text: `You will hear a question. Choose the best response.`,
             options: [
-              'A. Yes, I do',
-              'B. At 3 o\'clock',
-              'C. In the morning',
-              'D. By train'
+              "A. Yes, I do",
+              "B. At 3 o'clock",
+              "C. In the morning",
+              "D. By train",
             ],
-            answered: false
-          }))
+            answered: false,
+          })),
         },
         {
           id: 3,
-          name: 'Section 3',
+          name: "Section 3",
           questions: Array.from({ length: 6 }, (_, i) => ({
             id: i + 13,
             text: `You will hear a conversation. Choose the best answer to the question.`,
             options: [
-              'A. To schedule a meeting',
-              'B. To cancel an appointment',
-              'C. To ask for directions',
-              'D. To make a reservation'
+              "A. To schedule a meeting",
+              "B. To cancel an appointment",
+              "C. To ask for directions",
+              "D. To make a reservation",
             ],
-            answered: false
-          }))
+            answered: false,
+          })),
         },
         {
           id: 4,
-          name: 'Section 4',
+          name: "Section 4",
           questions: Array.from({ length: 6 }, (_, i) => ({
             id: i + 19,
             text: `You will hear a short talk. Choose the best answer to the question.`,
             options: [
-              'A. A business presentation',
-              'B. A weather forecast',
-              'C. A news report',
-              'D. An advertisement'
+              "A. A business presentation",
+              "B. A weather forecast",
+              "C. A news report",
+              "D. An advertisement",
             ],
-            answered: false
-          }))
-        }
+            answered: false,
+          })),
+        },
       ],
-      audioUrl: '/audio/listening-sample.mp3'
-    }
+      audioUrl: "/audio/listening-sample.mp3",
+    },
   ];
 
-  const currentPart = sampleParts.find(part => part.id === activePart) || sampleParts[0];
-  const currentSection = currentPart.sections.find(section => section.id === activeSection) || currentPart.sections[0];
+  const currentPart =
+    sampleParts.find((part) => part.id === activePart) || sampleParts[0];
+  const currentSection =
+    currentPart.sections.find((section) => section.id === activeSection) ||
+    currentPart.sections[0];
   const currentQuestion = currentSection.questions[currentQuestionIndex];
 
   useEffect(() => {
@@ -122,14 +136,14 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts, onAnswerSelect }) 
     const updateTime = () => setCurrentTime(audio.currentTime);
     const updateDuration = () => setDuration(audio.duration);
 
-    audio.addEventListener('timeupdate', updateTime);
-    audio.addEventListener('loadedmetadata', updateDuration);
-    audio.addEventListener('ended', () => setIsPlaying(false));
+    audio.addEventListener("timeupdate", updateTime);
+    audio.addEventListener("loadedmetadata", updateDuration);
+    audio.addEventListener("ended", () => setIsPlaying(false));
 
     return () => {
-      audio.removeEventListener('timeupdate', updateTime);
-      audio.removeEventListener('loadedmetadata', updateDuration);
-      audio.removeEventListener('ended', () => setIsPlaying(false));
+      audio.removeEventListener("timeupdate", updateTime);
+      audio.removeEventListener("loadedmetadata", updateDuration);
+      audio.removeEventListener("ended", () => setIsPlaying(false));
     };
   }, []);
 
@@ -157,17 +171,18 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts, onAnswerSelect }) 
   };
 
   const handleAnswerSelect = (questionId: number, answer: string) => {
-    setSelectedAnswers(prev => ({
+    setSelectedAnswers((prev: any) => ({
       ...prev,
-      [questionId]: answer
+      [questionId]: answer,
     }));
-    onAnswerSelect(questionId, answer);
   };
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   const handleNextQuestion = () => {
@@ -175,7 +190,8 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts, onAnswerSelect }) 
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       // Move to next section if available
-      const nextSectionIndex = currentPart.sections.findIndex(s => s.id === activeSection) + 1;
+      const nextSectionIndex =
+        currentPart.sections.findIndex((s) => s.id === activeSection) + 1;
       if (nextSectionIndex < currentPart.sections.length) {
         setActiveSection(currentPart.sections[nextSectionIndex].id);
         setCurrentQuestionIndex(0);
@@ -188,21 +204,32 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts, onAnswerSelect }) 
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     } else {
       // Move to previous section if available
-      const prevSectionIndex = currentPart.sections.findIndex(s => s.id === activeSection) - 1;
+      const prevSectionIndex =
+        currentPart.sections.findIndex((s) => s.id === activeSection) - 1;
       if (prevSectionIndex >= 0) {
         setActiveSection(currentPart.sections[prevSectionIndex].id);
-        setCurrentQuestionIndex(currentPart.sections[prevSectionIndex].questions.length - 1);
+        setCurrentQuestionIndex(
+          currentPart.sections[prevSectionIndex].questions.length - 1
+        );
       }
     }
   };
 
   const canGoPrevious = () => {
-    return currentQuestionIndex > 0 || currentPart.sections.findIndex(s => s.id === activeSection) > 0;
+    return (
+      currentQuestionIndex > 0 ||
+      currentPart.sections.findIndex((s) => s.id === activeSection) > 0
+    );
   };
 
   const canGoNext = () => {
-    const sectionIndex = currentPart.sections.findIndex(s => s.id === activeSection);
-    return currentQuestionIndex < currentSection.questions.length - 1 || sectionIndex < currentPart.sections.length - 1;
+    const sectionIndex = currentPart.sections.findIndex(
+      (s) => s.id === activeSection
+    );
+    return (
+      currentQuestionIndex < currentSection.questions.length - 1 ||
+      sectionIndex < currentPart.sections.length - 1
+    );
   };
 
   return (
@@ -216,8 +243,8 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts, onAnswerSelect }) 
               onClick={() => setActiveSection(section.id)}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 activeSection === section.id
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
               {section.name}
@@ -247,12 +274,15 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts, onAnswerSelect }) 
                 key={i}
                 className={`w-1 rounded-full transition-all duration-300 ${
                   isPlaying && i <= (currentTime / duration) * 40
-                    ? 'bg-green-500 h-8'
-                    : 'bg-gray-300 h-4'
+                    ? "bg-green-500 h-8"
+                    : "bg-gray-300 h-4"
                 }`}
                 style={{
                   height: `${Math.random() * 20 + 10}px`,
-                  backgroundColor: isPlaying && i <= (currentTime / duration) * 40 ? '#10b981' : '#d1d5db'
+                  backgroundColor:
+                    isPlaying && i <= (currentTime / duration) * 40
+                      ? "#10b981"
+                      : "#d1d5db",
                 }}
               />
             ))}
@@ -278,7 +308,9 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts, onAnswerSelect }) 
           <div className="flex-1 bg-gray-200 rounded-full h-2">
             <div
               className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
+              style={{
+                width: `${duration ? (currentTime / duration) * 100 : 0}%`,
+              }}
             />
           </div>
           <span>{formatTime(duration)}</span>
@@ -292,13 +324,12 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts, onAnswerSelect }) 
         <div className="mb-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-medium text-gray-800">
-              Question {currentQuestion?.id} of {currentSection.questions.length}
+              Question {currentQuestion?.id} of{" "}
+              {currentSection.questions.length}
             </h3>
-            <div className="text-sm text-gray-500">
-              {currentSection.name}
-            </div>
+            <div className="text-sm text-gray-500">{currentSection.name}</div>
           </div>
-          
+
           {/* Question Text */}
           <div className="bg-gray-50 rounded-lg p-4 mb-4">
             <p className="text-gray-800 font-medium">{currentQuestion?.text}</p>
@@ -308,15 +339,16 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts, onAnswerSelect }) 
           <div className="space-y-3">
             {currentQuestion?.options.map((option, index) => {
               const optionLetter = String.fromCharCode(65 + index); // A, B, C, D
-              const isSelected = selectedAnswers[currentQuestion.id] === optionLetter;
-              
+              const isSelected =
+                selectedAnswers[currentQuestion.id] === optionLetter;
+
               return (
                 <label
                   key={index}
                   className={`flex items-start space-x-3 p-3 rounded-lg border cursor-pointer transition-colors ${
                     isSelected
-                      ? 'bg-blue-50 border-blue-300'
-                      : 'bg-white border-gray-200 hover:bg-gray-50'
+                      ? "bg-blue-50 border-blue-300"
+                      : "bg-white border-gray-200 hover:bg-gray-50"
                   }`}
                 >
                   <input
@@ -324,7 +356,9 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts, onAnswerSelect }) 
                     name={`question-${currentQuestion.id}`}
                     value={optionLetter}
                     checked={isSelected}
-                    onChange={() => handleAnswerSelect(currentQuestion.id, optionLetter)}
+                    onChange={() =>
+                      handleAnswerSelect(currentQuestion.id, optionLetter)
+                    }
                     className="mt-1 w-4 h-4 text-blue-600"
                   />
                   <span className="text-gray-800">{option}</span>
@@ -340,8 +374,8 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts, onAnswerSelect }) 
               disabled={!canGoPrevious()}
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                 canGoPrevious()
-                  ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                  ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  : "bg-gray-50 text-gray-400 cursor-not-allowed"
               }`}
             >
               <ChevronLeftIcon className="w-4 h-4" />
@@ -355,10 +389,10 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts, onAnswerSelect }) 
                   onClick={() => setCurrentQuestionIndex(index)}
                   className={`w-3 h-3 rounded-full transition-colors ${
                     index === currentQuestionIndex
-                      ? 'bg-blue-500'
+                      ? "bg-blue-500"
                       : selectedAnswers[currentSection.questions[index].id]
-                      ? 'bg-green-500'
-                      : 'bg-gray-300 hover:bg-gray-400'
+                      ? "bg-green-500"
+                      : "bg-gray-300 hover:bg-gray-400"
                   }`}
                 />
               ))}
@@ -369,8 +403,8 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts, onAnswerSelect }) 
               disabled={!canGoNext()}
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                 canGoNext()
-                  ? 'bg-blue-500 text-white hover:bg-blue-600'
-                  : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                  ? "bg-blue-500 text-white hover:bg-blue-600"
+                  : "bg-gray-50 text-gray-400 cursor-not-allowed"
               }`}
             >
               <span>Next</span>
@@ -383,4 +417,4 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts, onAnswerSelect }) 
   );
 };
 
-export default ListeningExam; 
+export default ListeningExam;

@@ -1,6 +1,5 @@
 import { Toaster } from "react-hot-toast";
 
-import { AuthProvider } from "@/contexts/AuthContext";
 import { MusicProvider } from "@/contexts/MusicContext";
 import { PomodoroProvider } from "@/contexts/PomodoroContext";
 import { DictionaryProvider } from "@/contexts/DictionaryContext";
@@ -16,29 +15,27 @@ import MusicBreakModal from "@/components/features/MusicBreakModal";
 
 function AppContent({ children }: { children: React.ReactNode }) {
   return (
-    <AuthProvider>
-      <DictionaryProvider>
-        <RouteLoadingProvider>
-          <MusicProvider>
-            <PomodoroProvider>
-              <div className="min-h-screen bg-gray-50 flex flex-col">
-                {/* user={user} */}
-                <Header />
-                <main className="flex-1 w-full max-w-7xl mx-auto sm:mt-16 md:mt-14 sm:px-8 py-16">
-                  {children}
-                </main>
-                <Footer />
-                <RightSidebar />
-                <MusicBreakModal />
-                <BreakEndModal />
-                <StudyModal />
-                <StudyEndModal />
-              </div>
-            </PomodoroProvider>
-          </MusicProvider>
-        </RouteLoadingProvider>
-      </DictionaryProvider>
-    </AuthProvider>
+    <DictionaryProvider>
+      <RouteLoadingProvider>
+        <MusicProvider>
+          <PomodoroProvider>
+            <div className="min-h-screen flex flex-col">
+              {/* user={user} */}
+              <Header />
+              <main className="flex-1 sm:mt-16 md:mt-14 sm:px-8 py-16 bg-gradient-to-br from-sky-50 to-sky-100">
+                <div className="w-full max-w-7xl mx-auto">{children}</div>
+              </main>
+              <Footer />
+              <RightSidebar />
+              <MusicBreakModal />
+              <BreakEndModal />
+              <StudyModal />
+              <StudyEndModal />
+            </div>
+          </PomodoroProvider>
+        </MusicProvider>
+      </RouteLoadingProvider>
+    </DictionaryProvider>
   );
 }
 
@@ -52,4 +49,3 @@ function MainLayout({ children }: { children: React.ReactNode }) {
 }
 
 export default MainLayout;
- 

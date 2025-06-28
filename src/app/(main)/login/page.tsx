@@ -21,11 +21,11 @@ export default function LoginPage() {
   const [successMessage, setSuccessMessage] = useState("");
 
   // Redirect if already logged in
-  useEffect(() => {
-    if (isLoggedIn) {
-      router.push("/");
-    }
-  }, [isLoggedIn, router]);
+  // useEffect(() => {
+  //   if (isLoggedIn) {
+  //     router.push("/");
+  //   }
+  // }, [isLoggedIn, router]);
 
   useEffect(() => {
     const message = searchParams?.get("message");
@@ -67,14 +67,16 @@ export default function LoginPage() {
       if (!res.ok) {
         // Check if it's an email verification error
         if (data.data?.emailNotVerified) {
-          setErrors({ 
+          setErrors({
             submit: `${data.data.message}. `,
-            emailNotVerified: "true"
+            emailNotVerified: "true",
           });
           // Store email for potential resend
-          localStorage.setItem('verifyEmail', data.data.email);
+          localStorage.setItem("verifyEmail", data.data.email);
         } else {
-          setErrors({ submit: data.data?.message || data.message || "Login failed" });
+          setErrors({
+            submit: data.data?.message || data.message || "Login failed",
+          });
         }
         return;
       }
@@ -85,7 +87,6 @@ export default function LoginPage() {
       } else {
         setErrors({ submit: "Login response is missing required data" });
       }
-
     } catch (error) {
       console.error("Login error:", error);
       setErrors({ submit: "An error occurred. Please try again." });
@@ -109,7 +110,11 @@ export default function LoginPage() {
 
   // Show loading if already logged in (will redirect)
   if (isLoggedIn) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        Loading...
+      </div>
+    );
   }
 
   return (

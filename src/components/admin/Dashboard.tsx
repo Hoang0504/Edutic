@@ -1,43 +1,105 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
+interface UserProgress {
+  id: string;
+  user_id: string;
+  name: string;
+  avatar: string;
+  listening_score: number;
+  reading_score: number;
+  speaking_score: number;
+  writing_score: number;
+  total_study_time: number;
+  last_activity_date: string | null;
+  updated_at: string;
+  rank?: number;
+  score?: number;
+}
 
 const AdminDashboard = () => {
   const router = useRouter();
-
-  // Dữ liệu mẫu cố định
-  const leaderboard = [
-   { id: 1, name: 'Nguyễn A', score: 2000, avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&q=80&w=50&h=50&fit=crop', rank: 1 },
-    { id: 2, name: 'Trần B', score: 1600, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&q=80&w=50&h=50&fit=crop', rank: 2 },
-    { id: 3, name: 'Lê C', score: 1300, avatar: 'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?ixlib=rb-4.0.3&q=80&w=50&h=50&fit=crop', rank: 3 },
-    { id: 4, name: 'Phạm D', score: 1250, avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&q=80&w=50&h=50&fit=crop', rank: 4 },
-    { id: 5, name: 'Võ E', score: 1230, avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-4.0.3&q=80&w=50&h=50&fit=crop', rank: 5 },
-    { id: 6, name: 'Hồ F', score: 1215, avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&q=80&w=50&h=50&fit=crop', rank: 6 },
-    { id: 7, name: 'Ngô G', score: 1200, avatar: 'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-4.0.3&q=80&w=50&h=50&fit=crop', rank: 7 },
-  ];
-
+  const [leaderboard, setLeaderboard] = useState<UserProgress[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [periodType, setPeriodType] = useState('weekly');
   const [startDate, setStartDate] = useState('2025-06-01');
   const pageSize = 10;
-  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    fetchLeaderboard();
+  }, [currentPage, periodType, startDate]);
+
+  const fetchLeaderboard = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/admin/user_progresses?page=${currentPage}&limit=${pageSize}`);
+      if (!response.ok) throw new Error('Failed to fetch leaderboard');
+      const data = await response.json();
+      let users = data.data.map((progress: any) => ({
+        id: progress.id,
+        user_id: progress.user_id,
+        name: progress.name,
+        avatar: progress.avatar,
+        listening_score: progress.listening_score,
+        reading_score: progress.reading_score,
+        speaking_score: progress.speaking_score,
+        writing_score: progress.writing_score,
+        total_study_time: progress.total_study_time,
+        last_activity_date: progress.last_activity_date,
+        updated_at: progress.updated_at,
+        score: progress.listening_score + progress.reading_score + progress.speaking_score + progress.writing_score,
+      }));
+
+      if (startDate) {
+        const start = new Date(startDate);
+        users = users.filter((u: UserProgress) => {
+          const lastActive: Date | null = u.last_activity_date ? new Date(u.last_activity_date) : null;
+          return lastActive !== null && lastActive >= start;
+        });
+      }
+
+      users = users.sort((a: UserProgress, b: UserProgress) => (b.score ?? 0) - (a.score ?? 0));
+      interface RankedUserProgress extends UserProgress {
+        rank: number;
+      }
+
+      users = users.map((user: UserProgress, index: number): RankedUserProgress => ({
+        ...user,
+        rank: index + 1 + (currentPage - 1) * pageSize,
+      }));
+
+      setLeaderboard(users);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleViewResults = () => {
-    // Logic giả lập khi nhấn Xem kết quả (chỉ log)
     console.log(`Viewing results for ${periodType} from ${startDate}`);
+    fetchLeaderboard();
   };
 
   const top3 = leaderboard.slice(0, 3);
   const remaining = leaderboard.slice(3);
-  const paginatedRemaining = remaining.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-  const totalPages = Math.ceil(remaining.length / pageSize);
-  const maxScore = Math.max(...top3.map(u => u.score));
+  const paginatedRemaining = remaining.slice(0, pageSize);
+  const totalPages = Math.ceil((leaderboard.length - 3) / pageSize) || 1;
+  const maxScore = Math.max(...top3.map((u) => u.score || 0), 1);
+
+  // Giới hạn chiều cao cột trong phần Top 3 (tối đa 180px)
+  const getColumnHeight = (score: number) => {
+    const maxHeight = 180; // Giới hạn chiều cao tối đa
+    return Math.min((score / maxScore) * maxHeight, maxHeight) + 40; // Thêm 40px cho phần avatar và text
+  };
+
+  if (loading) return <div className="text-center p-4">Loading...</div>;
+  if (error) return <div className="text-center p-4 text-red-500">Error: {error}</div>;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -77,7 +139,7 @@ const AdminDashboard = () => {
           </button>
         </div>
       </header>
- 
+
       <main className="flex-1 p-4">
         {/* Top 3 User */}
         <div className="bg-white p-4 rounded-lg shadow mb-6">
@@ -88,13 +150,13 @@ const AdminDashboard = () => {
                 <div
                   className="w-16 mx-auto rounded-t"
                   style={{
-                    height: `${(user.score / maxScore) * 180 + 40}px`,
+                    height: `${getColumnHeight(user.score || 0)}px`, // Giới hạn chiều cao
                     backgroundColor:
                       user.rank === 1 ? '#FFD700' : user.rank === 2 ? '#C0C0C0' : '#CD7F32',
                     transition: 'height 0.3s',
-                     display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'flex-end',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'flex-end',
                   }}
                 >
                   <Image
@@ -104,8 +166,8 @@ const AdminDashboard = () => {
                     height={48}
                     className="w-12 h-12 rounded-full mx-auto -mt-6"
                   />
-                  <p className="mt-2 text-sm">{user.name}</p>
-                  <p className="text-sm">{user.score}</p>
+                  <p className="mt-2 text-sm font-bold">{user.name}</p> {/* In đậm tên */}
+                  <p className="text-sm">{user.score || 0}</p>
                   <p className="text-xs">Rank {user.rank}</p>
                 </div>
               </div>
@@ -140,8 +202,8 @@ const AdminDashboard = () => {
                         className="w-10 h-10 rounded-full"
                       />
                     </td>
-                    <td className="p-2 border">{user.name}</td>
-                    <td className="p-2 border">{user.score}</td>
+                    <td className="p-2 border"><span className="font-bold">{user.name}</span></td> {/* In đậm tên */}
+                    <td className="p-2 border">{user.score || 0}</td>
                     <td className="p-2 border">{user.rank}</td>
                   </tr>
                 ))}

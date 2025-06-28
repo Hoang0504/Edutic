@@ -145,3 +145,48 @@ select:focus {
 .rotate-x-180 {
   transform: rotateX(180deg);
 }
+
+/* Blog Article Content Styles */
+.article-content {
+  @apply text-gray-800 leading-relaxed;
+}
+
+.article-content h2 {
+  @apply text-2xl font-bold text-gray-900 mt-8 mb-4;
+}
+
+.article-content h3 {
+  @apply text-xl font-semibold text-gray-900 mt-6 mb-3;
+}
+
+.article-content h4 {
+  @apply text-lg font-semibold text-gray-900 mt-4 mb-2;
+}
+
+.article-content p {
+  @apply mb-4 leading-relaxed;
+}
+
+.article-content ul {
+  @apply mb-4 pl-6 space-y-2;
+}
+
+.article-content li {
+  @apply list-disc text-gray-700;
+}
+
+.article-content strong {
+  @apply font-semibold text-gray-900;
+}
+
+.article-content code {
+  @apply bg-gray-100 text-gray-800 px-1 py-0.5 rounded text-sm font-mono;
+}
+
+/* Responsive line clamping */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

@@ -302,7 +302,10 @@ export default function Header() {
 
               {/* Mobile Menu Dropdown */}
               {isMobileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                <div className="fixed top-16 left-1/2 right-auto transform -translate-x-1/2 w-[95vw] max-w-sm
+                  sm:absolute sm:top-auto sm:left-auto sm:right-0 sm:transform-none sm:w-56 sm:max-w-none sm:mt-2
+                  mt-0
+                  bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                   <div className="py-1">
                     <a
                       href="/flashcards"
@@ -335,17 +338,17 @@ export default function Header() {
 
             {/* Pomodoro Timer - Show when active */}
             {isActive && (
-              <div className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-                <div className="flex items-center space-x-2">
+              <div className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-1 py-1 sm:px-3 sm:py-2">
+                <div className="flex items-center space-x-1 sm:space-x-2">
                   <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                  <div className="text-sm font-medium text-gray-800">
+                  <div className="hidden sm:block text-xs sm:text-sm font-medium text-gray-800">
                     {isStudyMode
                       ? t("header.study", "Học")
                       : t("header.break", "Nghỉ")}
                   </div>
                   <button
                     onClick={handleTimerClick}
-                    className="text-lg font-bold text-blue-600 min-w-[4rem] hover:text-blue-700 cursor-pointer transition-colors"
+                    className="text-sm sm:text-lg font-bold text-blue-600 min-w-[2rem] sm:min-w-[4rem] hover:text-blue-700 cursor-pointer transition-colors"
                     title={`Click để mở modal ${
                       isStudyMode ? t("header.study", "học") : "nghỉ ngơi"
                     }`}
@@ -354,10 +357,10 @@ export default function Header() {
                   </button>
 
                   {/* Timer Controls */}
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center space-x-0.5 sm:space-x-1">
                     <button
                       onClick={handlePomodoroToggle}
-                      className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
+                      className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center transition-colors ${
                         isRunning
                           ? "bg-red-500 hover:bg-red-600 text-white"
                           : "bg-green-500 hover:bg-green-600 text-white"
@@ -369,22 +372,22 @@ export default function Header() {
                       }
                     >
                       {isRunning ? (
-                        <PauseIcon className="w-4 h-4" />
+                        <PauseIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                       ) : (
-                        <PlayIcon className="w-3 h-3 ml-0.5" />
+                        <PlayIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 ml-0.5" />
                       )}
                     </button>
 
                     <button
                       onClick={handleStopClick}
-                      className="w-7 h-7 rounded-full bg-gray-500 hover:bg-gray-600 text-white flex items-center justify-center transition-colors"
+                      className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gray-500 hover:bg-gray-600 text-white flex items-center justify-center transition-colors"
                       title={t("header.stop", "Dừng")}
                     >
-                      <StopIcon className="w-4 h-4" />
+                      <StopIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
 
                     {/* Music Control Icon */}
-                    <div className="relative" ref={musicDropdownRef}>
+                    <div className="hidden sm:block relative" ref={musicDropdownRef}>
                       <button
                         onClick={() =>
                           setIsMusicDropdownOpen(!isMusicDropdownOpen)
@@ -577,7 +580,10 @@ export default function Header() {
 
               {/* Notification Dropdown */}
               {isNotificationOpen && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-w-[calc(100vw-1.5rem)] mx-3 sm:mx-0">
+                <div className="fixed top-16 left-1/2 right-auto transform -translate-x-1/2 w-[95vw] max-w-sm
+                  sm:absolute sm:top-auto sm:left-auto sm:right-0 sm:transform-none sm:w-80 sm:max-w-xs sm:mt-2
+                  mt-0
+                  bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                   {/* Header */}
                   <div className="px-4 py-3 border-b border-gray-200">
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900">

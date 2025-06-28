@@ -61,23 +61,23 @@ function DashboardPage() {
   };
 
   return (
-    <div className="max-w-none mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-none mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
       {/* Greeting Section */}
-      <div className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
           Xin chào, Tên!
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 text-sm sm:text-base">
           Chào mừng bạn trở lại với Edutic. Hãy bắt đầu hành trình học tập hôm nay!
         </p>
       </div>
 
       {/* Main Layout - Adjusted columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 sm:gap-4">
         {/* Left Column - Main Content */}
-        <div className="lg:col-span-9">
+        <div className="lg:col-span-9 order-2 lg:order-1">
           {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-blue-100 rounded-lg">
@@ -196,7 +196,7 @@ function DashboardPage() {
           </div>
 
           {/* Recent Results & Latest Tests */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-4 mb-4 sm:mb-6">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Kết quả thi gần nhất</h2>
               <div className="space-y-3">
@@ -228,24 +228,24 @@ function DashboardPage() {
           </div>
 
           {/* Flashcard Section */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Flashcard</h2>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-6 mb-4 sm:mb-6">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-4">Flashcard</h2>
             <FlashcardOverview />
           </div>
         </div>
 
         {/* Right Column - Online Members & Leaderboard */}
-        <div className="lg:col-span-3 space-y-4">
+        <div className="lg:col-span-3 order-1 lg:order-2 space-y-2 sm:space-y-4 mb-4 lg:mb-0">
           {/* Online Members */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <div className="flex items-center mb-4">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-5">
+            <div className="flex items-center mb-2 sm:mb-4">
               <UserGroupIcon className="w-5 h-5 text-green-600 mr-2" />
-              <h2 className="text-base font-semibold text-gray-900">Thành viên đang online</h2>
+              <h2 className="text-sm sm:text-base font-semibold text-gray-900">Thành viên đang online</h2>
               <span className="ml-auto bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
                 {onlineMembers.length}
               </span>
             </div>
-            <div className="space-y-2 max-h-64 overflow-y-auto">
+            <div className="space-y-2 max-h-40 sm:max-h-64 overflow-y-auto">
               {onlineMembers.map((member) => (
                 <div key={member.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
                   <div className="relative">
@@ -264,12 +264,12 @@ function DashboardPage() {
           </div>
 
           {/* Leaderboard */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <div className="flex items-center mb-4">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-5">
+            <div className="flex items-center mb-2 sm:mb-4">
               <ChartBarIcon className="w-5 h-5 text-yellow-600 mr-2" />
-              <h2 className="text-base font-semibold text-gray-900">Bảng xếp hạng</h2>
+              <h2 className="text-sm sm:text-base font-semibold text-gray-900">Bảng xếp hạng</h2>
             </div>
-            <div className="space-y-2 max-h-80 overflow-y-auto">
+            <div className="space-y-2 max-h-48 sm:max-h-80 overflow-y-auto">
               {leaderboard.map((user) => (
                 <div key={user.rank} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${

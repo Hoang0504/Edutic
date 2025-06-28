@@ -36,7 +36,7 @@ export default function SpeakingDemoPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const recognitionRef = useRef<any>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const interimTranscriptRef = useRef<string>('');
+  const finalTranscriptRef = useRef<string>('');
 
   useEffect(() => {
     // Check for Speech Recognition support
@@ -59,31 +59,23 @@ export default function SpeakingDemoPage() {
       
       recognition.onresult = (event: any) => {
         let interimTranscript = '';
-        let finalTranscript = '';
         
+        // Process only new results from the last index
         for (let i = event.resultIndex; i < event.results.length; ++i) {
           const transcript = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            finalTranscript += transcript + ' ';
+            // Add final transcript to the accumulated final transcript
+            finalTranscriptRef.current += transcript + ' ';
+            setTranscription(finalTranscriptRef.current);
           } else {
+            // Show interim results temporarily
             interimTranscript += transcript;
           }
         }
         
-        if (finalTranscript) {
-          setTranscription(prev => {
-            const newTranscription = prev + finalTranscript;
-            interimTranscriptRef.current = newTranscription;
-            return newTranscription;
-          });
-        }
-        
-        // Update interim results for real-time feedback
+        // Show interim results combined with final transcript
         if (interimTranscript) {
-          setTranscription(prev => {
-            const baseTranscription = interimTranscriptRef.current || prev;
-            return baseTranscription + interimTranscript;
-          });
+          setTranscription(finalTranscriptRef.current + interimTranscript);
         }
       };
 
@@ -108,7 +100,9 @@ export default function SpeakingDemoPage() {
         if (isRecording) {
           setTimeout(() => {
             try {
-              recognition.start();
+              if (recognitionRef.current && isRecording) {
+                recognitionRef.current.start();
+              }
             } catch (err) {
               console.log('Recognition restart failed:', err);
             }
@@ -151,7 +145,7 @@ export default function SpeakingDemoPage() {
       setIsRecording(true);
       setRecordingTime(0);
       setTranscription('');
-      interimTranscriptRef.current = '';
+      finalTranscriptRef.current = '';
       setError('');
       setManualEdit(false);
 
@@ -255,7 +249,7 @@ export default function SpeakingDemoPage() {
   const resetRecording = () => {
     setAudioURL('');
     setTranscription('');
-    interimTranscriptRef.current = '';
+    finalTranscriptRef.current = '';
     setRecordingTime(0);
     setFeedback(null);
     setError('');

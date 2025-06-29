@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import sequelize from '@/lib/db';
 import { AIFeedback } from '@/models/AIFeedback';
 
@@ -21,21 +21,23 @@ interface DeepSeekResponse {
   content_analysis?: string;
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
+export async function POST(request: NextRequest) {
   try {
-    const { question, answer, user_id }: WritingRequest = req.body;
+    const { question, answer, user_id }: WritingRequest = await request.json();
 
     if (!question || !answer) {
-      return res.status(400).json({ error: 'Question and answer are required' });
+      return NextResponse.json(
+        { error: 'Question and answer are required' },
+        { status: 400 }
+      );
     }
 
     // Check API key
     if (!process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY) {
-      return res.status(500).json({ error: 'DEEPSEEK_API_KEY is not configured' });
+      return NextResponse.json(
+        { error: 'DEEPSEEK_API_KEY is not configured' },
+        { status: 500 }
+      );
     }
 
     // Construct prompt for DeepSeek to match AIFeedback table structure
@@ -95,16 +97,20 @@ Provide all feedback in Vietnamese. Be specific and constructive in your analysi
         statusText: deepSeekResponse.statusText,
         response: errorText
       });
-      return res.status(500).json({
-        error: `DeepSeek API error: ${deepSeekResponse.status} - ${deepSeekResponse.statusText}`
-      });
+      return NextResponse.json(
+        { error: `DeepSeek API error: ${deepSeekResponse.status} - ${deepSeekResponse.statusText}` },
+        { status: 500 }
+      );
     }
 
     const deepSeekData = await deepSeekResponse.json();
     
     if (!deepSeekData.choices || !deepSeekData.choices[0] || !deepSeekData.choices[0].message) {
       console.error('Invalid DeepSeek response:', deepSeekData);
-      return res.status(500).json({ error: 'Invalid response from DeepSeek API' });
+      return NextResponse.json(
+        { error: 'Invalid response from DeepSeek API' },
+        { status: 500 }
+      );
     }
 
     let analysis: DeepSeekResponse;
@@ -112,7 +118,10 @@ Provide all feedback in Vietnamese. Be specific and constructive in your analysi
       analysis = JSON.parse(deepSeekData.choices[0].message.content);
     } catch (parseError) {
       console.error('Failed to parse DeepSeek response:', deepSeekData.choices[0].message.content);
-      return res.status(500).json({ error: 'Failed to parse AI response' });
+      return NextResponse.json(
+        { error: 'Failed to parse AI response' },
+        { status: 500 }
+      );
     }
 
     // Save to database
@@ -137,10 +146,13 @@ Provide all feedback in Vietnamese. Be specific and constructive in your analysi
     }
 
     console.log('AI Analysis completed for writing sample');
-    return res.status(200).json(analysis);
+    return NextResponse.json(analysis);
 
   } catch (error) {
     console.error('Error analyzing writing:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 } 

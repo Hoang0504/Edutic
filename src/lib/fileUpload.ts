@@ -16,25 +16,21 @@ export async function ensureUploadDirs() {
   await mkdir(imageDir, { recursive: true });
 }
 
-// Save audio file to a part-specific folder within the exam's directory
+// Save audio file
 export async function saveAudioFile(
   file: Express.Multer.File,
-  examFolderName: string,
+  examId: number,
   partNumber: number
 ): Promise<string> {
-  const folderPath = path.join(examFolderName, `part${partNumber}`);
-  const extension = getFileExtension(file.originalname) || 'mp3';
-  const fileName = `audio_part_${partNumber}.${extension}`;
-  // Ensure forward slashes for the URL path
-  const relativePath = path.join(folderPath, fileName).replace(/\\/g, '/');
-
-  const fullPath = path.join(process.cwd(), 'public', relativePath);
-  const dirPath = path.dirname(fullPath);
+  await ensureUploadDirs();
   
-  await mkdir(dirPath, { recursive: true });
+  const fileName = `exam_${examId}_part_${partNumber}_audio_${Date.now()}.${getFileExtension(file.originalname)}`;
+  const filePath = path.join('uploads', 'audio', fileName);
+  const fullPath = path.join(process.cwd(), 'public', filePath);
+  
   await writeFile(fullPath, file.buffer);
   
-  return `/${relativePath}`;
+  return `/${filePath}`;
 }
 
 // Save question image
@@ -44,31 +40,15 @@ export async function saveQuestionImage(
   partNumber: number,
   questionNumber: number
 ): Promise<string> {
-  // Note: This function saves to a generic 'uploads' folder.
-  // Consider refactoring to use the exam-specific folder structure like saveAudioFile.
+  await ensureUploadDirs();
+  
   const fileName = `exam_${examId}_part_${partNumber}_q_${questionNumber}_${Date.now()}.${getFileExtension(file.originalname)}`;
   const filePath = path.join('uploads', 'images', fileName);
   const fullPath = path.join(process.cwd(), 'public', filePath);
   
-  await mkdir(path.dirname(fullPath), { recursive: true });
   await writeFile(fullPath, file.buffer);
   
   return `/${filePath}`;
-}
-
-// Save image file with custom path
-export async function saveImageFile(
-  file: Express.Multer.File,
-  relativePath: string
-): Promise<string> {
-  // Ensure the directory structure exists
-  const fullPath = path.join(process.cwd(), 'public', relativePath);
-  const dirPath = path.dirname(fullPath);
-  
-  await mkdir(dirPath, { recursive: true });
-  await writeFile(fullPath, file.buffer);
-  
-  return `/${relativePath}`;
 }
 
 // Get file extension

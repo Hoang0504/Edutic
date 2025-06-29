@@ -16,7 +16,6 @@ import type { Question as QuestionType } from "./Question";
 
 interface QuestionGroupCreationAttributes {
   id?: number;
-  part_id: number;
   image_url?: string | null;
   content?: string | null;
   created_at?: Date;
@@ -37,12 +36,12 @@ export class QuestionGroup extends Model<
   })
   id!: number;
 
-  @ForeignKey(() => Part)
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-  })
-  part_id!: number;
+  // @ForeignKey(() => Part)
+  // @Column({
+  //   type: DataType.INTEGER,
+  //   allowNull: false,
+  // })
+  // part_id!: number;
 
   @Column({
     type: DataType.STRING(255),
@@ -64,8 +63,8 @@ export class QuestionGroup extends Model<
   })
   created_at!: Date;
 
-  @BelongsTo(() => require("./Part").Part)
-  part!: PartType;
+  // @BelongsTo(() => require("./Part").Part)
+  // part!: PartType;
 
   @HasMany(() => require("./Question").Question)
   questions!: QuestionType[];

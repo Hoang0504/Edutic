@@ -1,0 +1,841 @@
+{
+	"info": {
+		"_postman_id": "4d987d06-6aaf-41ad-9d5b-72d6d5ad4fc6",
+		"name": "Edutic",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "36788067"
+	},
+	"item": [
+		{
+			"name": "flashcard",
+			"item": [
+				{
+					"name": "request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_TOKEN_mdv}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"word\": \"efficient\",\r\n  \"example\": \"She designed an efficient workflow that eliminated unnecessary steps and reduced errors.\",\r\n  \"user_id\": 1\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_PREFIX}}/flashcards/request",
+							"host": [
+								"{{API_PREFIX}}"
+							],
+							"path": [
+								"flashcards",
+								"request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "review",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_TOKEN_mdv}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_PREFIX}}/flashcards/review",
+							"host": [
+								"{{API_PREFIX}}"
+							],
+							"path": [
+								"flashcards",
+								"review"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "review/count",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_TOKEN_mdv}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_PREFIX}}/flashcards/review",
+							"host": [
+								"{{API_PREFIX}}"
+							],
+							"path": [
+								"flashcards",
+								"review"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_TOKEN_mdv}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_PREFIX}}/flashcards/update?id=3",
+							"host": [
+								"{{API_PREFIX}}"
+							],
+							"path": [
+								"flashcards",
+								"update"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "due-group-by-date",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_TOKEN_mdv}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{API_PREFIX}}/flashcards/due-group-by-date?user_id=2",
+							"host": [
+								"{{API_PREFIX}}"
+							],
+							"path": [
+								"flashcards",
+								"due-group-by-date"
+							],
+							"query": [
+								{
+									"key": "user_id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "group-by-context",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_PREFIX}}/flashcards/group-by-context?user_id=2",
+							"host": [
+								"{{API_PREFIX}}"
+							],
+							"path": [
+								"flashcards",
+								"group-by-context"
+							],
+							"query": [
+								{
+									"key": "user_id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "dashboard",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_TOKEN_mdv}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"word\": \"efficient\",\r\n//   \"image_url\": \"https://example.com/image.jpg\",\r\n//   \"pronunciation\": \"ɪˈfɪʃənt\",\r\n//   \"speech_audio_url\": \"https://example.com/audio.mp3\",\r\n  \"meaning\": \"hiệu quả\",\r\n  \"example\": \"She designed an efficient workflow...\",\r\n  \"context\": \"business\"\r\n//   \"status\": \"pending\"\r\n}\r\n"
+						},
+						"url": {
+							"raw": "{{API_PREFIX}}/flashcards/dashboard/vocab-stats?user_id=2",
+							"host": [
+								"{{API_PREFIX}}"
+							],
+							"path": [
+								"flashcards",
+								"dashboard",
+								"vocab-stats"
+							],
+							"query": [
+								{
+									"key": "user_id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "register",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_TOKEN_mdv}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"email\": \"hoang@gmail.com\", \"password\": \"123\", \"name\": \"hoang\"}"
+						},
+						"url": {
+							"raw": "{{API_PREFIX}}/auth/register",
+							"host": [
+								"{{API_PREFIX}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "listening-transcripts",
+			"item": [
+				{
+					"name": "create",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_TOKEN_mdv}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"audio_file_id\": 1,\r\n    \"level\": \"medium\",\r\n    \"blanks\": [\r\n        { \"index\": 0, \"position\": 11, \"length\": 6 }, // eating\r\n        { \"index\": 1, \"position\": 116, \"length\": 8 }, // brushing\r\n        { \"index\": 2, \"position\": 237, \"length\": 9 }\r\n      ]\r\n}"
+						},
+						"url": {
+							"raw": "{{API_PREFIX}}/listening-transcripts/2",
+							"host": [
+								"{{API_PREFIX}}"
+							],
+							"path": [
+								"listening-transcripts",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "admin",
+			"item": [
+				{
+					"name": "users",
+					"item": [
+						{
+							"name": "create",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{JWT_TOKEN_mdv}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"hoang@gmail.com\",\r\n    \"password\": \"hoang123\"\r\n}"
+								},
+								"url": {
+									"raw": "{{API_PREFIX}}/admin/users/create",
+									"host": [
+										"{{API_PREFIX}}"
+									],
+									"path": [
+										"admin",
+										"users",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get all",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{JWT_TOKEN_mdv}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"hoang@gmail.com\",\r\n    \"password\": \"hoang123\"\r\n}"
+								},
+								"url": {
+									"raw": "{{API_PREFIX}}/admin/users",
+									"host": [
+										"{{API_PREFIX}}"
+									],
+									"path": [
+										"admin",
+										"users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": ":id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_PREFIX}}/admin/users/1",
+									"host": [
+										"{{API_PREFIX}}"
+									],
+									"path": [
+										"admin",
+										"users",
+										"1"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "vocabularies",
+			"item": [
+				{
+					"name": "get all",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_TOKEN_mdv}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{API_PREFIX}}/admin/vocabularies",
+							"host": [
+								"{{API_PREFIX}}"
+							],
+							"path": [
+								"admin",
+								"vocabularies"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_TOKEN_mdv}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"word\": \"efficient\",\r\n//   \"image_url\": \"https://example.com/image.jpg\",\r\n//   \"pronunciation\": \"ɪˈfɪʃənt\",\r\n//   \"speech_audio_url\": \"https://example.com/audio.mp3\",\r\n  \"meaning\": \"hiệu quả\",\r\n  \"example\": \"She designed an efficient workflow...\",\r\n  \"context\": \"business\"\r\n//   \"status\": \"pending\"\r\n}\r\n"
+						},
+						"url": {
+							"raw": "{{API_PREFIX}}/admin/vocabularies",
+							"host": [
+								"{{API_PREFIX}}"
+							],
+							"path": [
+								"admin",
+								"vocabularies"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": ":id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_PREFIX}}/admin/vocabularies/3",
+							"host": [
+								"{{API_PREFIX}}"
+							],
+							"path": [
+								"admin",
+								"vocabularies",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": ":id",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"word\": \"efficient\",\r\n  \"image_url\": \"https://example.com/image.jpg\",\r\n  \"pronunciation\": \"ɪˈfɪʃənt\",\r\n  \"speech_audio_url\": \"https://example.com/audio.mp3\",\r\n  \"meaning\": \"achieving maximum productivity with minimum wasted effort\",\r\n  \"example\": \"She designed an efficient workflow...\",\r\n  \"context\": \"business\",\r\n  \"status\": \"approved\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_PREFIX}}/admin/vocabularies/3",
+							"host": [
+								"{{API_PREFIX}}"
+							],
+							"path": [
+								"admin",
+								"vocabularies",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": ":id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{API_PREFIX}}/admin/vocabularies/3",
+							"host": [
+								"{{API_PREFIX}}"
+							],
+							"path": [
+								"admin",
+								"vocabularies",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "by-context",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_TOKEN_mdv}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"word\": \"efficient\",\r\n//   \"image_url\": \"https://example.com/image.jpg\",\r\n//   \"pronunciation\": \"ɪˈfɪʃənt\",\r\n//   \"speech_audio_url\": \"https://example.com/audio.mp3\",\r\n  \"meaning\": \"hiệu quả\",\r\n  \"example\": \"She designed an efficient workflow...\",\r\n  \"context\": \"business\"\r\n//   \"status\": \"pending\"\r\n}\r\n"
+						},
+						"url": {
+							"raw": "{{API_PREFIX}}/vocabularies/by-context?context=casual",
+							"host": [
+								"{{API_PREFIX}}"
+							],
+							"path": [
+								"vocabularies",
+								"by-context"
+							],
+							"query": [
+								{
+									"key": "context",
+									"value": "casual"
+								},
+								{
+									"key": "user_id",
+									"value": "2",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "by-date",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_PREFIX}}/flashcards/by-date?user_id=2&date=2025-06-21",
+							"host": [
+								"{{API_PREFIX}}"
+							],
+							"path": [
+								"flashcards",
+								"by-date"
+							],
+							"query": [
+								{
+									"key": "user_id",
+									"value": "2"
+								},
+								{
+									"key": "date",
+									"value": "2025-06-21"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "notifications",
+			"item": [
+				{
+					"name": "test",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"user_id\": \"d0f6b9b8-12c7-4b15-9c31-b6f90c6e2950\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/notifications/test",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"notifications",
+								"test"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "exams",
+			"item": [
+				{
+					"name": "all",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_PREFIX}}/exams",
+							"host": [
+								"{{API_PREFIX}}"
+							],
+							"path": [
+								"exams"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Exam Attempts",
+			"item": [
+				{
+					"name": ":id/info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_PREFIX}}/exam-attempts/1/info",
+							"host": [
+								"{{API_PREFIX}}"
+							],
+							"path": [
+								"exam-attempts",
+								"1",
+								"info"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Part",
+			"item": [
+				{
+					"name": ":id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_PREFIX}}/part/27",
+							"host": [
+								"{{API_PREFIX}}"
+							],
+							"path": [
+								"part",
+								"27"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "user-grouped-by-context",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{API_PREFIX}}/vocabularies/user-grouped-by-context?user_id=2",
+					"host": [
+						"{{API_PREFIX}}"
+					],
+					"path": [
+						"vocabularies",
+						"user-grouped-by-context"
+					],
+					"query": [
+						{
+							"key": "user_id",
+							"value": "2"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

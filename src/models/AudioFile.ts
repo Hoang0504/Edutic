@@ -50,5 +50,5 @@ export class AudioFile extends Model<AudioFile, AudioFileCreationAttributes> {
   listeningTranscripts!: ListeningTranscriptType[];
 
   @BelongsTo(() => require("./Part").Part)
-  question!: PartType;
+  part!: PartType;
 }

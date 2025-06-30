@@ -25,9 +25,9 @@ async function handler(req: MulterRequest, res: NextApiResponse) {
   }
 
   try {
-    // Parse form data using multer
+    // Parse form data using multer for all files
     await new Promise<void>((resolve, reject) => {
-      upload.array('audioFiles')(req as any, res as any, (err) => {
+      upload.any()(req as any, res as any, (err) => {
         if (err) reject(err);
         else resolve();
       });
@@ -35,7 +35,12 @@ async function handler(req: MulterRequest, res: NextApiResponse) {
 
     // Get parsed exam data from form
     const examData = JSON.parse(req.body.data || '{}');
-    const audioFiles = req.files || [];
+    const allFiles = req.files || [];
+
+    // Separate files by type
+    const audioFiles = allFiles.filter(file => file.fieldname === 'audioFiles');
+    const groupImageFiles = allFiles.filter(file => file.fieldname.startsWith('groupImage_'));
+    const questionImageFiles = allFiles.filter(file => file.fieldname.startsWith('questionImage_'));
 
     // Log received data for debugging
     console.log("=== EXAM IMPORT DATA ===");
@@ -44,13 +49,15 @@ async function handler(req: MulterRequest, res: NextApiResponse) {
     console.log("Questions count:", examData.questions?.length || 0);
     console.log("Answers count:", examData.answers?.length || 0);
     console.log("Audio files count:", audioFiles.length);
+    console.log("Group image files count:", groupImageFiles.length);
+    console.log("Question image files count:", questionImageFiles.length);
     console.log("Parts details:", examData.parts?.map((p: any) => ({
       part_number: p.part_number,
       title: p.title,
       type: p.type
     })));
     
-    // Log each audio file info
+    // Log each file info
     audioFiles.forEach((file, index) => {
       console.log(`Audio file ${index + 1}:`, {
         originalname: file.originalname,
@@ -59,27 +66,38 @@ async function handler(req: MulterRequest, res: NextApiResponse) {
       });
     });
 
+    groupImageFiles.forEach((file, index) => {
+      console.log(`Group image file ${index + 1}:`, {
+        fieldname: file.fieldname,
+        originalname: file.originalname,
+        size: file.size,
+        mimetype: file.mimetype
+      });
+    });
+
+    questionImageFiles.forEach((file, index) => {
+      console.log(`Question image file ${index + 1}:`, {
+        fieldname: file.fieldname,
+        originalname: file.originalname,
+        size: file.size,
+        mimetype: file.mimetype
+      });
+    });
+
     // Validate required fields
-    if (!examData.exam || !examData.parts || !examData.questions) {
+    if (!examData.exam || !examData.parts || !examData.questions || !examData.answers) {
       return res.status(400).json({
         success: false,
         data: { message: "Missing required exam data sections" }
       });
     }
 
-    // For full TOEIC tests, answers are required. For speaking/writing they can be absent or empty.
-    const isFullToeic = examData.exam.exam_type === 'full_toeic';
-    if (isFullToeic && (!examData.answers || examData.answers.length === 0)) {
-      return res.status(400).json({
-        success: false,
-        data: { message: "Full TOEIC exam must include answers sheet" }
-      });
-    }
-
     // Validate parts that require audio files
     const listeningParts = examData.parts.filter((part: any) => [1, 2, 3, 4].includes(part.part_number));
     
-    // Only require audio for full_toeic exam type (isFullToeic is already defined above)
+    // Only require audio for full_toeic exam type
+    const isFullToeic = examData.exam.exam_type === 'full_toeic';
+    
     if (isFullToeic && listeningParts.length > 0) {
       // For TOEIC exams, validate that we have audio files for listening parts
       if (audioFiles.length < listeningParts.length) {
@@ -113,25 +131,13 @@ async function handler(req: MulterRequest, res: NextApiResponse) {
       });
     }
 
-    // Map exam_type (domain terminology) to DB enum "type" expected by Exam model.
-    // full_toeic  -> full_test
-    // speaking    -> speaking
-    // writing     -> writing
-    const mapExamTypeToDbType = (examType?: string): 'full_test' | 'speaking' | 'writing' => {
-      if (examType === 'speaking') return 'speaking';
-      if (examType === 'writing') return 'writing';
-      // Treat everything else (default) as full TOEIC test
-      return 'full_test';
-    };
-
+    // Preserve provided exam type / exam_type while ensuring required defaults
     const processedExamData = {
       ...examData,
       exam: {
-        // Preserve all original exam-level fields (title, description, difficulty, etc.)
         ...examData.exam,
-        // Ensure both exam_type (business logic) and type (DB enum) are present
-        exam_type: examData.exam.exam_type || examData.exam.type || 'full_toeic',
-        type: mapExamTypeToDbType(examData.exam.exam_type || examData.exam.type),
+        // Fallbacks
+        type: examData.exam.type || examData.exam.exam_type || 'full_test',
         estimated_time: examData.exam.estimated_time || 120,
         year_of_release: examData.exam.year_of_release || new Date().getFullYear(),
       },
@@ -139,7 +145,7 @@ async function handler(req: MulterRequest, res: NextApiResponse) {
 
     // Create exam with all data in database
     console.log("💾 Saving to database...");
-    const result = await createExamWithData(processedExamData, audioFiles);
+    const result = await createExamWithData(processedExamData, audioFiles, groupImageFiles, questionImageFiles);
 
     return res.status(200).json({
       success: true,

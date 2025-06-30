@@ -40,7 +40,7 @@ export class Exam extends Model<Exam, ExamCreationAttributes> {
     allowNull: false,
     defaultValue: "full_test",
   })
-  type!: string;
+  type!: "random" | "full_test" | "speaking" | "writing";
 
   @Column(DataType.TEXT)
   description!: string;

@@ -7,7 +7,7 @@ import { AudioFile } from '@/models/AudioFile';
 import { Translation } from '@/models/Translation';
 import { QuestionGroup } from '@/models/QuestionGroup';
 import { ExamPart } from '@/models/ExamPart';
-import { saveAudioFile, saveQuestionImage, getAudioDuration } from './fileUpload';
+import { saveAudioFile, saveQuestionImage, getAudioDuration, saveImageFile } from './fileUpload';
 
 interface ExamData {
   exam: {
@@ -76,26 +76,23 @@ interface PartData {
 // Create exam with all data
 export async function createExamWithData(
   examData: ExamData,
-  audioFiles: Express.Multer.File[]
+  audioFiles: Express.Multer.File[],
+  groupImageFiles: Express.Multer.File[] = [],
+  questionImageFiles: Express.Multer.File[] = []
 ): Promise<{ examId: number; summary: any }> {
   const transaction = await sequelize.transaction();
   
   try {
     // 1. Create exam
-    // Determine the correct DB enum value for the exam type
-    const resolvedExamType = (() => {
-      const srcType = (examData.exam.exam_type || examData.exam.type) as string | undefined;
-      if (srcType === 'full_toeic') return 'full_test';
-      if (srcType === 'speaking') return 'speaking';
-      if (srcType === 'writing') return 'writing';
-      return 'full_test'; // Fallback to full_test
-    })() as 'random' | 'full_test' | 'speaking' | 'writing';
+    const rawType = (examData.exam.exam_type || examData.exam.type) as string;
+    const mappedType: 'random' | 'full_test' | 'speaking' | 'writing' =
+      rawType === 'full_toeic' ? 'full_test' : (rawType as any);
 
     const exam = await Exam.create({
       title: examData.exam.title,
-      type: resolvedExamType,
-      description: examData.exam.exam_type ? 
-        `[${examData.exam.exam_type}] ${examData.exam.description}` : 
+      type: mappedType,
+      description: examData.exam.exam_type ?
+        `[${examData.exam.exam_type}] ${examData.exam.description}` :
         examData.exam.description,
       estimated_time: examData.exam.estimated_time,
       year_of_release: examData.exam.year_of_release || new Date().getFullYear(),
@@ -105,6 +102,70 @@ export async function createExamWithData(
     }, { transaction });
 
     const examId = exam.id;
+
+    // Create directories for image storage
+    const examFolderName = `${examData.exam.title.toLowerCase().replace(/\s+/g, '_')}_${examData.exam.year_of_release}`;
+    
+    // Process group images to create a mapping
+    const groupImageMap = new Map<string, string[]>(); // groupId -> image URLs
+    
+    for (const imageFile of groupImageFiles) {
+      // Extract group ID from fieldname (e.g., "groupImage_24" or "groupImage_24_2")
+      const match = imageFile.fieldname.match(/groupImage_(\d+)(?:_(\d+))?/);
+      if (match) {
+        const groupId = match[1];
+        const imageIndex = match[2] ? parseInt(match[2]) : 1;
+        
+        // Find questions for this group to determine the file naming
+        const groupQuestions = examData.questions.filter(q => q.group_id?.toString() === groupId);
+        if (groupQuestions.length > 0) {
+          const minQuestion = Math.min(...groupQuestions.map(q => q.question_number));
+          const maxQuestion = Math.max(...groupQuestions.map(q => q.question_number));
+          
+          // Determine part number for folder structure
+          const partNumber = groupQuestions[0].part_number;
+          const folderPath = `${examFolderName}/part${partNumber}`;
+          
+          // Generate file name
+          const suffix = imageIndex === 1 ? '' : `_${imageIndex}`;
+          const fileName = `${minQuestion}-${maxQuestion}${suffix}.png`;
+          const filePath = `${folderPath}/${fileName}`;
+          
+          // Save image file
+          await saveImageFile(imageFile, filePath);
+          
+          // Store in map
+          if (!groupImageMap.has(groupId)) {
+            groupImageMap.set(groupId, []);
+          }
+          groupImageMap.get(groupId)!.push(filePath);
+        }
+      }
+    }
+
+    // Process question images
+    const questionImageMap = new Map<string, string>(); // questionNumber -> image URL
+    
+    for (const imageFile of questionImageFiles) {
+      // Extract question number from fieldname (e.g., "questionImage_25")
+      const match = imageFile.fieldname.match(/questionImage_(\d+)/);
+      if (match) {
+        const questionNumber = match[1];
+        
+        // Find the question to determine part number
+        const question = examData.questions.find(q => q.question_number.toString() === questionNumber);
+        if (question) {
+          const partNumber = question.part_number;
+          const folderPath = `${examFolderName}/part${partNumber}`;
+          const fileName = `${questionNumber}.png`;
+          const filePath = `${folderPath}/${fileName}`;
+          
+          // Save image file
+          await saveImageFile(imageFile, filePath);
+          questionImageMap.set(questionNumber, filePath);
+        }
+      }
+    }
 
     // 2. Create parts and their relationships
     const partMap = new Map<number, number>(); // part_number -> part_id
@@ -135,7 +196,7 @@ export async function createExamWithData(
       // Handle audio file for listening parts
       if ([1, 2, 3, 4].includes(partData.part_number) && audioFiles[audioFileIndex]) {
         const audioFile = audioFiles[audioFileIndex];
-        const filePath = await saveAudioFile(audioFile, examId, partData.part_number);
+        const filePath = await saveAudioFile(audioFile, examFolderName, partData.part_number);
         const duration = getAudioDuration(audioFile);
 
         await AudioFile.create({
@@ -187,10 +248,14 @@ export async function createExamWithData(
             g.group_id === questionData.group_id && g.part_number === partNumber
           );
           
+          // Get image URLs for this group (multiple images separated by space)
+          const groupImages = groupImageMap.get(questionData.group_id.toString()) || [];
+          const imageUrl = groupImages.length > 0 ? groupImages.join(' ') : (groupData?.image_url || null);
+          
           const group = await QuestionGroup.create({
             part_id: partId,
             content: groupData?.passage || `Reading passage for questions in group ${questionData.group_id}`,
-            image_url: groupData?.image_url || null,
+            image_url: imageUrl,
             created_at: new Date()
           }, { transaction });
           
@@ -199,14 +264,16 @@ export async function createExamWithData(
         }
       }
 
-      // Create question
+      // Create question with image URL if available
+      const questionImageUrl = questionImageMap.get(questionData.question_number.toString()) || '';
+      
       const question = await Question.create({
         part_id: partId,
         group_id: groupId,
         question_number: questionData.question_number,
         content: questionData.content,
         question_type: questionData.question_type as any,
-        image_url: '', // Will be set when images are uploaded
+        image_url: questionImageUrl,
         created_at: new Date(),
         updated_at: new Date()
       }, { transaction });
@@ -225,30 +292,28 @@ export async function createExamWithData(
       }
     }
 
-    // 4. Create answers (only if provided)
-    if (Array.isArray(examData.answers) && examData.answers.length > 0) {
-      for (const answerData of examData.answers) {
-        const questionId = questionMap.get(`${answerData.part_number}:${answerData.question_number}`);
-        if (!questionId) continue;
+    // 4. Create answers
+    for (const answerData of examData.answers) {
+      const questionId = questionMap.get(`${answerData.part_number}:${answerData.question_number}`);
+      if (!questionId) continue;
 
-        const answer = await Answer.create({
-          question_id: questionId,
-          content: answerData.content,
-          is_correct: answerData.is_correct,
-          explanation: answerData.explanation || '',
-          created_at: new Date()
+      const answer = await Answer.create({
+        question_id: questionId,
+        content: answerData.content,
+        is_correct: answerData.is_correct,
+        explanation: answerData.explanation || '',
+        created_at: new Date()
+      }, { transaction });
+
+      // Add Vietnamese translation if exists
+      if (answerData.vietnamese_translation) {
+        await Translation.create({
+          content_type: 'answer',
+          content_id: answer.id,
+          vietnamese_text: answerData.vietnamese_translation,
+          created_at: new Date(),
+          updated_at: new Date()
         }, { transaction });
-
-        // Add Vietnamese translation if exists
-        if (answerData.vietnamese_translation) {
-          await Translation.create({
-            content_type: 'answer',
-            content_id: answer.id,
-            vietnamese_text: answerData.vietnamese_translation,
-            created_at: new Date(),
-            updated_at: new Date()
-          }, { transaction });
-        }
       }
     }
 
@@ -261,7 +326,11 @@ export async function createExamWithData(
         partsCount: examData.parts.length,
         questionsCount: examData.questions.length,
         answersCount: examData.answers.length,
-        audioFilesProcessed: audioFileIndex
+        audioFilesProcessed: audioFileIndex,
+        groupImagesProcessed: groupImageFiles.length,
+        questionImagesProcessed: questionImageFiles.length,
+        groupsWithImages: groupImageMap.size,
+        questionsWithImages: questionImageMap.size
       }
     };
 
@@ -286,6 +355,7 @@ export async function addPartToExam(
     if (!exam) {
       throw new Error('Exam not found');
     }
+    const examFolderName = `${exam.title.toLowerCase().replace(/\s+/g, '_')}_${exam.year_of_release}`;
 
     // 2. Create part
     const part = await Part.create({
@@ -308,7 +378,7 @@ export async function addPartToExam(
 
     // 4. Handle audio file for listening parts
     if (audioFile && [1, 2, 3, 4].includes(partData.part_number)) {
-      const filePath = await saveAudioFile(audioFile, examId, partData.part_number);
+      const filePath = await saveAudioFile(audioFile, examFolderName, partData.part_number);
       const duration = getAudioDuration(audioFile);
 
       await AudioFile.create({

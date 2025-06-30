@@ -85,19 +85,26 @@ async function handler(req: MulterRequest, res: NextApiResponse) {
     });
 
     // Validate required fields
-    if (!examData.exam || !examData.parts || !examData.questions || !examData.answers) {
+    if (!examData.exam || !examData.parts || !examData.questions) {
       return res.status(400).json({
         success: false,
         data: { message: "Missing required exam data sections" }
       });
     }
 
+    // For full TOEIC tests, answers are required. For speaking/writing they can be absent or empty.
+    const isFullToeic = examData.exam.exam_type === 'full_toeic';
+    if (isFullToeic && (!examData.answers || examData.answers.length === 0)) {
+      return res.status(400).json({
+        success: false,
+        data: { message: "Full TOEIC exam must include answers sheet" }
+      });
+    }
+
     // Validate parts that require audio files
     const listeningParts = examData.parts.filter((part: any) => [1, 2, 3, 4].includes(part.part_number));
     
-    // Only require audio for full_toeic exam type
-    const isFullToeic = examData.exam.exam_type === 'full_toeic';
-    
+    // Only require audio for full_toeic exam type (isFullToeic is already defined above)
     if (isFullToeic && listeningParts.length > 0) {
       // For TOEIC exams, validate that we have audio files for listening parts
       if (audioFiles.length < listeningParts.length) {
@@ -131,16 +138,28 @@ async function handler(req: MulterRequest, res: NextApiResponse) {
       });
     }
 
-    // Set default values for missing fields
+    // Map exam_type (domain terminology) to DB enum "type" expected by Exam model.
+    // full_toeic  -> full_test
+    // speaking    -> speaking
+    // writing     -> writing
+    const mapExamTypeToDbType = (examType?: string): 'full_test' | 'speaking' | 'writing' => {
+      if (examType === 'speaking') return 'speaking';
+      if (examType === 'writing') return 'writing';
+      // Treat everything else (default) as full TOEIC test
+      return 'full_test';
+    };
+
     const processedExamData = {
       ...examData,
       exam: {
-        title: examData.exam.title,
-        type: examData.exam.type || 'full_test',
-        description: examData.exam.description,
+        // Preserve all original exam-level fields (title, description, difficulty, etc.)
+        ...examData.exam,
+        // Ensure both exam_type (business logic) and type (DB enum) are present
+        exam_type: examData.exam.exam_type || examData.exam.type || 'full_toeic',
+        type: mapExamTypeToDbType(examData.exam.exam_type || examData.exam.type),
         estimated_time: examData.exam.estimated_time || 120,
-        year_of_release: examData.exam.year_of_release || new Date().getFullYear()
-      }
+        year_of_release: examData.exam.year_of_release || new Date().getFullYear(),
+      },
     };
 
     // Create exam with all data in database

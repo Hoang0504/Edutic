@@ -84,9 +84,18 @@ export async function createExamWithData(
   
   try {
     // 1. Create exam
+    // Determine the correct DB enum value for the exam type
+    const resolvedExamType = (() => {
+      const srcType = (examData.exam.exam_type || examData.exam.type) as string | undefined;
+      if (srcType === 'full_toeic') return 'full_test';
+      if (srcType === 'speaking') return 'speaking';
+      if (srcType === 'writing') return 'writing';
+      return 'full_test'; // Fallback to full_test
+    })() as 'random' | 'full_test' | 'speaking' | 'writing';
+
     const exam = await Exam.create({
       title: examData.exam.title,
-      type: (examData.exam.exam_type || examData.exam.type) as 'random' | 'full_test' | 'speaking' | 'writing',
+      type: resolvedExamType,
       description: examData.exam.exam_type ? 
         `[${examData.exam.exam_type}] ${examData.exam.description}` : 
         examData.exam.description,
@@ -229,7 +238,7 @@ export async function createExamWithData(
       if (!partId) continue;
 
       // Xử lý question groups cho reading comprehension
-      let groupId: number;
+      let groupId: number | null = null;
       
       if (questionData.group_id) {
         // Nếu có group_id từ Excel, tạo hoặc sử dụng group đã tồn tại
@@ -258,15 +267,6 @@ export async function createExamWithData(
           groupId = group.id;
           createdGroups.set(groupKey, groupId);
         }
-      } else {
-        // Không có group_id, tạo group riêng (cho listening hoặc single questions)
-        const group = await QuestionGroup.create({
-          part_id: partId,
-          content: `Question group for part ${partNumber}, question ${questionData.question_number}`,
-          created_at: new Date()
-        }, { transaction });
-        
-        groupId = group.id;
       }
 
       // Create question with image URL if available
@@ -297,28 +297,30 @@ export async function createExamWithData(
       }
     }
 
-    // 4. Create answers
-    for (const answerData of examData.answers) {
-      const questionId = questionMap.get(`${answerData.part_number}:${answerData.question_number}`);
-      if (!questionId) continue;
+    // 4. Create answers (only if provided)
+    if (Array.isArray(examData.answers) && examData.answers.length > 0) {
+      for (const answerData of examData.answers) {
+        const questionId = questionMap.get(`${answerData.part_number}:${answerData.question_number}`);
+        if (!questionId) continue;
 
-      const answer = await Answer.create({
-        question_id: questionId,
-        content: answerData.content,
-        is_correct: answerData.is_correct,
-        explanation: answerData.explanation || '',
-        created_at: new Date()
-      }, { transaction });
-
-      // Add Vietnamese translation if exists
-      if (answerData.vietnamese_translation) {
-        await Translation.create({
-          content_type: 'answer',
-          content_id: answer.id,
-          vietnamese_text: answerData.vietnamese_translation,
-          created_at: new Date(),
-          updated_at: new Date()
+        const answer = await Answer.create({
+          question_id: questionId,
+          content: answerData.content,
+          is_correct: answerData.is_correct,
+          explanation: answerData.explanation || '',
+          created_at: new Date()
         }, { transaction });
+
+        // Add Vietnamese translation if exists
+        if (answerData.vietnamese_translation) {
+          await Translation.create({
+            content_type: 'answer',
+            content_id: answer.id,
+            vietnamese_text: answerData.vietnamese_translation,
+            created_at: new Date(),
+            updated_at: new Date()
+          }, { transaction });
+        }
       }
     }
 
@@ -330,7 +332,7 @@ export async function createExamWithData(
         examTitle: examData.exam.title,
         partsCount: examData.parts.length,
         questionsCount: examData.questions.length,
-        answersCount: examData.answers.length,
+        answersCount: Array.isArray(examData.answers) ? examData.answers.length : 0,
         audioFilesProcessed: audioFileIndex,
         groupImagesProcessed: groupImageFiles.length,
         questionImagesProcessed: questionImageFiles.length,

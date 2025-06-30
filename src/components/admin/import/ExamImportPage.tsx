@@ -630,21 +630,21 @@ const ExamImportPage: React.FC = () => {
                       <h4 className="font-medium text-blue-900">
                         Nhóm câu hỏi {currentQuestionStructure.groupId} (Câu {currentQuestionStructure.questions[0].question_number}-{currentQuestionStructure.questions[currentQuestionStructure.questions.length - 1].question_number})
                       </h4>
-                      <button
+                <button
                         onClick={() => groupImageRef.current?.click()}
                         className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                      >
+                >
                         📷 Upload ảnh nhóm
-                      </button>
-                      <input
+                </button>
+                <input
                         ref={groupImageRef}
-                        type="file"
-                        accept="image/*"
+                  type="file"
+                  accept="image/*"
                         multiple
                         onChange={handleGroupImageUpload}
-                        className="hidden"
-                      />
-                    </div>
+                  className="hidden"
+                />
+              </div>
                     
                     {(() => {
                       const currentGroupData = getCurrentQuestionGroup();
@@ -809,80 +809,80 @@ const ExamImportPage: React.FC = () => {
                   {/* Question Image Preview */}
                   <SingleQuestionImagePreview questionNumber={currentQuestionStructure.questions[0].question_number} />
 
-                  {/* Question Content */}
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Nội dung câu hỏi
-                      </label>
-                      <textarea
+              {/* Question Content */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nội dung câu hỏi
+                  </label>
+                  <textarea
                         value={currentQuestionStructure.questions[0].content}
-                        readOnly
-                        className="w-full p-3 border border-gray-300 rounded-md bg-gray-50"
-                        rows={3}
-                      />
-                    </div>
+                    readOnly
+                    className="w-full p-3 border border-gray-300 rounded-md bg-gray-50"
+                    rows={3}
+                  />
+                </div>
 
                     {currentQuestionStructure.questions[0].vietnamese_translation && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Bản dịch tiếng Việt (câu hỏi)
-                        </label>
-                        <textarea
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Bản dịch tiếng Việt (câu hỏi)
+                  </label>
+                  <textarea
                           value={currentQuestionStructure.questions[0].vietnamese_translation || ""}
-                          readOnly
-                          className="w-full p-3 border border-gray-300 rounded-md bg-gray-50"
-                          rows={2}
-                        />
-                      </div>
+                    readOnly
+                    className="w-full p-3 border border-gray-300 rounded-md bg-gray-50"
+                    rows={2}
+                  />
+                </div>
                     )}
 
                     {/* Single Question Answers */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3">
-                        Đáp án
-                      </label>
-                      <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Đáp án
+                  </label>
+                  <div className="space-y-3">
                         {getAnswersForQuestion(currentQuestionStructure.questions[0].question_number).map((answer) => (
-                          <div
-                            key={answer.answer_letter}
-                            className={`p-3 border rounded-lg ${
-                              answer.is_correct
-                                ? "border-green-300 bg-green-50"
-                                : "border-gray-300 bg-white"
-                            }`}
-                          >
-                            <div className="flex items-start space-x-3">
-                              <input
-                                type="radio"
+                      <div
+                        key={answer.answer_letter}
+                        className={`p-3 border rounded-lg ${
+                          answer.is_correct
+                            ? "border-green-300 bg-green-50"
+                            : "border-gray-300 bg-white"
+                        }`}
+                      >
+                        <div className="flex items-start space-x-3">
+                          <input
+                            type="radio"
                                 name={`question-${currentQuestionStructure.questions[0].question_number}`}
-                                checked={answer.is_correct}
-                                readOnly
-                                className="mt-1"
-                              />
-                              <div className="flex-1">
-                                <div className="font-medium text-gray-900">
+                            checked={answer.is_correct}
+                            readOnly
+                            className="mt-1"
+                          />
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-900">
                                   {answer.content}
-                                </div>
+                            </div>
                                 {answer.vietnamese_translation && (
-                                  <div className="text-sm text-gray-600 mt-1">
-                                    {answer.vietnamese_translation}
-                                  </div>
+                            <div className="text-sm text-gray-600 mt-1">
+                              {answer.vietnamese_translation}
+                            </div>
                                 )}
                                 {answer.explanation && (
                                   <div className={`text-sm mt-1 font-medium ${
                                     answer.is_correct ? "text-green-700" : "text-gray-600"
                                   }`}>
                                     {answer.explanation}
-                                  </div>
-                                )}
                               </div>
-                            </div>
+                            )}
                           </div>
-                        ))}
+                        </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
+                </div>
+              </div>
                 </div>
               )}
             </div>

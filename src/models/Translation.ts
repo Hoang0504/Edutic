@@ -6,7 +6,10 @@ import {
   DataType,
   PrimaryKey,
   AutoIncrement,
+  ForeignKey,
+  BelongsTo,
 } from "sequelize-typescript";
+import { AudioFile } from "./AudioFile";
 
 interface TranslationCreationAttributes {
   id?: number;
@@ -18,10 +21,7 @@ interface TranslationCreationAttributes {
 }
 
 @Table({ tableName: "translations", timestamps: false })
-export class Translation extends Model<
-  Translation,
-  TranslationCreationAttributes
-> {
+export class Translation extends Model<Translation, TranslationCreationAttributes> {
   @PrimaryKey
   @AutoIncrement
   @Column
@@ -30,11 +30,9 @@ export class Translation extends Model<
   @Column(DataType.ENUM("question", "answer", "instruction", "transcript"))
   content_type!: "question" | "answer" | "instruction" | "transcript";
 
+  @ForeignKey(() => AudioFile)
   @Column(DataType.INTEGER)
   content_id!: number;
-
-  // @Column(DataType.TEXT)
-  // english_text!: string;
 
   @Column(DataType.TEXT)
   vietnamese_text!: string;
@@ -44,4 +42,7 @@ export class Translation extends Model<
 
   @Column(DataType.DATE)
   updated_at!: Date;
+
+  @BelongsTo(() => AudioFile, { foreignKey: 'content_id', constraints: false })
+  audioFile!: AudioFile;
 }

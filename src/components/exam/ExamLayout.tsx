@@ -2,6 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import QuestionNavigator from './QuestionNavigator';
+import ExamProctoring from './ExamProctoring';
+import ExamPermissionDialog from '../ExamPermissionDialog';
+import ExamViolationAlert from './ExamViolationAlert';
+import { useExamProctoring } from '@/hooks/UseExamProctoring';
 
 interface ExamLayoutProps {
   examTitle: string;
@@ -26,6 +30,7 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
 }) => {
   const [timeLeft, setTimeLeft] = useState(totalTime * 60); // convert to seconds
   const [activeSkill, setActiveSkill] = useState<'listening' | 'reading' | 'writing' | 'speaking'>('listening');
+  const [isTimerPaused, setIsTimerPaused] = useState(false);
 
   const skills = [
     { id: 'listening', name: 'Listening', color: 'bg-blue-500' },
@@ -34,20 +39,45 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
     { id: 'speaking', name: 'Speaking', color: 'bg-red-500' }
   ];
 
+  // Initialize proctoring system
+  const proctoringSystem = useExamProctoring({
+    isEnabled: true,
+    currentSkill: activeSkill,
+    onTimerPause: (pause: boolean) => {
+      setIsTimerPaused(pause);
+    },
+    onExamCancel: () => {
+      onExit();
+    }
+  });
+
+  // Timer effect
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          onSubmit();
-          return 0;
-        }
-        return prev - 1;
-      });
+      if (!isTimerPaused && !proctoringSystem.isTimerPaused) {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            onSubmit();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [onSubmit]);
+  }, [onSubmit, isTimerPaused, proctoringSystem.isTimerPaused]);
+
+  // Show permission dialog when exam starts
+  useEffect(() => {
+    // Show permission dialog after a short delay to ensure page is loaded
+    const timeout = setTimeout(() => {
+      proctoringSystem.requestProctoringPermission();
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, []);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -69,13 +99,46 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-xl font-semibold text-gray-800">{examTitle}</h1>
-            <button
-              onClick={onExit}
-              className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
-            >
-              Thoát
-            </button>
+            <div className="flex items-center space-x-4">
+              <h1 className="text-xl font-semibold text-gray-800">{examTitle}</h1>
+              
+              {/* Proctoring status indicator */}
+              {proctoringSystem.proctoringEnabled && (
+                <div className="flex items-center space-x-2 text-sm">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-green-600 font-medium">Giám sát đang hoạt động</span>
+                </div>
+              )}
+              
+              {/* Violation warning */}
+              {proctoringSystem.shouldShowRiskWarning() && (
+                <div className="flex items-center space-x-2 text-sm">
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <span className="text-red-600 font-medium">
+                    Cảnh báo: {proctoringSystem.getViolationStats().total} vi phạm
+                  </span>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              {/* Timer pause indicator */}
+              {(isTimerPaused || proctoringSystem.isTimerPaused) && (
+                <div className="flex items-center space-x-2 text-orange-600">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-sm font-medium">Đã tạm dừng</span>
+                </div>
+              )}
+              
+              <button
+                onClick={onExit}
+                className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+              >
+                Thoát
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -131,7 +194,9 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
             {/* Timer */}
             <div className="bg-white rounded-lg shadow-sm border p-4">
               <h3 className="font-medium text-gray-800 mb-2">Thời gian làm bài</h3>
-              <div className="text-2xl font-bold text-red-600 mb-4">
+              <div className={`text-2xl font-bold mb-4 ${
+                (isTimerPaused || proctoringSystem.isTimerPaused) ? 'text-orange-600' : 'text-red-600'
+              }`}>
                 {formatTime(timeLeft)}
               </div>
               <button
@@ -150,6 +215,31 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Proctoring Camera */}
+      <ExamProctoring
+        isEnabled={proctoringSystem.proctoringEnabled}
+        onViolation={proctoringSystem.handleViolation}
+        onPauseTimer={(pause) => setIsTimerPaused(pause)}
+        currentSkill={activeSkill}
+      />
+
+      {/* Permission Dialog */}
+      <ExamPermissionDialog
+        isOpen={proctoringSystem.showPermissionDialog}
+        onPermissionGranted={proctoringSystem.handlePermissionGranted}
+        onSkipProctoring={proctoringSystem.handleSkipProctoring}
+        onCancel={proctoringSystem.handlePermissionCancel}
+      />
+
+      {/* Violation Alert */}
+      <ExamViolationAlert
+        isVisible={proctoringSystem.showViolationAlert}
+        violationType={proctoringSystem.currentViolation?.type || 'face'}
+        message={proctoringSystem.currentViolation?.message || ''}
+        onContinue={proctoringSystem.handleContinueAfterViolation}
+        onCancel={proctoringSystem.handleCancelFromViolation}
+      />
     </div>
   );
 };

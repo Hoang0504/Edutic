@@ -17,7 +17,8 @@
     "continue": "Continue",
     "stop": "Stop",
     "musicControl": "Music Control",
-    "language": "Language"
+    "language": "Language",
+    "blog": "TOEIC Knowledge"
   },
   "notifications": {
     "title": "Notifications",
@@ -40,5 +41,106 @@
     "loading": "Loading...",
     "error": "Error",
     "success": "Success"
+  },
+  "home": {
+    "greeting": "Hello, {{name}}!",
+    "welcomeBack": "Welcome back to Edutic. Let's start your learning journey today!",
+    "nearestExam": "Next Exam",
+    "examDate": "Exam Date",
+    "targetScore": "Target Score",
+    "skill": {
+      "listening": "Listening",
+      "speaking": "Speaking",
+      "reading": "Reading",
+      "writing": "Writing"
+    },
+    "save": "Save",
+    "edit": "Edit",
+    "recentResults": "Recent Test Results",
+    "latestTests": "Latest Tests",
+    "flashcard": "Flashcard",
+    "onlineMembers": "Members Online",
+    "leaderboard": "Leaderboard",
+    "score": "Score"
+  },
+  "exams": {
+    "library": "Exam Library",
+    "tabs": {
+      "all": "All",
+      "random": "Generate Random Exam",
+      "written": "Writing Exams",
+      "speaking": "Speaking Exams"
+    },
+    "sortLabel": "Sort by:",
+    "sortOptions": {
+      "releaseDate": "Release Date",
+      "title": "Title",
+      "duration": "Duration"
+    },
+    "filterReleaseDate": "Release Date",
+    "status": {
+      "completed": "Completed",
+      "incomplete": "Incomplete",
+      "not_started": "Not Started"
+    },
+    "durationMin": "{{min}} min",
+    "questionCount": "{{count}} questions",
+    "releaseDate": "Release Date: {{date}}",
+    "testDuration": "{{min}} min test",
+    "scoreLabel": "Score:",
+    "viewDetails": "View details >>"
+  },
+  "blog": {
+    "title": "TOEIC Knowledge",
+    "subtitle": "Collection of tips and knowledge to conquer TOEIC",
+    "searchPlaceholder": "Search knowledge...",
+    "filter": {
+      "all": "All"
+    },
+    "lessonsCount": "{{count}} lessons",
+    "noResults": {
+      "title": "No results found",
+      "message": "Try searching with different keywords or select another category."
+    }
+  },
+  "addMusic": {
+    "pageTitle": "Add New Music",
+    "subtitle": "Upload your study music",
+    "uploadSuccess": "Music uploaded successfully!",
+    "form": {
+      "titleLabel": "Song title",
+      "titlePlaceholder": "Enter song title (3-100 characters)",
+      "fileLabel": "Music file (.mp3)",
+      "fileSelect": "Click to choose .mp3 file",
+      "fileOnly": "Only .mp3 files are accepted",
+      "durationLabel": "Duration",
+      "durationPlaceholder": "Automatically calculated after upload",
+      "submit": "Add Music",
+      "uploading": "Uploading..."
+    },
+    "errors": {
+      "titleShort": "Title must be at least 3 characters",
+      "titleLong": "Title must not exceed 100 characters",
+      "fileRequired": "Please choose a music file",
+      "fileInvalid": "Only .mp3 files are accepted",
+      "audioError": "Cannot read audio file"
+    },
+    "instructionsTitle": "Instructions:",
+    "instructions": [
+      "Title must be 3-100 characters",
+      "Only .mp3 files are accepted",
+      "Duration will be calculated automatically",
+      "Music will be used in Pomodoro mode"
+    ],
+    "musicLibrary": "Existing Music Library",
+    "loadingMusic": "Loading music list...",
+    "table": {
+      "index": "No.",
+      "title": "Song Title",
+      "duration": "Duration",
+      "source": "Source",
+      "actions": "Actions",
+      "delete": "Delete"
+    }
   }
 } 

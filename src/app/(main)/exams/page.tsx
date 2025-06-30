@@ -8,6 +8,7 @@ import {
   CalendarIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { useTranslation } from "@/contexts/I18nContext";
 
 // Dữ liệu mẫu cho đề thi
 const sampleExams = [
@@ -83,6 +84,7 @@ type ExamStatus = "completed" | "incomplete" | "not_started";
 type TabType = "all" | "random" | "written" | "speaking";
 
 export default function ExamsPage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabType>("all");
   const [sortBy, setSortBy] = useState("releaseDate");
   const [currentPage, setCurrentPage] = useState(1);
@@ -97,19 +99,19 @@ export default function ExamsPage() {
       case "completed":
         return (
           <button className="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700 border border-green-200">
-            Đã làm
+            {t("exams.status.completed", "Đã làm")}
           </button>
         );
       case "incomplete":
         return (
           <button className="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700 border border-yellow-200">
-            Chưa hoàn thành
+            {t("exams.status.incomplete", "Chưa hoàn thành")}
           </button>
         );
       case "not_started":
         return (
           <button className="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-700 border border-gray-200">
-            Chưa làm
+            {t("exams.status.not_started", "Chưa làm")}
           </button>
         );
     }
@@ -121,7 +123,7 @@ export default function ExamsPage() {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Thư viện đề thi
+            {t("exams.library", "Thư viện đề thi")}
           </h1>
 
           {/* Tabs */}
@@ -134,7 +136,7 @@ export default function ExamsPage() {
                   : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
               }`}
             >
-              Tất cả
+              {t("exams.tabs.all", "Tất cả")}
             </button>
             <button
               onClick={() => setActiveTab("random")}
@@ -144,7 +146,7 @@ export default function ExamsPage() {
                   : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
               }`}
             >
-              Tạo đề thi ngẫu nhiên
+              {t("exams.tabs.random", "Tạo đề thi ngẫu nhiên")}
             </button>
             <button
               onClick={() => setActiveTab("written")}
@@ -154,7 +156,7 @@ export default function ExamsPage() {
                   : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
               }`}
             >
-              Đề thi viết
+              {t("exams.tabs.written", "Đề thi viết")}
             </button>
             <button
               onClick={() => setActiveTab("speaking")}
@@ -164,26 +166,26 @@ export default function ExamsPage() {
                   : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
               }`}
             >
-              Đề thi nói
+              {t("exams.tabs.speaking", "Đề thi nói")}
             </button>
           </div>
 
           {/* Filter Section */}
           <div className="flex flex-wrap gap-4 items-center">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Xếp xếp:</span>
+              <span className="text-sm text-gray-600">{t("exams.sortLabel", "Sắp xếp:")}</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="releaseDate">Ngày phát hành</option>
-                <option value="title">Tên đề thi</option>
-                <option value="duration">Thời gian</option>
+                <option value="releaseDate">{t("exams.sortOptions.releaseDate", "Ngày phát hành")}</option>
+                <option value="title">{t("exams.sortOptions.title", "Tên đề thi")}</option>
+                <option value="duration">{t("exams.sortOptions.duration", "Thời gian")}</option>
               </select>
             </div>
             <button className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium">
-              Ngày phát hành
+              {t("exams.filterReleaseDate", "Ngày phát hành")}
             </button>
           </div>
         </div>
@@ -208,25 +210,25 @@ export default function ExamsPage() {
                 <div className="flex items-center gap-2">
                   <ClockIcon className="h-4 w-4 text-gray-400" />
                   <span className="text-sm text-gray-600">
-                    {exam.duration} phút
+                    {t("exams.durationMin", "{{min}} phút", { min: exam.duration })}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <PencilIcon className="h-4 w-4 text-gray-400" />
                   <span className="text-sm text-gray-600">
-                    {exam.questionCount} câu
+                    {t("exams.questionCount", "{{count}} câu", { count: exam.questionCount })}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CalendarIcon className="h-4 w-4 text-gray-400" />
                   <span className="text-sm text-gray-600">
-                    Ngày phát hành: {exam.releaseDate}
+                    {t("exams.releaseDate", "Ngày phát hành: {{date}}", { date: exam.releaseDate })}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <ClockIcon className="h-4 w-4 text-gray-400" />
                   <span className="text-sm text-gray-600">
-                    {exam.testDuration} phút thi
+                    {t("exams.testDuration", "{{min}} phút thi", { min: exam.testDuration })}
                   </span>
                 </div>
               </div>
@@ -234,7 +236,7 @@ export default function ExamsPage() {
               {/* Score and Status */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600">Điểm thi:</span>
+                  <span className="text-sm text-gray-600">{t("exams.scoreLabel", "Điểm thi:")}</span>
                   <span className="font-semibold text-blue-600">
                     {exam.score}/100
                   </span>
@@ -248,7 +250,7 @@ export default function ExamsPage() {
                   href={`/exams/${exam.id}`}
                   className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium text-center block"
                 >
-                  Xem chi tiết &gt;&gt;
+                  {t("exams.viewDetails", "Xem chi tiết >>")}
                 </Link>
               </div>
             </div>

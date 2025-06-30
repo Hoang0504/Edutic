@@ -23,7 +23,7 @@ interface UserProgressCreationAttributes {
   updated_at?: Date;
 }
 
-@Table({ tableName: "user_progress", timestamps: false })
+@Table({ tableName: "user_progresses", timestamps: false })
 export class UserProgress extends Model<
   UserProgress,
   UserProgressCreationAttributes

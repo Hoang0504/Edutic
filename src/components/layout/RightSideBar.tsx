@@ -1,15 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import {
+import { 
   ChatBubbleLeftRightIcon,
   BookOpenIcon,
   EyeIcon,
   ChevronRightIcon,
   ChevronLeftIcon,
   // EyeSlashIcon,
-  SpeakerWaveIcon,
-  SpeakerXMarkIcon,
 } from "@heroicons/react/24/outline";
 import Dictionary from "../features/Dictionary";
 import { useDictionary } from "@/contexts/DictionaryContext";
@@ -19,11 +17,10 @@ import { usePomodoro } from "@/contexts/PomodoroContext";
 function RightSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isPomodoroOpen, setIsPomodoroOpen] = useState(false);
-  const [isMusicOn, setIsMusicOn] = useState(true);
   // const [isFocusMode, setIsFocusMode] = useState(false);
   const { showDictionary, toggleDictionary } = useDictionary();
 
-  const { isActive, isStudyMode, openStudyModal } = usePomodoro();
+  const { isActive, isStudyMode, openStudyModal, openBreakModal } = usePomodoro();
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
@@ -37,16 +34,14 @@ function RightSidebar() {
       // If already in focus mode, open the appropriate modal
       if (isStudyMode) {
         openStudyModal();
+      } else {
+        // For break mode, open the break modal so user can continue studying
+        openBreakModal();
       }
-      // For break mode, the break modal is handled by MusicBreakModal component
     } else {
       // If not in focus mode, open the setup modal
       setIsPomodoroOpen(true);
     }
-  };
-
-  const toggleMusic = () => {
-    setIsMusicOn(!isMusicOn);
   };
 
   const closePomodoro = () => {
@@ -85,29 +80,21 @@ function RightSidebar() {
         : "bg-purple-500 hover:bg-purple-600",
       onClick: handleFocusModeClick,
     },
-    {
-      id: "music",
-      icon: isMusicOn ? SpeakerWaveIcon : SpeakerXMarkIcon,
-      label: isMusicOn ? "Tắt nhạc" : "Bật nhạc",
-      color: isMusicOn
-        ? "bg-orange-500 hover:bg-orange-600"
-        : "bg-gray-500 hover:bg-gray-600",
-      onClick: toggleMusic,
-    },
+
   ];
 
   if (isCollapsed) {
     return (
       <>
-        <div className="fixed right-2 sm:right-4 bottom-4 sm:top-1/2 sm:transform sm:-translate-y-1/2 z-40">
-          <button
-            onClick={toggleSidebar}
-            className="w-10 h-10 sm:w-10 sm:h-10 bg-gray-600 hover:bg-gray-700 text-white rounded-full shadow-lg transition-all duration-200 flex items-center justify-center hover:scale-110"
-            title="Mở sidebar"
-          >
-            <ChevronLeftIcon className="w-5 h-5" />
-          </button>
-        </div>
+      <div className="fixed right-2 sm:right-4 bottom-4 sm:top-1/2 sm:transform sm:-translate-y-1/2 z-40">
+        <button
+          onClick={toggleSidebar}
+          className="w-10 h-10 sm:w-10 sm:h-10 bg-gray-600 hover:bg-gray-700 text-white rounded-full shadow-lg transition-all duration-200 flex items-center justify-center hover:scale-110"
+          title="Mở sidebar"
+        >
+          <ChevronLeftIcon className="w-5 h-5" />
+        </button>
+      </div>
 
         {/* Pomodoro Modal */}
         <PomodoroModal isOpen={isPomodoroOpen} onClose={closePomodoro} />
@@ -117,38 +104,38 @@ function RightSidebar() {
 
   return (
     <>
-      <div className="fixed right-2 sm:right-4 bottom-4 sm:top-1/2 sm:transform sm:-translate-y-1/2 z-40 space-y-2 sm:space-y-3">
+    <div className="fixed right-2 sm:right-4 bottom-4 sm:top-1/2 sm:transform sm:-translate-y-1/2 z-40 space-y-2 sm:space-y-3">
         {showDictionary && <Dictionary />}
 
-        {/* Nút thu gọn */}
-        <div className="flex justify-end">
-          <button
-            onClick={toggleSidebar}
-            className="w-8 h-8 bg-gray-600 hover:bg-gray-700 text-white rounded-full shadow-md transition-all duration-200 flex items-center justify-center hover:scale-110"
-            title="Thu gọn sidebar"
-          >
-            <ChevronRightIcon className="w-4 h-4" />
-          </button>
-        </div>
+      {/* Nút thu gọn */}
+      <div className="flex justify-end">
+        <button
+          onClick={toggleSidebar}
+          className="w-8 h-8 bg-gray-600 hover:bg-gray-700 text-white rounded-full shadow-md transition-all duration-200 flex items-center justify-center hover:scale-110"
+          title="Thu gọn sidebar"
+        >
+          <ChevronRightIcon className="w-4 h-4" />
+        </button>
+      </div>
 
-        {/* Sidebar Items */}
-        {sidebarItems.map((item) => {
-          const IconComponent = item.icon;
-          return (
-            <div key={item.id} className="group relative">
-              <button
-                onClick={item.onClick}
-                className={`
+      {/* Sidebar Items */}
+      {sidebarItems.map((item) => {
+        const IconComponent = item.icon;
+        return (
+          <div key={item.id} className="group relative">
+            <button
+              onClick={item.onClick}
+              className={`
                 w-11 h-11 sm:w-12 sm:h-12 rounded-full text-white shadow-lg transition-all duration-200 
                 flex items-center justify-center hover:scale-110 touch-manipulation
                 ${item.color}
               `}
-                title={item.label}
-              >
-                <IconComponent className="w-5 h-5 sm:w-6 sm:h-6" />
-              </button>
-
-              {/* Tooltip - Hidden on mobile, shown on hover for desktop */}
+              title={item.label}
+            >
+              <IconComponent className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+            
+            {/* Tooltip - Hidden on mobile, shown on hover for desktop */}
               <div
                 className="
               hidden sm:block absolute right-14 top-1/2 transform -translate-y-1/2 
@@ -157,18 +144,18 @@ function RightSidebar() {
               pointer-events-none whitespace-nowrap
             "
               >
-                {item.label}
-                <div className="absolute left-full top-1/2 transform -translate-y-1/2 border-l-4 border-l-gray-800 border-y-4 border-y-transparent"></div>
-              </div>
+              {item.label}
+              <div className="absolute left-full top-1/2 transform -translate-y-1/2 border-l-4 border-l-gray-800 border-y-4 border-y-transparent"></div>
             </div>
-          );
-        })}
-      </div>
+          </div>
+        );
+      })}
+    </div>
 
       {/* Pomodoro Modal */}
       <PomodoroModal isOpen={isPomodoroOpen} onClose={closePomodoro} />
     </>
   );
-}
+} 
 
 export default RightSidebar;

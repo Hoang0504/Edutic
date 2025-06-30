@@ -1,6 +1,10 @@
 "use client";
+
 import React from "react";
 import Image from "next/image";
+
+import logo from "@/components/admin/assetadmin/logo.jpg";
+
 import {
   HomeIcon,
   UserIcon,
@@ -9,15 +13,17 @@ import {
   ClipboardIcon,
   MegaphoneIcon,
 } from "@heroicons/react/24/outline";
-import { useAdminContext } from "@/contexts/AdminContext";
+
 import { useRouter } from "next/navigation";
-import logo from "@/components/admin/assetadmin/logo.jpg";
+import { useAuth } from "@/contexts/AuthContext";
+import { useAdminContext } from "@/contexts/AdminContext";
 
 interface AdminSidebarProps {
   onMenuSelect: (menuKey: string) => void; // Định nghĩa hàm onMenuSelect
 }
 
 const AdminSidebar = ({ onMenuSelect }: AdminSidebarProps) => {
+  const { logout } = useAuth();
   const { admin, handleLogoutAdmin } = useAdminContext();
   const router = useRouter();
 
@@ -42,11 +48,6 @@ const AdminSidebar = ({ onMenuSelect }: AdminSidebarProps) => {
       icon: <DocumentTextIcon className="h-5 w-5" />,
     },
     {
-      key: "exams_2",
-      label: "Exams 2",
-      icon: <DocumentTextIcon className="h-5 w-5" />,
-    },
-    {
       key: "flashcard",
       label: "Flashcard",
       icon: <ClipboardIcon className="h-5 w-5" />,
@@ -57,8 +58,13 @@ const AdminSidebar = ({ onMenuSelect }: AdminSidebarProps) => {
       icon: <MegaphoneIcon className="h-5 w-5" />,
     },
     {
+      key: "userAnalytics",
+      label: "UserAnalytics",
+      icon: <UserIcon className="h-5 w-5" />,
+    },
+    {
       key: "logout",
-      label: <button onClick={handleLogout}>Logout</button>,
+      label: <button onClick={logout}>Logout</button>,
       icon: <PowerIcon className="h-5 w-5" />,
     },
   ];

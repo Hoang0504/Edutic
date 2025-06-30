@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import * as XLSX from 'xlsx';
-import { ExamImportData, ExamInfo, ExamPart, ExamQuestion, ExamAnswer, Translation, EXAM_TYPE_CONFIGS, ExamQuestionGroup } from '@/types/exam';
+import { ExamImportData, ExamInfo, ExamPart, ExamQuestion, ExamAnswer, Translation, EXAM_TYPE_CONFIGS } from '@/types/exam';
 
 interface ProcessResult {
   success: boolean;
@@ -65,9 +65,7 @@ export function useExcelProcessor() {
   // Submit exam data to database
   const submitExamToDatabase = async (
     examData: ExamImportData, 
-    audioFiles: File[] = [],
-    groupImages: { [groupId: number]: File[] } = {},
-    questionImages: { [questionNumber: number]: File } = {}
+    audioFiles: File[] = []
   ): Promise<SubmitResult> => {
     setIsSubmitting(true);
     
@@ -79,19 +77,6 @@ export function useExcelProcessor() {
       // Add audio files
       audioFiles.forEach((audioFile, index) => {
         formData.append('audioFiles', audioFile);
-      });
-
-      // Add group images (multiple images per group)
-      Object.entries(groupImages).forEach(([groupId, files]) => {
-        files.forEach((file, index) => {
-          const suffix = index === 0 ? '' : `_${index + 1}`;
-          formData.append(`groupImage_${groupId}${suffix}`, file);
-        });
-      });
-
-      // Add question images
-      Object.entries(questionImages).forEach(([questionNumber, file]) => {
-        formData.append(`questionImage_${questionNumber}`, file);
       });
 
       // Submit to API
@@ -182,50 +167,21 @@ export function useExcelProcessor() {
       type: [1, 2, 3, 4].includes(row.part_number) ? 'listening' : 'reading'
     }));
 
-    // Extract test name from file name for folder structure
-    const testName = fileName.replace(/\.[^/.]+$/, ''); // Remove extension
-
     // Process Question Groups sheet (optional)
     let questionGroups: ExamQuestionGroup[] = [];
     if (workbook.Sheets['QuestionGroups'] || workbook.Sheets['Question Groups']) {
       const groupsSheetName = workbook.Sheets['QuestionGroups'] ? 'QuestionGroups' : 'Question Groups';
       const groupsData = XLSX.utils.sheet_to_json(workbook.Sheets[groupsSheetName]) as any[];
       
-      questionGroups = groupsData.map(row => {
-        const groupId = row.group_id || row.id;
-        const partNumber = row.part_number;
-        const startQuestion = row.start_question || row.question_start;
-        const endQuestion = row.end_question || row.question_end;
-        
-        // Handle image URLs based on passage presence
-        let imageUrls: string[] = [];
-        
-        if (!row.passage || row.passage.trim() === '') {
-          // If passage is empty, generate image URLs
-          const baseImageName = `${startQuestion}-${endQuestion}`;
-          imageUrls.push(`/test1_2024/part${partNumber}/${baseImageName}.png`);
-          
-          // Check if multiple images are specified
-          if (row.image_count && row.image_count > 1) {
-            for (let i = 2; i <= row.image_count; i++) {
-              imageUrls.push(`/test1_2024/part${partNumber}/${baseImageName}_${i}.png`);
-            }
-          }
-        } else if (row.image_url) {
-          // If image_url is provided, split by space to handle multiple images
-          imageUrls = (row.image_url as string).split(' ').map((url: string) => url.trim()).filter((url: string) => url);
-        }
-
-        return {
-          group_id: parseInt(groupId) || 0,
-          part_number: parseInt(partNumber) || 0,
-          passage: row.passage || row.content || '',
-          image_url: imageUrls.join(' '), // Join multiple image URLs with space
+      questionGroups = groupsData.map(row => ({
+        group_id: row.group_id || row.id,
+        part_number: row.part_number,
+        passage: row.passage || row.content,
+        image_url: row.image_url,
         instruction: row.instruction,
-          question_range: [parseInt(startQuestion) || 0, parseInt(endQuestion) || 0],
+        question_range: [row.start_question || row.question_start, row.end_question || row.question_end],
         vietnamese_translation: row.vietnamese_translation
-        } as ExamQuestionGroup;
-      });
+      }));
     }
 
     // Process Questions sheet
@@ -233,32 +189,14 @@ export function useExcelProcessor() {
     if (!questionsSheet) throw new Error('Thiếu sheet "Questions"');
     
     const questionsData = XLSX.utils.sheet_to_json(questionsSheet) as any[];
-    
-    // Debug: Log the first few rows to see column names
-    console.log('Debug - Sample questions data from Excel:', questionsData.slice(0, 3));
-    console.log('Debug - Available columns:', Object.keys(questionsData[0] || {}));
-    
-    const questions: ExamQuestion[] = questionsData.map(row => {
-      // Try different possible column names for group_id
-      const groupId = row['Group No'] || row['group_id'] || row['Group ID'] || row['GroupNo'] || row['group_no'] || row['GroupId'];
-      
-      console.log(`Debug - Question ${row.question_number}: group_id value = "${groupId}", type = ${typeof groupId}`);
-      
-      return {
-        part_number: parseInt(row.part_number) || 0,
-        question_number: parseInt(row.question_number) || 0,
-        group_id: groupId ? parseInt(groupId) : null,
-        content: row.content || '',
+    const questions: ExamQuestion[] = questionsData.map(row => ({
+      part_number: row.part_number,
+      question_number: row.question_number,
+      group_id: row.group_id || row.question_group_id, // Lấy group_id từ Excel
+      content: row.content,
       question_type: 'multiple_choice' as const,
       vietnamese_translation: row.vietnamese_translation || ''
-      };
-    });
-
-    console.log('Debug - Processed questions with group_id:', questions.map(q => ({
-      number: q.question_number,
-      group_id: q.group_id,
-      part_number: q.part_number
-    })));
+    }));
 
     // Create mapping từ question_number to part_number
     const questionToPartMap = new Map<number, number>();
@@ -282,15 +220,17 @@ export function useExcelProcessor() {
         console.warn(`Không tìm thấy part_number cho question ${questionNumber}`);
       }
       
-      // Extract answer letter from answer_text (e.g. "A. She's eating in a picnic area.")
-      const content = row.answer_text || row.content || row['Content'] || row['Answer Text'] || '';
-      const answerLetter = content.split('.')[0].trim(); // Get "A" from "A. She's eating..."
+      // Handle missing answer_text - construct from answer_letter if needed
+      let content = row.answer_text || row.content || row['Content'] || row['Answer Text'] || '';
+      if (!content && row.answer_letter) {
+        content = `(${row.answer_letter}) [Missing answer text]`;
+        console.warn(`Missing answer_text for question ${questionNumber}, option ${row.answer_letter}`);
+      }
       
       return {
         part_number: partNumber || 1, // Default to part 1 if not found
         question_number: questionNumber,
         content: content,
-        answer_letter: answerLetter, // Add this for UI display purposes
         is_correct: row.is_correct === true || row.is_correct === 'TRUE' || row.is_correct === 1 || 
                    row['Is Correct'] === true || row['Is Correct'] === 'TRUE' || row['Is Correct'] === 1,
         explanation: row.explanation || row['Explanation'] || '', // Keep empty if not available
@@ -379,11 +319,10 @@ export function useExcelProcessor() {
     
     const questionsData = XLSX.utils.sheet_to_json(questionsSheet) as any[];
     const questions: ExamQuestion[] = questionsData.map(row => ({
-      part_number: parseInt(row.part_number) || 0,
-      question_number: parseInt(row.question_number) || 0,
-      group_id: null, // Structured exams don't use question groups
-      content: row.content || '',
-      question_type: examType as 'speaking' | 'writing',
+      part_number: row.part_number,
+      question_number: row.question_number,
+      content: row.content,
+      question_type: examType, // Use 'speaking' or 'writing' directly
       vietnamese_translation: row.vietnamese_translation || ''
     }));
 
@@ -406,7 +345,6 @@ export function useExcelProcessor() {
             part_number: partNumber || 1,
             question_number: questionNumber,
             content: row.content || '',
-            answer_letter: '', // Add empty answer_letter for structured exams
             is_correct: false, // Speaking/Writing không có đáp án đúng/sai
             explanation: row.explanation || '',
             vietnamese_translation: row.vietnamese_translation || ''

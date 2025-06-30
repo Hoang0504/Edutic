@@ -1,10 +1,10 @@
 'use client';
 import React, { useState } from 'react';
 import { PlusCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import Image from 'next/image'; // Import Image từ next/image
+import Image from 'next/image';
 
 interface AddUserProps {
-  onSubmit: (e: React.FormEvent, formData: { email: string; role: string; avatarFile?: File }) => void;
+  onSubmit: (e: React.FormEvent, formData: { email: string; role: string; avatarFile?: File; password: string }) => void;
   onCancel: () => void;
 }
 
@@ -12,11 +12,12 @@ const AddUserPage = ({ onSubmit, onCancel }: AddUserProps) => {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | undefined>(undefined);
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('Employee');
+  const [role, setRole] = useState('student');
+  const [password, setPassword] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(e, { email, role, avatarFile });
+    onSubmit(e, { email, role, avatarFile, password });
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,6 +26,10 @@ const AddUserPage = ({ onSubmit, onCancel }: AddUserProps) => {
 
   const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setRole(e.target.value);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,6 +72,22 @@ const AddUserPage = ({ onSubmit, onCancel }: AddUserProps) => {
             onChange={handleEmailChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
             placeholder="Nhập email"
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Password
+          </label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            value={password}
+            onChange={handlePasswordChange}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+            placeholder="Nhập password"
+            required
           />
         </div>
         <div>
@@ -80,8 +101,8 @@ const AddUserPage = ({ onSubmit, onCancel }: AddUserProps) => {
             onChange={handleRoleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
           >
-            <option value="Employee">Employee</option>
-            <option value="Admin">Admin</option>
+            <option value="student">student</option>
+            <option value="admin">admin</option>
           </select>
         </div>
         <div>
@@ -106,10 +127,10 @@ const AddUserPage = ({ onSubmit, onCancel }: AddUserProps) => {
             </button>
             {avatarPreview && (
               <Image
-                src={avatarPreview} // Sử dụng base64 URL từ FileReader
+                src={avatarPreview}
                 alt="Avatar Preview"
-                width={64} // Đặt kích thước cố định (phù hợp với w-16)
-                height={64} // Đặt kích thước cố định (phù hợp với h-16)
+                width={64}
+                height={64}
                 className="object-cover rounded-full"
               />
             )}

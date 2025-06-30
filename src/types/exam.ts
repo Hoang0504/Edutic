@@ -26,7 +26,7 @@ export interface ExamQuestionGroup {
   group_id: number;
   part_number: number;
   passage?: string; // Đoạn văn cho reading comprehension
-  image_url?: string; // Hình ảnh đi kèm passage, multiple URLs separated by space
+  image_url?: string; // Hình ảnh đi kèm passage
   instruction?: string; // Hướng dẫn riêng cho nhóm câu hỏi này
   question_range: [number, number]; // [start_question, end_question]
   vietnamese_translation?: string; // Bản dịch passage
@@ -35,7 +35,7 @@ export interface ExamQuestionGroup {
 export interface ExamQuestion {
   part_number: number;
   question_number: number;
-  group_id: number | null; // ID nhóm câu hỏi (cho reading comprehension), null if no group
+  group_id?: number; // ID nhóm câu hỏi (cho reading comprehension)
   content: string;
   question_type: 'multiple_choice' | 'fill_in_blank' | 'matching' | 'speaking' | 'writing'; // Updated to match database ENUM
   image_url?: string;
@@ -47,7 +47,6 @@ export interface ExamAnswer {
   part_number: number;
   question_number: number;
   content: string;
-  answer_letter: string; // Add this field for UI display
   is_correct: boolean;
   explanation?: string;
   vietnamese_translation?: string; // Bản dịch tiếng Việt cho đáp án

@@ -7,7 +7,7 @@ import { AudioFile } from '@/models/AudioFile';
 import { Translation } from '@/models/Translation';
 import { QuestionGroup } from '@/models/QuestionGroup';
 import { ExamPart } from '@/models/ExamPart';
-import { saveAudioFile, saveQuestionImage, getAudioDuration } from './fileUpload';
+import { saveAudioFile, saveQuestionImage, getAudioDuration, saveImageFile } from './fileUpload';
 
 interface ExamData {
   exam: {
@@ -33,6 +33,7 @@ interface ExamData {
     content: string;
     question_type: string;
     vietnamese_translation?: string;
+    group_id?: number;
   }>;
   answers: Array<{
     part_number: number;
@@ -41,6 +42,12 @@ interface ExamData {
     is_correct: boolean;
     explanation?: string;
     vietnamese_translation?: string;
+  }>;
+  question_groups?: Array<{
+    group_id: number;
+    part_number: number;
+    passage: string;
+    image_url?: string;
   }>;
 }
 
@@ -69,7 +76,9 @@ interface PartData {
 // Create exam with all data
 export async function createExamWithData(
   examData: ExamData,
-  audioFiles: Express.Multer.File[]
+  audioFiles: Express.Multer.File[],
+  groupImageFiles: Express.Multer.File[] = [],
+  questionImageFiles: Express.Multer.File[] = []
 ): Promise<{ examId: number; summary: any }> {
   const transaction = await sequelize.transaction();
   
@@ -89,6 +98,70 @@ export async function createExamWithData(
     }, { transaction });
 
     const examId = exam.id;
+
+    // Create directories for image storage
+    const examFolderName = `${examData.exam.title.toLowerCase().replace(/\s+/g, '_')}_${examData.exam.year_of_release}`;
+    
+    // Process group images to create a mapping
+    const groupImageMap = new Map<string, string[]>(); // groupId -> image URLs
+    
+    for (const imageFile of groupImageFiles) {
+      // Extract group ID from fieldname (e.g., "groupImage_24" or "groupImage_24_2")
+      const match = imageFile.fieldname.match(/groupImage_(\d+)(?:_(\d+))?/);
+      if (match) {
+        const groupId = match[1];
+        const imageIndex = match[2] ? parseInt(match[2]) : 1;
+        
+        // Find questions for this group to determine the file naming
+        const groupQuestions = examData.questions.filter(q => q.group_id?.toString() === groupId);
+        if (groupQuestions.length > 0) {
+          const minQuestion = Math.min(...groupQuestions.map(q => q.question_number));
+          const maxQuestion = Math.max(...groupQuestions.map(q => q.question_number));
+          
+          // Determine part number for folder structure
+          const partNumber = groupQuestions[0].part_number;
+          const folderPath = `${examFolderName}/part${partNumber}`;
+          
+          // Generate file name
+          const suffix = imageIndex === 1 ? '' : `_${imageIndex}`;
+          const fileName = `${minQuestion}-${maxQuestion}${suffix}.png`;
+          const filePath = `${folderPath}/${fileName}`;
+          
+          // Save image file
+          await saveImageFile(imageFile, filePath);
+          
+          // Store in map
+          if (!groupImageMap.has(groupId)) {
+            groupImageMap.set(groupId, []);
+          }
+          groupImageMap.get(groupId)!.push(filePath);
+        }
+      }
+    }
+
+    // Process question images
+    const questionImageMap = new Map<string, string>(); // questionNumber -> image URL
+    
+    for (const imageFile of questionImageFiles) {
+      // Extract question number from fieldname (e.g., "questionImage_25")
+      const match = imageFile.fieldname.match(/questionImage_(\d+)/);
+      if (match) {
+        const questionNumber = match[1];
+        
+        // Find the question to determine part number
+        const question = examData.questions.find(q => q.question_number.toString() === questionNumber);
+        if (question) {
+          const partNumber = question.part_number;
+          const folderPath = `${examFolderName}/part${partNumber}`;
+          const fileName = `${questionNumber}.png`;
+          const filePath = `${folderPath}/${fileName}`;
+          
+          // Save image file
+          await saveImageFile(imageFile, filePath);
+          questionImageMap.set(questionNumber, filePath);
+        }
+      }
+    }
 
     // 2. Create parts and their relationships
     const partMap = new Map<number, number>(); // part_number -> part_id
@@ -119,7 +192,7 @@ export async function createExamWithData(
       // Handle audio file for listening parts
       if ([1, 2, 3, 4].includes(partData.part_number) && audioFiles[audioFileIndex]) {
         const audioFile = audioFiles[audioFileIndex];
-        const filePath = await saveAudioFile(audioFile, examId, partData.part_number);
+        const filePath = await saveAudioFile(audioFile, examFolderName, partData.part_number);
         const duration = getAudioDuration(audioFile);
 
         await AudioFile.create({
@@ -134,8 +207,9 @@ export async function createExamWithData(
       }
     }
 
-    // 3. Create question groups and questions
-    const questionMap = new Map<string, number>(); // part_number:question_number -> question_id
+    // 3. Create questions and question groups
+    const questionMap = new Map<string, number>();
+    const createdGroups = new Map<string, number>(); // Track created groups by part_number:group_id
 
     // Handle specific question numbers
     const processedQuestions = new Set<number>();
@@ -154,21 +228,57 @@ export async function createExamWithData(
       const partId = partMap.get(partNumber);
       if (!partId) continue;
 
-      // Create a default question group for each part
-      const group = await QuestionGroup.create({
-        part_id: partId,
-        content: `Question group for part ${partNumber}`,
-        created_at: new Date()
-      }, { transaction });
+      // Xử lý question groups cho reading comprehension
+      let groupId: number;
+      
+      if (questionData.group_id) {
+        // Nếu có group_id từ Excel, tạo hoặc sử dụng group đã tồn tại
+        const groupKey = `${partNumber}:${questionData.group_id}`;
+        
+        if (createdGroups.has(groupKey)) {
+          // Group đã tồn tại, sử dụng lại
+          groupId = createdGroups.get(groupKey)!;
+        } else {
+          // Tạo group mới từ question_groups data hoặc default
+          const groupData = examData.question_groups?.find(g => 
+            g.group_id === questionData.group_id && g.part_number === partNumber
+          );
+          
+          // Get image URLs for this group (multiple images separated by space)
+          const groupImages = groupImageMap.get(questionData.group_id.toString()) || [];
+          const imageUrl = groupImages.length > 0 ? groupImages.join(' ') : (groupData?.image_url || null);
+          
+          const group = await QuestionGroup.create({
+            part_id: partId,
+            content: groupData?.passage || `Reading passage for questions in group ${questionData.group_id}`,
+            image_url: imageUrl,
+            created_at: new Date()
+          }, { transaction });
+          
+          groupId = group.id;
+          createdGroups.set(groupKey, groupId);
+        }
+      } else {
+        // Không có group_id, tạo group riêng (cho listening hoặc single questions)
+        const group = await QuestionGroup.create({
+          part_id: partId,
+          content: `Question group for part ${partNumber}, question ${questionData.question_number}`,
+          created_at: new Date()
+        }, { transaction });
+        
+        groupId = group.id;
+      }
 
-      // Create question
+      // Create question with image URL if available
+      const questionImageUrl = questionImageMap.get(questionData.question_number.toString()) || '';
+      
       const question = await Question.create({
         part_id: partId,
-        group_id: group.id,
+        group_id: groupId,
         question_number: questionData.question_number,
         content: questionData.content,
         question_type: questionData.question_type as any,
-        image_url: '', // Will be set when images are uploaded
+        image_url: questionImageUrl,
         created_at: new Date(),
         updated_at: new Date()
       }, { transaction });
@@ -221,7 +331,11 @@ export async function createExamWithData(
         partsCount: examData.parts.length,
         questionsCount: examData.questions.length,
         answersCount: examData.answers.length,
-        audioFilesProcessed: audioFileIndex
+        audioFilesProcessed: audioFileIndex,
+        groupImagesProcessed: groupImageFiles.length,
+        questionImagesProcessed: questionImageFiles.length,
+        groupsWithImages: groupImageMap.size,
+        questionsWithImages: questionImageMap.size
       }
     };
 
@@ -246,6 +360,7 @@ export async function addPartToExam(
     if (!exam) {
       throw new Error('Exam not found');
     }
+    const examFolderName = `${exam.title.toLowerCase().replace(/\s+/g, '_')}_${exam.year_of_release}`;
 
     // 2. Create part
     const part = await Part.create({
@@ -268,7 +383,7 @@ export async function addPartToExam(
 
     // 4. Handle audio file for listening parts
     if (audioFile && [1, 2, 3, 4].includes(partData.part_number)) {
-      const filePath = await saveAudioFile(audioFile, examId, partData.part_number);
+      const filePath = await saveAudioFile(audioFile, examFolderName, partData.part_number);
       const duration = getAudioDuration(audioFile);
 
       await AudioFile.create({

@@ -1,6 +1,10 @@
-'use client';
-import React from 'react';
-import Image from 'next/image';
+"use client";
+
+import React from "react";
+import Image from "next/image";
+
+import logo from "@/components/admin/assetadmin/logo.jpg";
+
 import {
   HomeIcon,
   UserIcon,
@@ -8,16 +12,18 @@ import {
   PowerIcon,
   ClipboardIcon,
   MegaphoneIcon,
-} from '@heroicons/react/24/outline';
-import { useAdminContext } from '@/contexts/AdminContext';
-import { useRouter } from 'next/navigation';
-import logo from '@/components/admin/assetadmin/logo.jpg';
+} from "@heroicons/react/24/outline";
+
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { useAdminContext } from "@/contexts/AdminContext";
 
 interface AdminSidebarProps {
   onMenuSelect: (menuKey: string) => void; // Định nghĩa hàm onMenuSelect
 }
 
 const AdminSidebar = ({ onMenuSelect }: AdminSidebarProps) => {
+  const { logout } = useAuth();
   const { admin, handleLogoutAdmin } = useAdminContext();
   const router = useRouter();
 
@@ -25,18 +31,20 @@ const AdminSidebar = ({ onMenuSelect }: AdminSidebarProps) => {
     e.preventDefault();
     const loggedOut = handleLogoutAdmin?.();
     if (loggedOut) {
-      router.push('/admin/login');
+      router.push("/admin/login");
     }
   };
 
   const menuItems = [
-    { key: 'dashboard', label: 'Dashboard', icon: <HomeIcon className="h-5 w-5" /> },
-    { key: 'users', label: 'Users', icon: <UserIcon className="h-5 w-5" /> },
-    { key: 'exams', label: 'Exams', icon: <DocumentTextIcon className="h-5 w-5" /> },
-    
     {
-      key: "exams_2",
-      label: "Exams 2",
+      key: "dashboard",
+      label: "Dashboard",
+      icon: <HomeIcon className="h-5 w-5" />,
+    },
+    { key: "users", label: "Users", icon: <UserIcon className="h-5 w-5" /> },
+    {
+      key: "exams",
+      label: "Exams",
       icon: <DocumentTextIcon className="h-5 w-5" />,
     },
     {
@@ -44,14 +52,27 @@ const AdminSidebar = ({ onMenuSelect }: AdminSidebarProps) => {
       label: "Flashcard",
       icon: <ClipboardIcon className="h-5 w-5" />,
     },
-    { key: 'listenningTranscript', label: 'ListenningTranscript', icon: <MegaphoneIcon className="h-5 w-5" /> },
-    { key: 'userAnalytics', label: 'UserAnalytics', icon: <UserIcon className="h-5 w-5" /> },
-    { key: 'logout', label: <button onClick={handleLogout}>Logout</button>, icon: <PowerIcon className="h-5 w-5" /> },
+    {
+      key: "listenningTranscript",
+      label: "ListenningTranscript",
+      icon: <MegaphoneIcon className="h-5 w-5" />,
+    },
+    {
+      key: "userAnalytics",
+      label: "UserAnalytics",
+      icon: <UserIcon className="h-5 w-5" />,
+    },
+    {
+      key: "logout",
+      label: <button onClick={logout}>Logout</button>,
+      icon: <PowerIcon className="h-5 w-5" />,
+    },
   ];
 
-  const filteredItems = admin?.role === 'Employee'
-    ? menuItems.filter((_, index) => ![0, 1].includes(index)) // Chỉ lọc Dashboard và Users
-    : menuItems;
+  const filteredItems =
+    admin?.role === "Employee"
+      ? menuItems.filter((_, index) => ![0, 1].includes(index)) // Chỉ lọc Dashboard và Users
+      : menuItems;
 
   return (
     <aside className="fixed top-0 left-0 w-[280px] h-screen bg-[#006494] text-white shadow-lg z-10">
@@ -63,9 +84,9 @@ const AdminSidebar = ({ onMenuSelect }: AdminSidebarProps) => {
         {filteredItems.map((item) => (
           <div
             key={item.key}
-            onClick={() => item.key !== 'logout' && onMenuSelect(item.key)} // Gọi hàm onMenuSelect khi nhấp
+            onClick={() => item.key !== "logout" && onMenuSelect(item.key)} // Gọi hàm onMenuSelect khi nhấp
             className={`flex items-center px-3 py-2 rounded cursor-pointer hover:bg-[#005478] transition ${
-              item.key === 'logout' ? '' : 'hover:bg-[#005478]'
+              item.key === "logout" ? "" : "hover:bg-[#005478]"
             }`}
           >
             {item.icon}

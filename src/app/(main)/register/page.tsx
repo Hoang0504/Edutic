@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import AuthCard from "@/components/auth/AuthCard";
 import AuthInput from "@/components/auth/AuthInput";
+import GoogleSignIn from "@/components/auth/GoogleSignIn";
 import emailjs from '@emailjs/browser';
 
 export default function RegisterPage() {
@@ -131,6 +132,15 @@ export default function RegisterPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleGoogleSuccess = (response: any) => {
+    // Google signup success - user is already logged in via AuthContext
+    console.log("Google signup successful:", response);
+  };
+
+  const handleGoogleError = (error: any) => {
+    setErrors({ submit: error.data?.message || "Đăng ký Google thất bại" });
+  };
+
   if (verificationSent) {
     return (
       <AuthCard
@@ -204,7 +214,9 @@ export default function RegisterPage() {
         />
 
         {errors.submit && (
-          <div className="text-red-600 text-sm">{errors.submit}</div>
+          <div className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-md px-3 py-2">
+            {errors.submit}
+          </div>
         )}
 
         <div>
@@ -226,6 +238,25 @@ export default function RegisterPage() {
             Already have an account? Sign in
           </Link>
         </div>
+
+        {/* Divider */}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">
+              Or continue with
+            </span>
+          </div>
+        </div>
+
+        {/* Google Sign In */}
+        <GoogleSignIn
+          type="register"
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+        />
       </form>
     </AuthCard>
   );

@@ -25,9 +25,9 @@ async function handler(req: MulterRequest, res: NextApiResponse) {
   }
 
   try {
-    // Parse form data using multer
+    // Parse form data using multer for all files
     await new Promise<void>((resolve, reject) => {
-      upload.array('audioFiles')(req as any, res as any, (err) => {
+      upload.any()(req as any, res as any, (err) => {
         if (err) reject(err);
         else resolve();
       });
@@ -35,7 +35,12 @@ async function handler(req: MulterRequest, res: NextApiResponse) {
 
     // Get parsed exam data from form
     const examData = JSON.parse(req.body.data || '{}');
-    const audioFiles = req.files || [];
+    const allFiles = req.files || [];
+
+    // Separate files by type
+    const audioFiles = allFiles.filter(file => file.fieldname === 'audioFiles');
+    const groupImageFiles = allFiles.filter(file => file.fieldname.startsWith('groupImage_'));
+    const questionImageFiles = allFiles.filter(file => file.fieldname.startsWith('questionImage_'));
 
     // Log received data for debugging
     console.log("=== EXAM IMPORT DATA ===");
@@ -44,15 +49,35 @@ async function handler(req: MulterRequest, res: NextApiResponse) {
     console.log("Questions count:", examData.questions?.length || 0);
     console.log("Answers count:", examData.answers?.length || 0);
     console.log("Audio files count:", audioFiles.length);
+    console.log("Group image files count:", groupImageFiles.length);
+    console.log("Question image files count:", questionImageFiles.length);
     console.log("Parts details:", examData.parts?.map((p: any) => ({
       part_number: p.part_number,
       title: p.title,
       type: p.type
     })));
     
-    // Log each audio file info
+    // Log each file info
     audioFiles.forEach((file, index) => {
       console.log(`Audio file ${index + 1}:`, {
+        originalname: file.originalname,
+        size: file.size,
+        mimetype: file.mimetype
+      });
+    });
+
+    groupImageFiles.forEach((file, index) => {
+      console.log(`Group image file ${index + 1}:`, {
+        fieldname: file.fieldname,
+        originalname: file.originalname,
+        size: file.size,
+        mimetype: file.mimetype
+      });
+    });
+
+    questionImageFiles.forEach((file, index) => {
+      console.log(`Question image file ${index + 1}:`, {
+        fieldname: file.fieldname,
         originalname: file.originalname,
         size: file.size,
         mimetype: file.mimetype
@@ -120,7 +145,7 @@ async function handler(req: MulterRequest, res: NextApiResponse) {
 
     // Create exam with all data in database
     console.log("💾 Saving to database...");
-    const result = await createExamWithData(processedExamData, audioFiles);
+    const result = await createExamWithData(processedExamData, audioFiles, groupImageFiles, questionImageFiles);
 
     return res.status(200).json({
       success: true,

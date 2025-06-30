@@ -1,57 +1,50 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import QuestionNavigator from './QuestionNavigator';
-import ExamProctoring from './ExamProctoring';
-import ExamPermissionDialog from '../ExamPermissionDialog';
-import ExamViolationAlert from './ExamViolationAlert';
-import { useExamProctoring } from '@/hooks/UseExamProctoring';
+import React, { useState, useEffect } from "react";
+import QuestionNavigator from "./QuestionNavigator";
+import ListeningExam from "./ListeningExam";
 
 interface ExamLayoutProps {
+  mode: "lr" | "sw";
   examTitle: string;
   totalTime: number; // in minutes
   onExit: () => void;
   onSubmit: () => void;
-  children: React.ReactNode;
   onSkillChange?: (skill: string) => void;
   selectedAnswers?: { [key: number]: string };
   onQuestionClick?: (questionId: number) => void;
 }
 
+const getInitialSkill = (mode: string | null) => {
+  if (mode === "lr") return "listening";
+  if (mode === "sw") return "speaking";
+  return "listening"; // fallback default
+};
+
 const ExamLayout: React.FC<ExamLayoutProps> = ({
+  mode,
   examTitle,
   totalTime,
   onExit,
   onSubmit,
-  children,
   onSkillChange,
   selectedAnswers = {},
-  onQuestionClick = () => {}
+  onQuestionClick = () => {},
 }) => {
   const [timeLeft, setTimeLeft] = useState(totalTime * 60); // convert to seconds
-  const [activeSkill, setActiveSkill] = useState<'listening' | 'reading' | 'writing' | 'speaking'>('listening');
-  const [isTimerPaused, setIsTimerPaused] = useState(false);
+  const [activeSkill, setActiveSkill] = useState<
+    "listening" | "reading" | "writing" | "speaking"
+  >(getInitialSkill(mode));
 
-  const skills = [
-    { id: 'listening', name: 'Listening', color: 'bg-blue-500' },
-    { id: 'reading', name: 'Reading', color: 'bg-green-500' },
-    { id: 'writing', name: 'Writing', color: 'bg-yellow-500' },
-    { id: 'speaking', name: 'Speaking', color: 'bg-red-500' }
+  const allSkills = [
+    { id: "listening", name: "Listening", color: "bg-blue-500" },
+    { id: "reading", name: "Reading", color: "bg-green-500" },
+    { id: "speaking", name: "Speaking", color: "bg-red-500" },
+    { id: "writing", name: "Writing", color: "bg-yellow-500" },
   ];
 
-  // Initialize proctoring system
-  const proctoringSystem = useExamProctoring({
-    isEnabled: true,
-    currentSkill: activeSkill,
-    onTimerPause: (pause: boolean) => {
-      setIsTimerPaused(pause);
-    },
-    onExamCancel: () => {
-      onExit();
-    }
-  });
+  const skills = mode === "lr" ? allSkills.slice(0, 2) : allSkills.slice(2);
 
-  // Timer effect
   useEffect(() => {
     const timer = setInterval(() => {
       if (!isTimerPaused && !proctoringSystem.isTimerPaused) {
@@ -83,10 +76,14 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const handleSkillChange = (skill: 'listening' | 'reading' | 'writing' | 'speaking') => {
+  const handleSkillChange = (
+    skill: "listening" | "reading" | "writing" | "speaking"
+  ) => {
     setActiveSkill(skill);
     if (onSkillChange) {
       onSkillChange(skill);
@@ -94,7 +91,7 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -153,8 +150,8 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
                 onClick={() => handleSkillChange(skill.id as any)}
                 className={`px-6 py-3 font-medium text-sm rounded-t-lg transition-colors ${
                   activeSkill === skill.id
-                    ? 'bg-gray-100 text-gray-800 border-b-2 border-blue-500'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    ? "bg-gray-100 text-gray-800 border-b-2 border-blue-500"
+                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                 }`}
               >
                 {skill.name}
@@ -168,23 +165,39 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
         <div className="flex gap-6">
           {/* Main Content */}
           <div className="flex-1">
-            {activeSkill === 'listening' && children}
-            {activeSkill === 'reading' && (
+            {activeSkill === "listening" && (
+              <ListeningExam
+                parts={[]} // Will use sample data from component
+              />
+            )}
+            {activeSkill === "reading" && (
               <div className="bg-white rounded-lg shadow-sm border p-6">
-                <h2 className="text-lg font-medium text-gray-800 mb-4">Reading Section</h2>
-                <p className="text-gray-600">Reading interface will be implemented here.</p>
+                <h2 className="text-lg font-medium text-gray-800 mb-4">
+                  Reading Section
+                </h2>
+                <p className="text-gray-600">
+                  Reading interface will be implemented here.
+                </p>
               </div>
             )}
-            {activeSkill === 'writing' && (
+            {activeSkill === "writing" && (
               <div className="bg-white rounded-lg shadow-sm border p-6">
-                <h2 className="text-lg font-medium text-gray-800 mb-4">Writing Section</h2>
-                <p className="text-gray-600">Writing interface will be implemented here.</p>
+                <h2 className="text-lg font-medium text-gray-800 mb-4">
+                  Writing Section
+                </h2>
+                <p className="text-gray-600">
+                  Writing interface will be implemented here.
+                </p>
               </div>
             )}
-            {activeSkill === 'speaking' && (
+            {activeSkill === "speaking" && (
               <div className="bg-white rounded-lg shadow-sm border p-6">
-                <h2 className="text-lg font-medium text-gray-800 mb-4">Speaking Section</h2>
-                <p className="text-gray-600">Speaking interface will be implemented here.</p>
+                <h2 className="text-lg font-medium text-gray-800 mb-4">
+                  Speaking Section
+                </h2>
+                <p className="text-gray-600">
+                  Speaking interface will be implemented here.
+                </p>
               </div>
             )}
           </div>
@@ -197,6 +210,10 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
               <div className={`text-2xl font-bold mb-4 ${
                 (isTimerPaused || proctoringSystem.isTimerPaused) ? 'text-orange-600' : 'text-red-600'
               }`}>
+              <h3 className="font-medium text-gray-800 mb-2">
+                Thời gian làm bài
+              </h3>
+              <div className="text-2xl font-bold text-red-600 mb-4">
                 {formatTime(timeLeft)}
               </div>
               <button
@@ -244,4 +261,4 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
   );
 };
 
-export default ExamLayout; 
+export default ExamLayout;

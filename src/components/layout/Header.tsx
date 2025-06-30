@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 import {
   BellIcon,
@@ -17,24 +18,29 @@ import {
   PauseIcon,
   PlayIcon,
   StopIcon,
+  MusicalNoteIcon,
+  BackwardIcon,
+  SpeakerXMarkIcon,
+  SpeakerWaveIcon,
+  LanguageIcon,
+  NewspaperIcon,
 } from "@heroicons/react/24/outline";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { usePomodoro } from "@/contexts/PomodoroContext";
 import ConfirmModal from "../ui/ConfirmModal";
-
-interface HeaderProps {
-  user?: {
-    name: string;
-    avatar?: string;
-  };
-}
+import { useMusic } from "@/contexts/MusicContext";
+import { useTranslation } from "@/contexts/I18nContext";
+import MarqueeText from "../ui/MarqueeText";
+import { ForwardIcon } from "lucide-react";
 
 export default function Header() {
   const { user, isLoggedIn, logout } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMusicDropdownOpen, setIsMusicDropdownOpen] = useState(false);
+  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [activeNotificationTab, setActiveNotificationTab] = useState<
     "all" | "unread" | "read"
   >("all");
@@ -50,12 +56,39 @@ export default function Header() {
     startTimer,
     pauseTimer,
     stopFocusMode,
+    openStudyModal,
+    openBreakModal,
   } = usePomodoro();
+
+  // Music context
+  const {
+    isPlaying: isMusicPlaying,
+    isMuted,
+    currentTime: musicCurrentTime,
+    duration: musicDuration,
+    volume,
+    currentTrack,
+    isLoaded: isMusicLoaded,
+    isStudyMusicActive,
+    togglePlay: toggleMusicPlay,
+    toggleMute,
+    nextTrack,
+    previousTrack,
+    setVolume,
+    seekTo,
+    stopStudyMusic,
+    formatTime: formatMusicTime,
+  } = useMusic();
+
+  // Translation context
+  const { t, locale, changeLanguage } = useTranslation();
 
   // Refs for dropdowns
   const notificationRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const musicDropdownRef = useRef<HTMLDivElement>(null);
+  const languageDropdownRef = useRef<HTMLDivElement>(null);
 
   // Click outside handler
   useEffect(() => {
@@ -71,6 +104,18 @@ export default function Header() {
         !userMenuRef.current.contains(event.target as Node)
       ) {
         setIsUserMenuOpen(false);
+      }
+      if (
+        musicDropdownRef.current &&
+        !musicDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsMusicDropdownOpen(false);
+      }
+      if (
+        languageDropdownRef.current &&
+        !languageDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsLanguageDropdownOpen(false);
       }
     }
 
@@ -104,6 +149,14 @@ export default function Header() {
     }
   };
 
+  const handleTimerClick = () => {
+    if (isStudyMode) {
+      openStudyModal();
+    } else {
+      openBreakModal();
+    }
+  };
+
   const handleStopClick = () => {
     setShowStopConfirm(true);
   };
@@ -111,6 +164,14 @@ export default function Header() {
   const handleStopConfirm = () => {
     stopFocusMode();
   };
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVolume = parseFloat(e.target.value);
+    setVolume(newVolume);
+  };
+
+  const musicProgressPercentage =
+    musicDuration > 0 ? (musicCurrentTime / musicDuration) * 100 : 0;
 
   // Sample notifications data
   const notifications = [
@@ -182,16 +243,23 @@ export default function Header() {
       : readNotifications;
 
   return (
-    <header className="bg-white border-b border-gray-200 shadow-sm">
+    <header className="bg-white border-b border-gray-200 shadow-sm fixed top-0 start-0 right-0 z-10">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14 sm:h-16">
+        <div className="flex items-center justify-between md:h-14 sm:h-16">
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center h-full">
             <Link
               href="/"
-              className="bg-blue-600 text-white px-2 sm:px-3 py-1 rounded text-xs sm:text-sm font-semibold"
+              className="text-white rounded text-xs sm:text-sm font-semibold inline-flex items-center h-full"
             >
-              Edutic
+              <div className="relative h-full aspect-square">
+                <Image
+                  src="/logo.png"
+                  alt="Edutic logo"
+                  fill
+                  className="object-contain"
+                />
+              </div>
             </Link>
           </div>
 
@@ -202,14 +270,21 @@ export default function Header() {
                 href="/flashcards"
                 className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
               >
-                Flashcard của tôi
+                {t("header.flashcards", "Flashcard của tôi")}
               </Link>
             )}
+
             <Link
               href="/exams"
               className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
             >
-              Đề thi online
+              {t("header.exams", "Đề thi online")}
+            </Link>
+            <Link
+              href="/blog"
+              className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+            >
+              {t("header.blog", "Kiến thức TOEIC")}
             </Link>
           </div>
 
@@ -230,7 +305,10 @@ export default function Header() {
 
               {/* Mobile Menu Dropdown */}
               {isMobileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                <div className="fixed top-16 left-1/2 right-auto transform -translate-x-1/2 w-[95vw] max-w-sm
+                  sm:absolute sm:top-auto sm:left-auto sm:right-0 sm:transform-none sm:w-56 sm:max-w-none sm:mt-2
+                  mt-0
+                  bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                   <div className="py-1">
                     <a
                       href="/flashcards"
@@ -238,7 +316,7 @@ export default function Header() {
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <BookOpenIcon className="h-5 w-5 mr-3 text-gray-400" />
-                      Flashcard của tôi
+                      {t("header.flashcards", "Flashcard của tôi")}
                     </a>
                     <a
                       href="/exams"
@@ -246,7 +324,15 @@ export default function Header() {
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <ClipboardDocumentListIcon className="h-5 w-5 mr-3 text-gray-400" />
-                      Đề thi online
+                      {t("header.exams", "Đề thi online")}
+                    </a>
+                    <a
+                      href="/blog"
+                      className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <NewspaperIcon className="h-5 w-5 mr-3 text-gray-400" />
+                      {t("header.blog", "Kiến thức TOEIC")}
                     </a>
                   </div>
                 </div>
@@ -255,41 +341,228 @@ export default function Header() {
 
             {/* Pomodoro Timer - Show when active */}
             {isActive && (
-              <div className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-                <div className="flex items-center space-x-2">
+              <div className="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-1 py-1 sm:px-3 sm:py-2">
+                <div className="flex items-center space-x-1 sm:space-x-2">
                   <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                  <div className="text-sm font-medium text-gray-800">
-                    {isStudyMode ? "Học" : "Nghỉ"}
+                  <div className="hidden sm:block text-xs sm:text-sm font-medium text-gray-800">
+                    {isStudyMode
+                      ? t("header.study", "Học")
+                      : t("header.break", "Nghỉ")}
                   </div>
-                  <div className="text-lg font-bold text-blue-600 min-w-[4rem]">
+                  <button
+                    onClick={handleTimerClick}
+                    className="text-sm sm:text-lg font-bold text-blue-600 min-w-[2rem] sm:min-w-[4rem] hover:text-blue-700 cursor-pointer transition-colors"
+                    title={`Click để mở modal ${
+                      isStudyMode ? t("header.study", "học") : "nghỉ ngơi"
+                    }`}
+                  >
                     {formatTime(currentTime)}
-                  </div>
+                  </button>
 
                   {/* Timer Controls */}
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center space-x-0.5 sm:space-x-1">
                     <button
                       onClick={handlePomodoroToggle}
-                      className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
+                      className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center transition-colors ${
                         isRunning
                           ? "bg-red-500 hover:bg-red-600 text-white"
                           : "bg-green-500 hover:bg-green-600 text-white"
                       }`}
-                      title={isRunning ? "Tạm dừng" : "Tiếp tục"}
+                      title={
+                        isRunning
+                          ? t("header.pause", "Tạm dừng")
+                          : t("header.continue", "Tiếp tục")
+                      }
                     >
                       {isRunning ? (
-                        <PauseIcon className="w-4 h-4" />
+                        <PauseIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                       ) : (
-                        <PlayIcon className="w-3 h-3 ml-0.5" />
+                        <PlayIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 ml-0.5" />
                       )}
                     </button>
 
                     <button
                       onClick={handleStopClick}
-                      className="w-7 h-7 rounded-full bg-gray-500 hover:bg-gray-600 text-white flex items-center justify-center transition-colors"
-                      title="Dừng"
+                      className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gray-500 hover:bg-gray-600 text-white flex items-center justify-center transition-colors"
+                      title={t("header.stop", "Dừng")}
                     >
-                      <StopIcon className="w-4 h-4" />
+                      <StopIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
+
+                    {/* Music Control Icon */}
+                    <div className="hidden sm:block relative" ref={musicDropdownRef}>
+                      <button
+                        onClick={() =>
+                          setIsMusicDropdownOpen(!isMusicDropdownOpen)
+                        }
+                        className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
+                          isStudyMusicActive && isMusicPlaying
+                            ? "bg-purple-500 hover:bg-purple-600 text-white"
+                            : "bg-blue-500 hover:bg-blue-600 text-white"
+                        }`}
+                        title={t("header.musicControl", "Điều khiển nhạc")}
+                      >
+                        <MusicalNoteIcon className="w-4 h-4" />
+                      </button>
+
+                      {/* Music Control Dropdown */}
+                      {isMusicDropdownOpen && (
+                        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                          {/* Header */}
+                          <div className="px-4 py-3 border-b border-gray-200">
+                            <h3 className="text-base font-semibold text-gray-900">
+                              {t("header.musicControl", "Điều khiển nhạc")}
+                            </h3>
+                          </div>
+
+                          {/* Music Player Content */}
+                          <div className="p-4 space-y-4">
+                            {isStudyMusicActive ? (
+                              <>
+                                {/* Current Track Info */}
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                                    <MusicalNoteIcon className="w-5 h-5 text-white" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="max-w-[200px]">
+                                      <MarqueeText
+                                        text={currentTrack.title}
+                                        className="text-sm font-medium text-gray-800"
+                                        speed={40}
+                                        pauseOnHover={true}
+                                        pauseDuration={1000}
+                                      />
+                                    </div>
+                                    <p className="text-xs text-gray-500 truncate">
+                                      {currentTrack.artist}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {/* Progress Bar */}
+                                <div className="space-y-1">
+                                  <div className="flex justify-between text-xs text-gray-500">
+                                    <span>
+                                      {formatMusicTime(musicCurrentTime)}
+                                    </span>
+                                    <span>
+                                      {musicDuration > 0
+                                        ? formatMusicTime(musicDuration)
+                                        : currentTrack.duration}
+                                    </span>
+                                  </div>
+                                  <div
+                                    className="w-full bg-gray-200 rounded-full h-1.5 cursor-pointer"
+                                    onClick={(e) => {
+                                      const rect =
+                                        e.currentTarget.getBoundingClientRect();
+                                      const percentage =
+                                        ((e.clientX - rect.left) / rect.width) *
+                                        100;
+                                      seekTo(percentage);
+                                    }}
+                                  >
+                                    <div
+                                      className="bg-gradient-to-r from-blue-500 to-purple-500 h-1.5 rounded-full transition-all duration-300"
+                                      style={{
+                                        width: `${musicProgressPercentage}%`,
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* Music Controls */}
+                                <div className="flex items-center justify-center space-x-4">
+                                  <button
+                                    onClick={previousTrack}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                    title="Bài trước"
+                                  >
+                                    <BackwardIcon className="w-4 h-4 text-gray-600" />
+                                  </button>
+
+                                  <button
+                                    onClick={toggleMusicPlay}
+                                    disabled={!isMusicLoaded}
+                                    className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-full disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                                    title={isMusicPlaying ? "Tạm dừng" : "Phát"}
+                                  >
+                                    {isMusicPlaying ? (
+                                      <PauseIcon className="w-5 h-5" />
+                                    ) : (
+                                      <PlayIcon className="w-5 h-5" />
+                                    )}
+                                  </button>
+
+                                  <button
+                                    onClick={nextTrack}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                    title="Bài tiếp theo"
+                                  >
+                                    <ForwardIcon className="w-4 h-4 text-gray-600" />
+                                  </button>
+                                </div>
+
+                                {/* Volume Control */}
+                                <div className="flex items-center space-x-2">
+                                  <button
+                                    onClick={toggleMute}
+                                    className="p-1 hover:bg-gray-100 rounded transition-colors flex-shrink-0"
+                                  >
+                                    {isMuted || volume === 0 ? (
+                                      <SpeakerXMarkIcon className="w-4 h-4 text-gray-600" />
+                                    ) : (
+                                      <SpeakerWaveIcon className="w-4 h-4 text-gray-600" />
+                                    )}
+                                  </button>
+
+                                  <input
+                                    type="range"
+                                    min="0"
+                                    max="1"
+                                    step="0.1"
+                                    value={isMuted ? 0 : volume}
+                                    onChange={handleVolumeChange}
+                                    className="flex-1 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                                    title="Âm lượng"
+                                  />
+                                </div>
+
+                                {/* Stop Music Button */}
+                                <button
+                                  onClick={() => {
+                                    stopStudyMusic();
+                                    setIsMusicDropdownOpen(false);
+                                  }}
+                                  className="w-full px-4 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors text-sm font-medium"
+                                >
+                                  Dừng nhạc
+                                </button>
+
+                                {/* Loading Indicator */}
+                                {!isMusicLoaded && (
+                                  <div className="text-center text-xs text-gray-500">
+                                    Đang tải nhạc...
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <div className="text-center py-4">
+                                <MusicalNoteIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                                <p className="text-sm text-gray-500 mb-4">
+                                  Chưa có nhạc đang phát
+                                </p>
+                                <p className="text-xs text-gray-400">
+                                  Nhạc sẽ tự động phát khi bạn bắt đầu học hoặc
+                                  nghỉ ngơi
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -310,82 +583,69 @@ export default function Header() {
 
               {/* Notification Dropdown */}
               {isNotificationOpen && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                  {/* Header with tabs */}
-                  <div className="p-4 border-b border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                      Thông báo
+                <div className="fixed top-16 left-1/2 right-auto transform -translate-x-1/2 w-[95vw] max-w-sm
+                  sm:absolute sm:top-auto sm:left-auto sm:right-0 sm:transform-none sm:w-80 sm:max-w-xs sm:mt-2
+                  mt-0
+                  bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                  {/* Header */}
+                  <div className="px-4 py-3 border-b border-gray-200">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+                      {t("notifications.title", "Thông báo")}
                     </h3>
-                    <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
-                      <button
-                        onClick={() => setActiveNotificationTab("all")}
-                        className={`flex-1 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                          activeNotificationTab === "all"
-                            ? "bg-white text-gray-900 shadow-sm"
-                            : "text-gray-600 hover:text-gray-900"
-                        }`}
-                      >
-                        Tất cả ({notifications.length})
-                      </button>
-                      <button
-                        onClick={() => setActiveNotificationTab("unread")}
-                        className={`flex-1 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                          activeNotificationTab === "unread"
-                            ? "bg-white text-gray-900 shadow-sm"
-                            : "text-gray-600 hover:text-gray-900"
-                        }`}
-                      >
-                        Chưa đọc ({unreadNotifications.length})
-                      </button>
-                      <button
-                        onClick={() => setActiveNotificationTab("read")}
-                        className={`flex-1 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                          activeNotificationTab === "read"
-                            ? "bg-white text-gray-900 shadow-sm"
-                            : "text-gray-600 hover:text-gray-900"
-                        }`}
-                      >
-                        Đã đọc ({readNotifications.length})
-                      </button>
-                    </div>
                   </div>
 
-                  {/* Notification list */}
-                  <div className="max-h-80 overflow-y-auto">
+                  {/* Tabs */}
+                  <div className="flex border-b border-gray-200">
+                    <button
+                      onClick={() => setActiveNotificationTab("all")}
+                      className={`flex-1 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
+                        activeNotificationTab === "all"
+                          ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      {t("notifications.all", "Tất cả")}
+                    </button>
+                    <button
+                      onClick={() => setActiveNotificationTab("unread")}
+                      className={`flex-1 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
+                        activeNotificationTab === "unread"
+                          ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      {t("notifications.unread", "Chưa đọc")}
+                    </button>
+                    <button
+                      onClick={() => setActiveNotificationTab("read")}
+                      className={`flex-1 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
+                        activeNotificationTab === "read"
+                          ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      {t("notifications.read", "Đã đọc")}
+                    </button>
+                  </div>
+
+                  {/* Notifications List */}
+                  <div className="max-h-72 sm:max-h-80 overflow-y-auto">
                     {displayNotifications.length > 0 ? (
                       displayNotifications.map((notification) => {
                         const IconComponent = notification.icon;
                         return (
                           <div
                             key={notification.id}
-                            className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
-                              !notification.isRead ? "bg-blue-50" : ""
-                            }`}
+                            className="px-3 sm:px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 cursor-pointer"
                           >
                             <div className="flex items-start space-x-3">
-                              <div
-                                className={`flex-shrink-0 p-2 rounded-full ${
-                                  !notification.isRead
-                                    ? "bg-blue-100"
-                                    : "bg-gray-100"
-                                }`}
-                              >
-                                <IconComponent
-                                  className={`h-4 w-4 ${
-                                    !notification.isRead
-                                      ? "text-blue-600"
-                                      : "text-gray-600"
-                                  }`}
-                                />
+                              <div className="flex-shrink-0 mt-1">
+                                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                  <IconComponent className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
+                                </div>
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p
-                                  className={`text-sm ${
-                                    !notification.isRead
-                                      ? "font-medium text-gray-900"
-                                      : "text-gray-700"
-                                  }`}
-                                >
+                                <p className="text-xs sm:text-sm font-medium text-gray-900 line-clamp-2">
                                   {notification.title}
                                 </p>
                                 <p className="text-xs text-gray-500 mt-1">
@@ -394,7 +654,7 @@ export default function Header() {
                               </div>
                               {!notification.isRead && (
                                 <div className="flex-shrink-0">
-                                  <div className="h-2 w-2 bg-blue-600 rounded-full"></div>
+                                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                                 </div>
                               )}
                             </div>
@@ -402,32 +662,127 @@ export default function Header() {
                         );
                       })
                     ) : (
-                      <div className="p-8 text-center text-gray-500">
-                        <BellIcon className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                        <p className="text-sm">
-                          {activeNotificationTab === "unread"
-                            ? "Không có thông báo chưa đọc"
-                            : activeNotificationTab === "read"
-                            ? "Không có thông báo đã đọc"
-                            : "Không có thông báo nào"}
+                      <div className="px-4 py-8 text-center">
+                        <p className="text-gray-500 text-xs sm:text-sm">
+                          {t("notifications.empty", "Không có thông báo nào")}
                         </p>
                       </div>
                     )}
                   </div>
-
-                  {/* Footer */}
-                  {displayNotifications.length > 0 && (
-                    <div className="p-3 border-t border-gray-200 bg-gray-50">
-                      <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
-                        Xem tất cả thông báo
-                      </button>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
 
-            {!isLoggedIn ? (
+            {/* Language Selector */}
+            <div className="relative" ref={languageDropdownRef}>
+              <button
+                onClick={() =>
+                  setIsLanguageDropdownOpen(!isLanguageDropdownOpen)
+                }
+                className="flex items-center space-x-1 p-2 sm:p-1 text-gray-600 hover:text-gray-800 transition-colors"
+                title={t("header.language")}
+              >
+                <LanguageIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                <span className="text-xs font-medium hidden sm:inline">
+                  {locale === "vi" ? "VI" : "EN"}
+                </span>
+              </button>
+
+              {/* Language Dropdown */}
+              {isLanguageDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                  <div className="py-1">
+                    <button
+                      onClick={() => {
+                        changeLanguage("en");
+                        setIsLanguageDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                        locale === "en"
+                          ? "bg-blue-50 text-blue-600 font-medium"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      🇺🇸 English
+                    </button>
+                    <button
+                      onClick={() => {
+                        changeLanguage("vi");
+                        setIsLanguageDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                        locale === "vi"
+                          ? "bg-blue-50 text-blue-600 font-medium"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      🇻🇳 Tiếng Việt
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* User Menu */}
+            {isLoggedIn ? (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center space-x-1 sm:space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
+                >
+                  {user?.avatar ? (
+                    <Image
+                      src={user.avatar}
+                      alt={user.name}
+                      width={0}
+                      height={0}
+                      sizes="100vw"
+                      className="h-6 w-6 sm:h-8 sm:w-8 object-contain rounded-full"
+                    />
+                  ) : (
+                    <UserCircleIcon className="h-6 w-6 sm:h-8 sm:w-8" />
+                  )}
+                  <span className="font-medium text-sm sm:text-base hidden sm:inline">
+                    {user?.name || "Null"}
+                  </span>
+                  <ChevronDownIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+                </button>
+
+                {/* Dropdown Menu */}
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-44 sm:w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+                    <div className="py-1">
+                      <a
+                        href="/profile"
+                        className="block px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Thông tin cá nhân
+                      </a>
+                      <a
+                        href="/add-music"
+                        className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <MusicalNoteIcon className="h-4 w-4 mr-2" />
+                        Thêm nhạc
+                      </a>
+                      <a
+                        href="/settings"
+                        className="block px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Cài đặt
+                      </a>
+                      <div className="border-t border-gray-100"></div>
+                      <button
+                        onClick={logout}
+                        className="block w-full text-left px-3 sm:px-4 py-2 text-xs sm:text-sm text-red-600 hover:bg-gray-100"
+                      >
+                        Đăng xuất
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
               <div className="flex items-center space-x-2">
                 <Link
                   href="/login"
@@ -441,77 +796,6 @@ export default function Header() {
                 >
                   Đăng ký
                 </Link>
-              </div>
-            ) : (
-              // {/* User Avatar & Dropdown */}
-              <div className="relative" ref={userMenuRef}>
-                <button
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center space-x-2 text-sm text-gray-700 hover:text-gray-900 transition-colors"
-                >
-                  <UserCircleIcon className="h-6 w-6 sm:h-8 sm:w-8 text-gray-600" />
-                  <span className="hidden sm:block font-medium">
-                    {user?.name || "User"}
-                  </span>
-                  <ChevronDownIcon className="h-4 w-4 text-gray-500" />
-                </button>
-
-                {/* User Dropdown Menu */}
-                {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                    <div className="py-1">
-                      <div className="px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm font-medium text-gray-900">
-                          {user?.name}
-                        </p>
-                        <p className="text-sm text-gray-500">{user?.email}</p>
-                        <p className="text-xs text-blue-600 capitalize">
-                          {user?.role}
-                        </p>
-                      </div>
-                      <Link
-                        href="/profile"
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsUserMenuOpen(false)}
-                      >
-                        <UserCircleIcon className="h-4 w-4 mr-3 text-gray-400" />
-                        Thông tin cá nhân
-                      </Link>
-                      {user?.role === "admin" && (
-                        <Link
-                          href="/admin"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setIsUserMenuOpen(false)}
-                        >
-                          <AcademicCapIcon className="h-4 w-4 mr-3 text-gray-400" />
-                          Quản trị
-                        </Link>
-                      )}
-                      <button
-                        onClick={() => {
-                          logout();
-                          setIsUserMenuOpen(false);
-                        }}
-                        className="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                      >
-                        <svg
-                          className="h-4 w-4 mr-3"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                          />
-                        </svg>
-                        Đăng xuất
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             )}
           </div>

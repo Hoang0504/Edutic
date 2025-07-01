@@ -16,7 +16,7 @@ export class AIFeedback extends Model<AIFeedback> {
 
   @Column({
     type: DataType.ENUM(
-      "voice_recording",
+      "speaking_submission",
       "writing_submission",
       "exam_attempt"
     ),

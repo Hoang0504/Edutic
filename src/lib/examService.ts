@@ -89,14 +89,14 @@ export async function createExamWithData(
 
   try {
     // 1. Create exam
+    const rawType = (examData.exam.exam_type || examData.exam.type) as string;
+    const mappedType: "random" | "full_test" | "speaking" | "writing" =
+      rawType === "full_toeic" ? "full_test" : (rawType as any);
+
     const exam = await Exam.create(
       {
         title: examData.exam.title,
-        type: (examData.exam.exam_type || examData.exam.type) as
-          | "random"
-          | "full_test"
-          | "speaking"
-          | "writing",
+        type: mappedType,
         description: examData.exam.exam_type
           ? `[${examData.exam.exam_type}] ${examData.exam.description}`
           : examData.exam.description,
@@ -271,7 +271,7 @@ export async function createExamWithData(
       if (!partId) continue;
 
       // Xử lý question groups cho reading comprehension
-      let groupId: number;
+      let groupId: number | null = null;
 
       if (questionData.group_id) {
         // Nếu có group_id từ Excel, tạo hoặc sử dụng group đã tồn tại
@@ -311,18 +311,6 @@ export async function createExamWithData(
           groupId = group.id;
           createdGroups.set(groupKey, groupId);
         }
-      } else {
-        // Không có group_id, tạo group riêng (cho listening hoặc single questions)
-        const group = await QuestionGroup.create(
-          {
-            // part_id: partId,
-            content: `Question group for part ${partNumber}, question ${questionData.question_number}`,
-            created_at: new Date(),
-          },
-          { transaction }
-        );
-
-        groupId = group.id;
       }
 
       // Create question with image URL if available

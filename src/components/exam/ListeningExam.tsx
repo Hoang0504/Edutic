@@ -10,26 +10,31 @@ import {
   ChevronRightIcon,
 } from "@heroicons/react/24/solid";
 
+import FullPageLoading from "../features/FullPageLoading";
+
+import { usePartDetail } from "@/hooks";
 import { useSelectedAnswers } from "@/contexts/SelectedAnswersContext";
+import { useExamAttemptInfo } from "@/contexts/ExamAttemptInfoContext";
+
+interface Answer {
+  id: number;
+  content: string;
+}
 
 interface Question {
   id: number;
-  text: string;
-  options: string[];
-  answered: boolean;
-}
-
-interface Section {
-  id: number;
-  name: string;
-  questions: Question[];
+  question_number: number;
+  content: string;
+  image_url: string;
+  question_type: string;
+  answers: Answer[];
 }
 
 interface Part {
   id: number;
-  name: string;
-  sections: Section[];
-  audioUrl?: string;
+  title: string;
+  audio?: string;
+  questions: Question[];
 }
 
 interface ListeningExamProps {
@@ -39,8 +44,9 @@ interface ListeningExamProps {
 const ListeningExam: React.FC<ListeningExamProps> = ({ parts }) => {
   const { selectedAnswers, setSelectedAnswers } = useSelectedAnswers();
   const [activeSection, setActiveSection] = useState(1);
-  const [activePart, setActivePart] = useState(1);
+  // const [activePart, setActivePart] = useState(1);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentQuestionNumber, setCurrentQuestionNumber] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(50);
   const [currentTime, setCurrentTime] = useState(0);
@@ -51,112 +57,35 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts }) => {
 
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Sample data for demonstration
-  const sampleParts: Part[] = [
-    {
-      id: 1,
-      name: "Part 1",
-      sections: [
-        {
-          id: 1,
-          name: "Section 1",
-          questions: Array.from({ length: 6 }, (_, i) => ({
-            id: i + 1,
-            text: `Look at the picture and listen to the question. Choose the best answer.`,
-            options: [
-              "A. The man is reading a book",
-              "B. The woman is typing on a computer",
-              "C. They are having a meeting",
-              "D. The office is empty",
-            ],
-            answered: false,
-          })),
-        },
-        {
-          id: 2,
-          name: "Section 2",
-          questions: Array.from({ length: 6 }, (_, i) => ({
-            id: i + 7,
-            text: `You will hear a question. Choose the best response.`,
-            options: [
-              "A. Yes, I do",
-              "B. At 3 o'clock",
-              "C. In the morning",
-              "D. By train",
-            ],
-            answered: false,
-          })),
-        },
-        {
-          id: 3,
-          name: "Section 3",
-          questions: Array.from({ length: 6 }, (_, i) => ({
-            id: i + 13,
-            text: `You will hear a conversation. Choose the best answer to the question.`,
-            options: [
-              "A. To schedule a meeting",
-              "B. To cancel an appointment",
-              "C. To ask for directions",
-              "D. To make a reservation",
-            ],
-            answered: false,
-          })),
-        },
-        {
-          id: 4,
-          name: "Section 4",
-          questions: Array.from({ length: 6 }, (_, i) => ({
-            id: i + 19,
-            text: `You will hear a short talk. Choose the best answer to the question.`,
-            options: [
-              "A. A business presentation",
-              "B. A weather forecast",
-              "C. A news report",
-              "D. An advertisement",
-            ],
-            answered: false,
-          })),
-        },
-      ],
-      audioUrl: "/audio/listening-sample.mp3",
-    },
-  ];
+  const { data: examData } = useExamAttemptInfo();
+  const listeningParts = examData?.parts?.filter(
+    (part: any) => part.skill === "l"
+  );
 
-  const currentPart =
-    sampleParts.find((part) => part.id === activePart) || sampleParts[0];
-  const currentSection =
-    currentPart.sections.find((section) => section.id === activeSection) ||
-    currentPart.sections[0];
-  const currentQuestion = currentSection.questions[currentQuestionIndex];
+  const activePart = examData?.parts?.find((part: any) => part.skill === "l");
+
+  const activePartId = activePart?.part_id;
+
+  const { data: partDetail, loading } = usePartDetail(activePartId);
 
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const updateTime = () => setCurrentTime(audio.currentTime);
-    const updateDuration = () => setDuration(audio.duration);
-
-    audio.addEventListener("timeupdate", updateTime);
-    audio.addEventListener("loadedmetadata", updateDuration);
-    audio.addEventListener("ended", () => setIsPlaying(false));
-
-    return () => {
-      audio.removeEventListener("timeupdate", updateTime);
-      audio.removeEventListener("loadedmetadata", updateDuration);
-      audio.removeEventListener("ended", () => setIsPlaying(false));
-    };
-  }, []);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume / 100;
+    if (activePart?.questionStart != null) {
+      setCurrentQuestionNumber(activePart.questionStart);
     }
-  }, [volume]);
+  }, [activePart]);
 
-  useEffect(() => {
-    // Reset question index when section changes
-    setCurrentQuestionIndex(0);
-  }, [activeSection]);
+  if (!examData || !activePartId || loading) {
+    return <FullPageLoading />;
+  }
+
+  const currentPart = partDetail?.part;
+  const questions = partDetail?.questions ?? [];
+  const currentQuestion = questions[currentQuestionIndex];
+
+  // useEffect(() => {
+  //   // Reset question index when section changes
+  //   setCurrentQuestionIndex(0);
+  // }, [activeSection]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
@@ -186,68 +115,76 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts }) => {
   };
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < currentSection.questions.length - 1) {
+    // if (currentQuestionIndex < currentSection.questions.length - 1) {
+    //   setCurrentQuestionIndex(currentQuestionIndex + 1);
+    // } else {
+    //   // Move to next section if available
+    //   const nextSectionIndex =
+    //     currentPart.sections.findIndex((s) => s.id === activeSection) + 1;
+    //   if (nextSectionIndex < currentPart.sections.length) {
+    //     setActiveSection(currentPart.sections[nextSectionIndex].id);
+    //     setCurrentQuestionIndex(0);
+    //   }
+    // }
+    if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else {
-      // Move to next section if available
-      const nextSectionIndex =
-        currentPart.sections.findIndex((s) => s.id === activeSection) + 1;
-      if (nextSectionIndex < currentPart.sections.length) {
-        setActiveSection(currentPart.sections[nextSectionIndex].id);
-        setCurrentQuestionIndex(0);
-      }
+      setCurrentQuestionNumber((prev) => prev + 1);
     }
   };
 
   const handlePreviousQuestion = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
-    } else {
-      // Move to previous section if available
-      const prevSectionIndex =
-        currentPart.sections.findIndex((s) => s.id === activeSection) - 1;
-      if (prevSectionIndex >= 0) {
-        setActiveSection(currentPart.sections[prevSectionIndex].id);
-        setCurrentQuestionIndex(
-          currentPart.sections[prevSectionIndex].questions.length - 1
-        );
-      }
+      setCurrentQuestionNumber((prev) => prev - 1);
     }
+    // else {
+    //   // Move to previous section if available
+    //   const prevSectionIndex =
+    //     currentPart.sections.findIndex((s) => s.id === activeSection) - 1;
+    //   if (prevSectionIndex >= 0) {
+    //     setActiveSection(currentPart.sections[prevSectionIndex].id);
+    //     setCurrentQuestionIndex(
+    //       currentPart.sections[prevSectionIndex].questions.length - 1
+    //     );
+    //   }
+    // }
   };
 
-  const canGoPrevious = () => {
-    return (
-      currentQuestionIndex > 0 ||
-      currentPart.sections.findIndex((s) => s.id === activeSection) > 0
-    );
-  };
+  // const canGoPrevious = () => {
+  //   return (
+  //     currentQuestionIndex > 0 ||
+  //     currentPart.sections.findIndex((s) => s.id === activeSection) > 0
+  //   );
+  // };
 
-  const canGoNext = () => {
-    const sectionIndex = currentPart.sections.findIndex(
-      (s) => s.id === activeSection
-    );
-    return (
-      currentQuestionIndex < currentSection.questions.length - 1 ||
-      sectionIndex < currentPart.sections.length - 1
-    );
-  };
+  // const canGoNext = () => {
+  //   const sectionIndex = currentPart.sections.findIndex(
+  //     (s) => s.id === activeSection
+  //   );
+  //   return (
+  //     currentQuestionIndex < currentSection.questions.length - 1 ||
+  //     sectionIndex < currentPart.sections.length - 1
+  //   );
+  // };
+  const canGoNext = () => currentQuestionIndex < questions.length - 1;
+  const canGoPrevious = () => currentQuestionIndex > 0;
 
   return (
     <div className="space-y-6">
       {/* Sections Navigation */}
       <div className="bg-white rounded-lg shadow-sm border p-4">
         <div className="flex space-x-2">
-          {currentPart.sections.map((section) => (
+          {parts.map((part) => (
             <button
-              key={section.id}
-              onClick={() => setActiveSection(section.id)}
+              key={part.id}
+              onClick={() => setActiveSection(part.id)}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeSection === section.id
+                activeSection === part.id
                   ? "bg-blue-500 text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
-              {section.name}
+              {part.title}
             </button>
           ))}
         </div>
@@ -316,7 +253,7 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts }) => {
           <span>{formatTime(duration)}</span>
         </div>
 
-        <audio ref={audioRef} src={currentPart.audioUrl} preload="metadata" />
+        <audio ref={audioRef} src={currentPart?.audio} preload="metadata" />
       </div>
 
       {/* Question Section - Compact Design */}
@@ -324,20 +261,25 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts }) => {
         <div className="mb-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-medium text-gray-800">
-              Question {currentQuestion?.id} of{" "}
-              {currentSection.questions.length}
+              Question {currentQuestionNumber}
             </h3>
-            <div className="text-sm text-gray-500">{currentSection.name}</div>
+            {/* <div className="text-sm text-gray-500">
+              {currentQuestion?.content}
+            </div> */}
           </div>
 
           {/* Question Text */}
-          <div className="bg-gray-50 rounded-lg p-4 mb-4">
-            <p className="text-gray-800 font-medium">{currentQuestion?.text}</p>
-          </div>
+          {currentQuestion?.content && (
+            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+              <p className="text-gray-800 font-medium">
+                {currentQuestion.content}
+              </p>
+            </div>
+          )}
 
           {/* Answer Options */}
           <div className="space-y-3">
-            {currentQuestion?.options.map((option, index) => {
+            {currentQuestion?.answers.map((answer: any, index: number) => {
               const optionLetter = String.fromCharCode(65 + index); // A, B, C, D
               const isSelected =
                 selectedAnswers[currentQuestion.id] === optionLetter;
@@ -361,7 +303,7 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts }) => {
                     }
                     className="mt-1 w-4 h-4 text-blue-600"
                   />
-                  <span className="text-gray-800">{option}</span>
+                  <span className="text-gray-800">{answer.content}</span>
                 </label>
               );
             })}
@@ -383,14 +325,14 @@ const ListeningExam: React.FC<ListeningExamProps> = ({ parts }) => {
             </button>
 
             <div className="flex items-center space-x-2">
-              {currentSection.questions.map((_, index) => (
+              {questions.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentQuestionIndex(index)}
                   className={`w-3 h-3 rounded-full transition-colors ${
                     index === currentQuestionIndex
                       ? "bg-blue-500"
-                      : selectedAnswers[currentSection.questions[index].id]
+                      : selectedAnswers[questions[index].id]
                       ? "bg-green-500"
                       : "bg-gray-300 hover:bg-gray-400"
                   }`}

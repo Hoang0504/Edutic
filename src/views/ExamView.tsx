@@ -51,9 +51,9 @@ const ExamView = () => {
 
   return (
     <ExamLayout
-      mode={mode as "lr" | "sw"}
-      examTitle="Tên đề thi"
-      totalTime={120} // 120 minutes
+      // mode={mode as "lr" | "sw"}
+      // examTitle="Tên đề thi"
+      // totalTime={120} // 120 minutes
       onExit={handleExit}
       onSubmit={handleSubmit}
       selectedAnswers={selectedAnswers}

@@ -33,6 +33,15 @@ const API_ENDPOINTS = {
         set ? `&set=${set}` : ""
       }`,
   },
+
+  EXAM_ATTEMPTS: {
+    INFO: (id: string) => `${BASE_URL}/exam-attempts/${id}/info`,
+  },
+
+  PART: {
+    DETAIL: (id: string) => `${BASE_URL}/part/${id}`,
+  },
+
   // Add other endpoints
   AUTH: {
     LOGIN: `${BASE_URL}/api/auth/login`,

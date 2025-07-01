@@ -39,6 +39,18 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     order: [["question_number", "ASC"]],
   });
 
+  const sanitizedQuestions = questions.map((q) => ({
+    id: q.id,
+    question_number: q.question_number,
+    content: part.part_number === 2 ? "" : q.content,
+    image_url: part.part_number === 2 ? "" : q.image_url,
+    question_type: q.question_type,
+    answers: q.answers.map((a) => ({
+      id: a.id,
+      content: part.part_number === 2 ? a.content.slice(0, 2) : a.content,
+    })),
+  }));
+
   const data = {
     part: {
       id: part.id,
@@ -47,14 +59,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       audio: part.audioFile?.file_path || null,
       time_limit: part.time_limit,
     },
-    questions: questions.map((q) => ({
-      id: q.id,
-      question_number: q.question_number,
-      content: q.content,
-      image_url: q.image_url,
-      question_type: q.question_type,
-      answers: q.answers,
-    })),
+    questions: sanitizedQuestions,
   };
 
   return res.status(200).json(data);

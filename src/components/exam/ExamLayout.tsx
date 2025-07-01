@@ -3,11 +3,12 @@
 import React, { useState, useEffect } from "react";
 import QuestionNavigator from "./QuestionNavigator";
 import ListeningExam from "./ListeningExam";
+import { useExamAttemptInfo } from "@/contexts/ExamAttemptInfoContext";
 
 interface ExamLayoutProps {
-  mode: "lr" | "sw";
-  examTitle: string;
-  totalTime: number; // in minutes
+  // mode: "lr" | "sw";
+  // examTitle: string;
+  // totalTime: number; // in minutes
   onExit: () => void;
   onSubmit: () => void;
   onSkillChange?: (skill: string) => void;
@@ -15,23 +16,28 @@ interface ExamLayoutProps {
   onQuestionClick?: (questionId: number) => void;
 }
 
-const getInitialSkill = (mode: string | null) => {
+const getInitialSkill = (mode: string | undefined) => {
   if (mode === "lr") return "listening";
   if (mode === "sw") return "speaking";
   return "listening"; // fallback default
 };
 
 const ExamLayout: React.FC<ExamLayoutProps> = ({
-  mode,
-  examTitle,
-  totalTime,
+  // mode,
+  // examTitle,
+  // totalTime,
   onExit,
   onSubmit,
   onSkillChange,
   selectedAnswers = {},
   onQuestionClick = () => {},
 }) => {
-  const [timeLeft, setTimeLeft] = useState(totalTime * 60); // convert to seconds
+  const { data } = useExamAttemptInfo(); // Custom context hook
+  const mode = data?.mode;
+  const examTitle = data?.title;
+  const totalTime = data?.estimated_time;
+
+  const [timeLeft, setTimeLeft] = useState<number | null>(null); // convert to seconds
   const [activeSkill, setActiveSkill] = useState<
     "listening" | "reading" | "writing" | "speaking"
   >(getInitialSkill(mode));
@@ -46,19 +52,27 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
   const skills = mode === "lr" ? allSkills.slice(0, 2) : allSkills.slice(2);
 
   useEffect(() => {
+    if (totalTime) {
+      setTimeLeft(totalTime * 60); // convert to seconds
+    }
+  }, [totalTime]);
+
+  useEffect(() => {
+    if (timeLeft === null) return;
+
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
-        if (prev <= 1) {
+        if (prev !== null && prev <= 1) {
           clearInterval(timer);
           onSubmit();
           return 0;
         }
-        return prev - 1;
+        return (prev ?? 0) - 1;
       });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [onSubmit]);
+  }, [timeLeft, onSubmit]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -165,7 +179,7 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
                 Thời gian làm bài
               </h3>
               <div className="text-2xl font-bold text-red-600 mb-4">
-                {formatTime(timeLeft)}
+                {formatTime(timeLeft || 0)}
               </div>
               <button
                 onClick={onSubmit}

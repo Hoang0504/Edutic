@@ -13,6 +13,8 @@ import {
   getAudioDuration,
   saveImageFile,
 } from "./fileUpload";
+import { Op } from "sequelize";
+import { UserAnswer } from "@/models/UserAnswer";
 
 interface ExamData {
   exam: {
@@ -588,6 +590,114 @@ export async function addPartToExam(
         questionImagesCount: questionImages?.length || 0,
       },
     };
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+}
+
+// --------------------------------------------
+// Delete exam and all related entities
+// --------------------------------------------
+
+/**
+ * Delete an exam and every related record (parts, questions, answers, translations, audio files, etc.)
+ * wrapped in a single SQL transaction to ensure atomicity.
+ */
+export async function deleteExamWithCascade(examId: number): Promise<void> {
+  const transaction = await sequelize.transaction();
+
+  try {
+    // 1. Find parts via ExamPart
+    const examParts = await ExamPart.findAll({
+      where: { exam_id: examId },
+      transaction,
+    });
+    const partIds = examParts.map((ep) => ep.part_id);
+
+    // 2. Find questions that belong to those parts
+    const questions = partIds.length
+      ? await Question.findAll({
+          where: { part_id: { [Op.in]: partIds } },
+          transaction,
+        })
+      : [];
+    const questionIds = questions.map((q) => q.id);
+
+    // 3. Find answers that belong to those questions
+    const answers = questionIds.length
+      ? await Answer.findAll({
+          where: { question_id: { [Op.in]: questionIds } },
+          transaction,
+        })
+      : [];
+    const answerIds = answers.map((a) => a.id);
+
+    // 4. Delete dependent records (translations / user answers) first
+    if (answerIds.length) {
+      await Translation.destroy({
+        where: {
+          content_type: "answer",
+          content_id: { [Op.in]: answerIds },
+        },
+        transaction,
+      });
+    }
+
+    if (questionIds.length) {
+      await Translation.destroy({
+        where: {
+          content_type: "question",
+          content_id: { [Op.in]: questionIds },
+        },
+        transaction,
+      });
+
+      await UserAnswer.destroy({
+        where: { question_id: { [Op.in]: questionIds } },
+        transaction,
+      });
+    }
+
+    // 5. Delete answers & questions
+    if (answerIds.length) {
+      await Answer.destroy({ where: { id: { [Op.in]: answerIds } }, transaction });
+    }
+
+    if (questionIds.length) {
+      await Question.destroy({ where: { id: { [Op.in]: questionIds } }, transaction });
+    }
+
+    // 6. Delete question groups (if any)
+    const groupIds = questions
+      .map((q) => q.group_id)
+      .filter((id): id is number => !!id);
+    if (groupIds.length) {
+      await QuestionGroup.destroy({
+        where: { id: { [Op.in]: groupIds } },
+        transaction,
+      });
+    }
+
+    // 7. Delete audio files
+    if (partIds.length) {
+      await AudioFile.destroy({
+        where: { part_id: { [Op.in]: partIds } },
+        transaction,
+      });
+    }
+
+    // 8. Delete parts and exam_parts
+    if (partIds.length) {
+      await Part.destroy({ where: { id: { [Op.in]: partIds } }, transaction });
+    }
+
+    await ExamPart.destroy({ where: { exam_id: examId }, transaction });
+
+    // 9. Finally, delete the exam itself
+    await Exam.destroy({ where: { id: examId }, transaction });
+
+    await transaction.commit();
   } catch (error) {
     await transaction.rollback();
     throw error;

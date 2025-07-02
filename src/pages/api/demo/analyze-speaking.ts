@@ -1,137 +1,159 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from 'next';
+import sequelize from '@/lib/db';
+import { AIFeedback } from '@/models/AIFeedback';
 
-interface AIFeedback {
-  score: number;
+interface SpeakingRequest {
+  question: string;
+  transcription: string;
+  recordingTime: number;
+  user_id?: number; // Optional for demo
+}
+
+interface DeepSeekSpeakingResponse {
+  feedback_text: string;
+  suggestions: string;
+  strengths: string;
+  weaknesses: string;
+  // Keep original format for frontend compatibility
+  score?: number;
   pronunciation_score?: number;
   fluency_score?: number;
   content_score?: number;
-  strengths: string;
-  weaknesses: string;
-  suggestions: string[] | string;
+  transcription?: string;
   pronunciation_analysis?: string;
 }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<AIFeedback | { error: string }>
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
-  
-  try {
-    const { question, transcription, recordingTime, userAttemptPartId } = req.body;
 
-    if (!transcription || !transcription.trim()) {
-      return res.status(400).json({ error: 'Transcription is required' });
+  try {
+    const { question, transcription, recordingTime, user_id }: SpeakingRequest = req.body;
+
+    if (!question || !transcription) {
+      return res.status(400).json({ error: 'Question and transcription are required' });
     }
 
+    // Check API key
+    if (!process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY) {
+      return res.status(500).json({ error: 'DEEPSEEK_API_KEY is not configured' });
+    }
+
+    // Construct prompt for DeepSeek to analyze speaking
+    const prompt = `You are an expert TOEIC speaking examiner. Analyze the following speaking sample and provide detailed feedback in JSON format.
+
+QUESTION: ${question}
+
+STUDENT'S RESPONSE (transcribed): ${transcription}
+
+SPEAKING TIME: ${recordingTime} seconds
+
+Return a JSON response with exactly this structure:
+{
+  "feedback_text": "Overall detailed feedback about the speaking performance (in Vietnamese)",
+  "suggestions": "Specific actionable suggestions for improvement (in Vietnamese)", 
+  "strengths": "What the student did well (in Vietnamese)",
+  "weaknesses": "Areas that need improvement (in Vietnamese)",
+  "score": (overall score from 1-10),
+  "pronunciation_score": (estimated pronunciation score from 1-10 based on text analysis),
+  "fluency_score": (fluency score from 1-10 based on response length and coherence),
+  "content_score": (content relevance score from 1-10),
+  "transcription": "${transcription}",
+  "pronunciation_analysis": "Analysis of likely pronunciation issues based on word choice and grammar patterns (in Vietnamese)"
+}
+
+Focus on these areas for TOEIC Speaking assessment:
+1. Content - How well the response addresses the question
+2. Fluency - Flow and natural speech patterns (estimate from text length and structure)
+3. Vocabulary - Range and appropriateness of word choice
+4. Grammar - Accuracy and complexity of sentence structures
+5. Pronunciation - Estimate based on grammar patterns and word choices
+6. Time management - Appropriate length for the time given
+
+Consider that:
+- Recommended speaking time is 45-60 seconds
+- Current response time: ${recordingTime} seconds
+- Shorter responses may indicate hesitation or lack of content
+- Longer responses may indicate good fluency but check for relevance
+
+Provide all feedback in Vietnamese. Be specific and constructive in your analysis. 
+For pronunciation analysis, base your assessment on grammar complexity, word choice sophistication, and likely pronunciation challenges for Vietnamese speakers.`;
+
     // Call DeepSeek API
-    const deepSeekResponse = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    const deepSeekResponse = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY}`,
       },
       body: JSON.stringify({
         model: 'deepseek-chat',
         messages: [
           {
-            role: 'system',
-            content: `Bạn là một giám khảo TOEIC Speaking chuyên nghiệp. Hãy đánh giá bài nói của thí sinh và trả về phản hồi bằng tiếng Việt theo định dạng JSON chính xác như sau:
-
-{
-  "score": 8,
-  "pronunciation_score": 7,
-  "fluency_score": 8,
-  "content_score": 9,
-  "strengths": "Phát âm rõ ràng, nội dung phù hợp với chủ đề...",
-  "weaknesses": "Cần cải thiện tốc độ nói, một số từ phát âm chưa chính xác...",
-  "suggestions": [
-    "Luyện tập phát âm từ vựng khó",
-    "Tăng tốc độ nói tự nhiên",
-    "Sử dụng nhiều từ nối hơn"
-  ],
-  "pronunciation_analysis": "Phân tích chi tiết về phát âm..."
-}
-
-Tiêu chí đánh giá:
-- Pronunciation (Phát âm): 0-10
-- Fluency (Lưu loát): 0-10  
-- Content (Nội dung): 0-10
-- Overall Score (Điểm tổng): 0-10
-
-Hãy đánh giá nghiêm túc như kỳ thi thật.`
-          },
-          {
             role: 'user',
-            content: `Đề bài: ${question}
-
-Bài nói của thí sinh: "${transcription}"
-
-Thời gian nói: ${recordingTime} giây
-
-Hãy đánh giá bài nói này theo tiêu chuẩn TOEIC Speaking.`
+            content: prompt
           }
         ],
-        temperature: 0.7,
-        max_tokens: 1000,
+        response_format: { type: 'json_object' },
+        temperature: 0.3,
+        max_tokens: 2000,
       }),
     });
 
     if (!deepSeekResponse.ok) {
-      throw new Error(`DeepSeek API error: ${deepSeekResponse.status}`);
+      const errorText = await deepSeekResponse.text();
+      console.error('DeepSeek API error:', {
+        status: deepSeekResponse.status,
+        statusText: deepSeekResponse.statusText,
+        response: errorText
+      });
+      return res.status(500).json({
+        error: `DeepSeek API error: ${deepSeekResponse.status} - ${deepSeekResponse.statusText}`
+      });
     }
 
     const deepSeekData = await deepSeekResponse.json();
-    const aiResponse = deepSeekData.choices[0]?.message?.content;
-
-    if (!aiResponse) {
-      throw new Error('No response from AI');
+    
+    if (!deepSeekData.choices || !deepSeekData.choices[0] || !deepSeekData.choices[0].message) {
+      console.error('Invalid DeepSeek response:', deepSeekData);
+      return res.status(500).json({ error: 'Invalid response from DeepSeek API' });
     }
 
-    // Parse AI response
-    let feedback;
+    let analysis: DeepSeekSpeakingResponse;
     try {
-      const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-      const jsonString = jsonMatch ? jsonMatch[0] : aiResponse;
-      feedback = JSON.parse(jsonString);
+      analysis = JSON.parse(deepSeekData.choices[0].message.content);
     } catch (parseError) {
-      feedback = {
-        score: 5,
-        strengths: "Có thể hiểu được nội dung cơ bản.",
-        weaknesses: "Cần cải thiện tổng thể các kỹ năng nói.",
-        suggestions: ["Luyện tập thêm", "Cải thiện phát âm", "Tăng độ lưu loát"],
-        pronunciation_analysis: "Cần đánh giá thêm."
-      };
+      console.error('Failed to parse DeepSeek response:', deepSeekData.choices[0].message.content);
+      return res.status(500).json({ error: 'Failed to parse AI response' });
     }
 
-    // Save to database if userAttemptPartId is provided
-    if (userAttemptPartId) {
-      try {
-        const { sequelize } = await import('@/lib/database');
-        const { AiFeedback } = await import('@/models');
+    // Save to database
+    try {
+      await sequelize.authenticate();
+      console.log('Database connection established');
+      
+      const feedback = await AIFeedback.create({
+        content_type: 'speaking_submission' as any,
+        content_id: user_id || 1,
+        feedback_text: analysis.feedback_text,
+        suggestions: analysis.suggestions || '',
+        strengths: analysis.strengths || '',
+        weaknesses: analysis.weaknesses || '',
+        created_at: new Date(),
+      } as any);
 
-        await AiFeedback.create({
-          content_type: 'user_attempt_parts',
-          content_id: userAttemptPartId,
-          feedback_text: JSON.stringify(feedback),
-          suggestions: Array.isArray(feedback.suggestions) ? feedback.suggestions.join('\n') : feedback.suggestions,
-          strengths: feedback.strengths,
-          weaknesses: feedback.weaknesses,
-          created_at: new Date(),
-          updated_at: new Date()
-        });
-        console.log(`Saved AI feedback for user_attempt_part ${userAttemptPartId}`);
-      } catch (dbError) {
-        console.error('Database save error:', dbError);
-      }
+      console.log('Feedback saved to database:', feedback.id);
+    } catch (dbError) {
+      console.error('Database save error:', dbError);
+      // Continue without saving to database but log the error
     }
 
-    res.status(200).json(feedback);
+    console.log('AI Analysis completed for speaking sample');
+    return res.status(200).json(analysis);
 
   } catch (error) {
     console.error('Error analyzing speaking:', error);
-    res.status(500).json({ error: 'Failed to analyze speaking' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
-} 
+}

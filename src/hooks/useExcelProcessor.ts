@@ -187,13 +187,26 @@ export function useExcelProcessor() {
 
     // Process Question Groups sheet (optional)
     let questionGroups: ExamQuestionGroup[] = [];
-    if (workbook.Sheets['QuestionGroups'] || workbook.Sheets['Question Groups']) {
-      const groupsSheetName = workbook.Sheets['QuestionGroups'] ? 'QuestionGroups' : 'Question Groups';
-      const groupsData = XLSX.utils.sheet_to_json(workbook.Sheets[groupsSheetName]) as any[];
+    // Detect sheet name for QuestionGroups (case & space insensitive)
+    const qgSheetName = workbook.SheetNames.find((name) => name.replace(/\s+/g, '').toLowerCase() === 'questiongroups');
+    if (qgSheetName && workbook.Sheets[qgSheetName]) {
+      const groupsSheetName = qgSheetName;
+      const rawGroupsData = XLSX.utils.sheet_to_json(workbook.Sheets[groupsSheetName], {header:1}) as any[];
+      
+      // Convert first row headers to normalized keys (trim lower-case)
+      const headers = rawGroupsData[0].map((h: string) => (h || '').toString().trim().replace(/\s+/g,'_').toLowerCase());
+      
+      const groupsData = rawGroupsData.slice(1).map((rowArr: any[]) => {
+        const obj: any = {};
+        headers.forEach((h: string, idx: number) => {
+          obj[h] = rowArr[idx];
+        });
+        return obj;
+      });
       
       questionGroups = groupsData.map(row => {
-        const groupId = row.group_id || row.id;
-        const partNumber = row.part_number;
+        const groupId = row.group_id || row.group_no || row.groupid || row.id;
+        const partNumber = row.part_number || row.partno || row.partnumber || row['part_number'];
         const startQuestion = row.start_question || row.question_start;
         const endQuestion = row.end_question || row.question_end;
         
@@ -219,11 +232,11 @@ export function useExcelProcessor() {
         return {
           group_id: parseInt(groupId) || 0,
           part_number: parseInt(partNumber) || 0,
-          passage: row.passage || row.content || '',
+          passage: ((row.passage ?? row['passage'] ?? row.content ?? '') as string).trim(),
           image_url: imageUrls.join(' '), // Join multiple image URLs with space
-        instruction: row.instruction,
+          instruction: row.instruction,
           question_range: [parseInt(startQuestion) || 0, parseInt(endQuestion) || 0],
-        vietnamese_translation: row.vietnamese_translation
+          vietnamese_translation: row.vietnamese_translation
         } as ExamQuestionGroup;
       });
     }
@@ -232,7 +245,15 @@ export function useExcelProcessor() {
     const questionsSheet = workbook.Sheets['Questions'];
     if (!questionsSheet) throw new Error('Thiếu sheet "Questions"');
     
-    const questionsData = XLSX.utils.sheet_to_json(questionsSheet) as any[];
+    const rawQuestionsData = XLSX.utils.sheet_to_json(questionsSheet, {header:1}) as any[];
+    const qHeaders = rawQuestionsData[0].map((h: string) => h.toString().trim().replace(/\s+/g,'_').toLowerCase());
+    const questionsData = rawQuestionsData.slice(1).map((rowArr: any[]) => {
+      const obj: any = {};
+      qHeaders.forEach((h: string, idx: number) => {
+        obj[h] = rowArr[idx];
+      });
+      return obj;
+    });
     
     // Debug: Log the first few rows to see column names
     console.log('Debug - Sample questions data from Excel:', questionsData.slice(0, 3));
@@ -240,17 +261,17 @@ export function useExcelProcessor() {
     
     const questions: ExamQuestion[] = questionsData.map(row => {
       // Try different possible column names for group_id
-      const groupId = row['Group No'] || row['group_id'] || row['Group ID'] || row['GroupNo'] || row['group_no'] || row['GroupId'];
+      const groupId = row.group_id || row.group_no || row.groupid;
       
       console.log(`Debug - Question ${row.question_number}: group_id value = "${groupId}", type = ${typeof groupId}`);
       
       return {
-        part_number: parseInt(row.part_number) || 0,
-        question_number: parseInt(row.question_number) || 0,
+        part_number: parseInt(row.part_number || row.partnumber || row.part_no || 0) || 0,
+        question_number: parseInt(row.question_number || row.questionno || row['question_no'] || 0) || 0,
         group_id: groupId ? parseInt(groupId) : null,
-        content: row.content || '',
-      question_type: 'multiple_choice' as const,
-      vietnamese_translation: row.vietnamese_translation || ''
+        content: row.content || row.question || row['question_content'] || '',
+        question_type: 'multiple_choice' as const,
+        vietnamese_translation: row.vietnamese_translation || ''
       };
     });
 
@@ -270,12 +291,21 @@ export function useExcelProcessor() {
     const answersSheet = workbook.Sheets['Answers'];
     if (!answersSheet) throw new Error('Thiếu sheet "Answers"');
     
-    const answersData = XLSX.utils.sheet_to_json(answersSheet) as any[];
+    const rawAnswersData = XLSX.utils.sheet_to_json(answersSheet, {header:1}) as any[];
+    const aHeaders = rawAnswersData[0].map((h: string) => h.toString().trim().replace(/\s+/g,'_').toLowerCase());
+    const answersData = rawAnswersData.slice(1).map((rowArr: any[]) => {
+      const obj: any = {};
+      aHeaders.forEach((h: string, idx: number) => {
+        obj[h] = rowArr[idx];
+      });
+      return obj;
+    });
+    
     console.log('Answers data count:', answersData.length);
     console.log('Sample answer data:', answersData[0]);
     
     const answers: ExamAnswer[] = answersData.map(row => {
-      const questionNumber = parseInt(row.question_number || row['Question No'] || row['Question Number'] || '0');
+      const questionNumber = parseInt(row.question_number || row.questionno || row['question_no'] || '0');
       const partNumber = questionToPartMap.get(questionNumber);
       
       if (!partNumber) {
@@ -283,7 +313,7 @@ export function useExcelProcessor() {
       }
       
       // Extract answer letter from answer_text (e.g. "A. She's eating in a picnic area.")
-      const content = row.answer_text || row.content || row['Content'] || row['Answer Text'] || '';
+      const content = row.answer_text || row.content || row.answer || row['answer_text'] || '';
       const answerLetter = content.split('.')[0].trim(); // Get "A" from "A. She's eating..."
       
       return {

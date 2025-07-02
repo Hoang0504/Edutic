@@ -160,7 +160,7 @@ const ExamImportPage: React.FC = () => {
     if (!currentStructure || currentStructure.type !== 'group' || !examData?.question_groups) {
       return null;
     }
-    return examData.question_groups.find(g => g.group_id === currentStructure.groupId);
+    return examData.question_groups.find((g) => g.group_id === currentStructure.groupId);
   };
 
   // Get all questions in the same group
@@ -648,13 +648,14 @@ const ExamImportPage: React.FC = () => {
                     
                     {(() => {
                       const currentGroupData = getCurrentQuestionGroup();
-                      return currentGroupData?.passage ? (
+                      const passageText = currentGroupData?.passage || (currentGroupData as any)?.content;
+                      return passageText && passageText.trim() !== "" ? (
                         <div className="mb-3">
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             Đoạn văn/Mô tả nhóm
                           </label>
-                          <div className="p-3 bg-white border border-gray-300 rounded-md">
-                            {currentGroupData.passage}
+                          <div className="p-3 bg-white border border-gray-300 rounded-md text-black">
+                            {passageText}
                           </div>
                         </div>
                       ) : null;

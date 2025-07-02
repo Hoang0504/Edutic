@@ -282,11 +282,15 @@ export async function createExamWithData(
           groupId = createdGroups.get(groupKey)!;
         } else {
           // Tạo group mới từ question_groups data hoặc default
-          const groupData = examData.question_groups?.find(
+          let groupData = examData.question_groups?.find(
             (g) =>
               g.group_id === questionData.group_id &&
               g.part_number === partNumber
           );
+          // Fallback: match by group_id only if precise match not found
+          if (!groupData) {
+            groupData = examData.question_groups?.find((g) => g.group_id === questionData.group_id);
+          }
 
           // Get image URLs for this group (multiple images separated by space)
           const groupImages =
@@ -300,8 +304,9 @@ export async function createExamWithData(
             {
               // part_id: partId,
               content:
-                groupData?.passage ||
-                `Reading passage for questions in group ${questionData.group_id}`,
+                groupData && typeof groupData.passage === "string" && groupData.passage.trim() !== ""
+                  ? groupData.passage
+                  : null,
               image_url: imageUrl,
               created_at: new Date(),
             },
@@ -478,7 +483,7 @@ export async function addPartToExam(
     const group = await QuestionGroup.create(
       {
         // part_id: part.id,
-        content: `Question group for part ${partData.part_number}`,
+        content: null, // No passage provided in this context
         created_at: new Date(),
       },
       { transaction }

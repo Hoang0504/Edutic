@@ -55,6 +55,7 @@ interface ExamData {
     part_number: number;
     passage: string;
     image_url?: string;
+    vietnamese_translation?: string;
   }>;
 }
 
@@ -317,6 +318,20 @@ export async function createExamWithData(
 
           groupId = group.id;
           createdGroups.set(groupKey, groupId);
+
+          // Create translation for question group if vietnamese_translation exists
+          if (groupData && groupData.vietnamese_translation) {
+            await Translation.create(
+              {
+                content_type: "question_group",
+                content_id: group.id,
+                vietnamese_text: groupData.vietnamese_translation,
+                created_at: new Date(),
+                updated_at: new Date(),
+              },
+              { transaction }
+            );
+          }
         }
       }
 
@@ -673,6 +688,16 @@ export async function deleteExamWithCascade(examId: number): Promise<void> {
       .map((q) => q.group_id)
       .filter((id): id is number => !!id);
     if (groupIds.length) {
+      // Delete question group translations
+      await Translation.destroy({
+        where: {
+          content_type: "question_group",
+          content_id: { [Op.in]: groupIds },
+        },
+        transaction,
+      });
+
+      // Delete question groups
       await QuestionGroup.destroy({
         where: { id: { [Op.in]: groupIds } },
         transaction,

@@ -50,7 +50,7 @@ async function handler(req: NextApiRequestWithFiles, res: NextApiResponse): Prom
       });
     });
 
-    const { email, password, role = "student" } = req.body;
+    const { email,name, password, role = "student" } = req.body;
     const avatarFile = req.file;
 
     if (!email || !password) {
@@ -67,6 +67,7 @@ async function handler(req: NextApiRequestWithFiles, res: NextApiResponse): Prom
 
     const user = await User.create({
       email,
+      name,
       avatar,
       password_hash,
       role,

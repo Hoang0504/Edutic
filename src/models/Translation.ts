@@ -10,7 +10,11 @@ import {
 
 interface TranslationCreationAttributes {
   id?: number;
+<<<<<<< HEAD
   content_type: "question" | "answer" | "transcript" | "question_group";
+=======
+  content_type: "question" | "answer" | "instruction" | "transcript" | "question_group";
+>>>>>>> origin/TruongHuy_2
   content_id: number;
   vietnamese_text: string;
   created_at?: Date;

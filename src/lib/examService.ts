@@ -13,6 +13,8 @@ import {
   getAudioDuration,
   saveImageFile,
 } from "./fileUpload";
+import { Op } from "sequelize";
+import { UserAnswer } from "@/models/UserAnswer";
 
 interface ExamData {
   exam: {
@@ -53,6 +55,7 @@ interface ExamData {
     part_number: number;
     passage: string;
     image_url?: string;
+    vietnamese_translation?: string;
   }>;
 }
 
@@ -282,11 +285,15 @@ export async function createExamWithData(
           groupId = createdGroups.get(groupKey)!;
         } else {
           // Tạo group mới từ question_groups data hoặc default
-          const groupData = examData.question_groups?.find(
+          let groupData = examData.question_groups?.find(
             (g) =>
               g.group_id === questionData.group_id &&
               g.part_number === partNumber
           );
+          // Fallback: match by group_id only if precise match not found
+          if (!groupData) {
+            groupData = examData.question_groups?.find((g) => g.group_id === questionData.group_id);
+          }
 
           // Get image URLs for this group (multiple images separated by space)
           const groupImages =
@@ -300,8 +307,9 @@ export async function createExamWithData(
             {
               // part_id: partId,
               content:
-                groupData?.passage ||
-                `Reading passage for questions in group ${questionData.group_id}`,
+                groupData && typeof groupData.passage === "string" && groupData.passage.trim() !== ""
+                  ? groupData.passage
+                  : null,
               image_url: imageUrl,
               created_at: new Date(),
             },
@@ -310,6 +318,20 @@ export async function createExamWithData(
 
           groupId = group.id;
           createdGroups.set(groupKey, groupId);
+
+          // Create translation for question group if vietnamese_translation exists
+          if (groupData && groupData.vietnamese_translation) {
+            await Translation.create(
+              {
+                content_type: "question_group",
+                content_id: group.id,
+                vietnamese_text: groupData.vietnamese_translation,
+                created_at: new Date(),
+                updated_at: new Date(),
+              },
+              { transaction }
+            );
+          }
         }
       }
 
@@ -478,7 +500,7 @@ export async function addPartToExam(
     const group = await QuestionGroup.create(
       {
         // part_id: part.id,
-        content: `Question group for part ${partData.part_number}`,
+        content: null, // No passage provided in this context
         created_at: new Date(),
       },
       { transaction }
@@ -583,6 +605,124 @@ export async function addPartToExam(
         questionImagesCount: questionImages?.length || 0,
       },
     };
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+}
+
+// --------------------------------------------
+// Delete exam and all related entities
+// --------------------------------------------
+
+/**
+ * Delete an exam and every related record (parts, questions, answers, translations, audio files, etc.)
+ * wrapped in a single SQL transaction to ensure atomicity.
+ */
+export async function deleteExamWithCascade(examId: number): Promise<void> {
+  const transaction = await sequelize.transaction();
+
+  try {
+    // 1. Find parts via ExamPart
+    const examParts = await ExamPart.findAll({
+      where: { exam_id: examId },
+      transaction,
+    });
+    const partIds = examParts.map((ep) => ep.part_id);
+
+    // 2. Find questions that belong to those parts
+    const questions = partIds.length
+      ? await Question.findAll({
+          where: { part_id: { [Op.in]: partIds } },
+          transaction,
+        })
+      : [];
+    const questionIds = questions.map((q) => q.id);
+
+    // 3. Find answers that belong to those questions
+    const answers = questionIds.length
+      ? await Answer.findAll({
+          where: { question_id: { [Op.in]: questionIds } },
+          transaction,
+        })
+      : [];
+    const answerIds = answers.map((a) => a.id);
+
+    // 4. Delete dependent records (translations / user answers) first
+    if (answerIds.length) {
+      await Translation.destroy({
+        where: {
+          content_type: "answer",
+          content_id: { [Op.in]: answerIds },
+        },
+        transaction,
+      });
+    }
+
+    if (questionIds.length) {
+      await Translation.destroy({
+        where: {
+          content_type: "question",
+          content_id: { [Op.in]: questionIds },
+        },
+        transaction,
+      });
+
+      await UserAnswer.destroy({
+        where: { question_id: { [Op.in]: questionIds } },
+        transaction,
+      });
+    }
+
+    // 5. Delete answers & questions
+    if (answerIds.length) {
+      await Answer.destroy({ where: { id: { [Op.in]: answerIds } }, transaction });
+    }
+
+    if (questionIds.length) {
+      await Question.destroy({ where: { id: { [Op.in]: questionIds } }, transaction });
+    }
+
+    // 6. Delete question groups (if any)
+    const groupIds = questions
+      .map((q) => q.group_id)
+      .filter((id): id is number => !!id);
+    if (groupIds.length) {
+      // Delete question group translations
+      await Translation.destroy({
+        where: {
+          content_type: "question_group",
+          content_id: { [Op.in]: groupIds },
+        },
+        transaction,
+      });
+
+      // Delete question groups
+      await QuestionGroup.destroy({
+        where: { id: { [Op.in]: groupIds } },
+        transaction,
+      });
+    }
+
+    // 7. Delete audio files
+    if (partIds.length) {
+      await AudioFile.destroy({
+        where: { part_id: { [Op.in]: partIds } },
+        transaction,
+      });
+    }
+
+    // 8. Delete parts and exam_parts
+    if (partIds.length) {
+      await Part.destroy({ where: { id: { [Op.in]: partIds } }, transaction });
+    }
+
+    await ExamPart.destroy({ where: { exam_id: examId }, transaction });
+
+    // 9. Finally, delete the exam itself
+    await Exam.destroy({ where: { id: examId }, transaction });
+
+    await transaction.commit();
   } catch (error) {
     await transaction.rollback();
     throw error;

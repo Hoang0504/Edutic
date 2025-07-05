@@ -46,6 +46,9 @@ export class UserAttemptPart extends Model<
   @Column(DataType.INTEGER)
   score!: number;
 
+  @Column(DataType.INTEGER)
+  ai_feedback_id!: number;
+
   @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
   created_at!: Date;
 

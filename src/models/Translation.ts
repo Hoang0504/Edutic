@@ -10,7 +10,7 @@ import {
 
 interface TranslationCreationAttributes {
   id?: number;
-  content_type: "question" | "answer" | "instruction" | "transcript";
+  content_type: "question" | "answer" | "transcript" | "question_group";
   content_id: number;
   vietnamese_text: string;
   created_at?: Date;
@@ -27,8 +27,8 @@ export class Translation extends Model<
   @Column
   id!: number;
 
-  @Column(DataType.ENUM("question", "answer", "instruction", "transcript"))
-  content_type!: "question" | "answer" | "instruction" | "transcript";
+  @Column(DataType.ENUM("question", "answer", "transcript", "question_group"))
+  content_type!: "question" | "answer" | "transcript" | "question_group";
 
   @Column(DataType.INTEGER)
   content_id!: number;

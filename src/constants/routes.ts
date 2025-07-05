@@ -8,6 +8,7 @@ const ROUTES = {
   VOCABULARIES: {
     QUIZLET: `${BASE_URL}vocabularies/quizlet`,
   },
+  OVERVIEW_EXAM: `${BASE_URL}exam/overview`,
 };
 
 export default ROUTES;

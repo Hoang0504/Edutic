@@ -36,10 +36,20 @@ const API_ENDPOINTS = {
 
   EXAM_ATTEMPTS: {
     INFO: (id: string) => `${BASE_URL}/exam-attempts/${id}/info`,
+    DETAILS: (id: string) => `${BASE_URL}/exam-attempts/${id}/details`,
+    PART: (id: string, partNumber: string) =>
+      `${BASE_URL}/exam-attempts/${id}/parts/${partNumber}/overview`,
+    QUESTION_DETAILS: (id: string, questionId: string) =>
+      `${BASE_URL}/exam-attempts/${id}/questions/${questionId}/details`,
   },
 
   PART: {
     DETAIL: (id: string) => `${BASE_URL}/part/${id}`,
+  },
+
+  EXAM: {
+    SUBMIT: `${BASE_URL}/exam/submit`,
+    INFO: `${BASE_URL}/exam/info`,
   },
 
   // Add other endpoints

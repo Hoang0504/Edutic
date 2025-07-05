@@ -7,8 +7,22 @@ import {
   AutoIncrement,
 } from "sequelize-typescript";
 
+export interface AIFeedbackContentAttributes {
+  id?: number;
+  content_type:
+    | "speaking_submission"
+    | "writing_submission"
+    | "user_attempt_part";
+  content_id: number;
+  feedback_text: string;
+  suggestions?: string;
+  strengths?: string;
+  weaknesses?: string;
+  created_at?: Date;
+}
+
 @Table({ tableName: "ai_feedbacks", timestamps: false })
-export class AIFeedback extends Model<AIFeedback> {
+export class AIFeedback extends Model<AIFeedback, AIFeedbackContentAttributes> {
   @PrimaryKey
   @AutoIncrement
   @Column(DataType.INTEGER)
@@ -18,7 +32,7 @@ export class AIFeedback extends Model<AIFeedback> {
     type: DataType.ENUM(
       "speaking_submission",
       "writing_submission",
-      "exam_attempt"
+      "user_attempt_part"
     ),
     allowNull: false,
   })

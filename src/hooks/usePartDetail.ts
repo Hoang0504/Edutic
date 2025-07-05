@@ -11,6 +11,12 @@ const usePartDetail = (partId?: number) => {
       audio: string;
       time_limit: number;
     };
+    groups: {
+      groupId: number;
+      groupContent: string;
+      groupImages: string[];
+      questions: any[];
+    };
     questions: any[];
   } | null>(null);
 

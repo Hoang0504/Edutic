@@ -8,6 +8,7 @@ import {
   ExclamationCircleIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
+import { useTranslation } from '@/contexts/I18nContext';
 
 interface FormData {
   title: string;
@@ -30,6 +31,7 @@ interface ExistingMusic {
 }
 
 export default function AddMusicPage() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<FormData>({
     title: '',
     file: null,
@@ -44,6 +46,14 @@ export default function AddMusicPage() {
   // Existing music list
   const [existingMusic, setExistingMusic] = useState<ExistingMusic[]>([]);
   const [loadingMusic, setLoadingMusic] = useState(true);
+
+  // Prepare instruction list which can be stored either as array in JSON or pipe-separated string fallback
+  const instructionList: string[] = (() => {
+    const raw = t('addMusic.instructions', '') as unknown;
+    if (Array.isArray(raw)) return raw as string[];
+    if (typeof raw === 'string' && raw) return raw.split('|');
+    return [];
+  })();
 
   // Load existing music from API
   useEffect(() => {
@@ -66,22 +76,22 @@ export default function AddMusicPage() {
 
   const validateTitle = (title: string): string | undefined => {
     if (title.length < 3) {
-      return 'Tiêu đề phải có ít nhất 3 ký tự';
+      return t('addMusic.errors.titleShort', 'Tiêu đề phải có ít nhất 3 ký tự');
     }
     if (title.length > 100) {
-      return 'Tiêu đề không được vượt quá 100 ký tự';
+      return t('addMusic.errors.titleLong', 'Tiêu đề không được vượt quá 100 ký tự');
     }
     return undefined;
   };
 
   const validateFile = (file: File | null): string | undefined => {
     if (!file) {
-      return 'Vui lòng chọn file nhạc';
+      return t('addMusic.errors.fileRequired', 'Vui lòng chọn file nhạc');
     }
     
     const extension = file.name.split('.').pop()?.toLowerCase();
     if (extension !== 'mp3') {
-      return 'Chỉ chấp nhận file .mp3';
+      return t('addMusic.errors.fileInvalid', 'Chỉ chấp nhận file .mp3');
     }
     
     return undefined;
@@ -100,7 +110,7 @@ export default function AddMusicPage() {
       
       audio.onerror = () => {
         URL.revokeObjectURL(url);
-        reject(new Error('Không thể đọc file âm thanh'));
+        reject(new Error(t('addMusic.errors.audioError', 'Không thể đọc file âm thanh')));
       };
       
       audio.src = url;
@@ -136,7 +146,7 @@ export default function AddMusicPage() {
       } catch (error) {
         setErrors(prev => ({ 
           ...prev, 
-          file: 'File âm thanh không hợp lệ' 
+          file: t('addMusic.errors.audioError', 'File âm thanh không hợp lệ') 
         }));
         setFormData(prev => ({ 
           ...prev, 
@@ -270,8 +280,8 @@ export default function AddMusicPage() {
             <MusicalNoteIcon className="w-6 h-6 text-blue-600" />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Thêm nhạc mới</h1>
-            <p className="text-gray-600 mt-1">Tải lên nhạc học tập của bạn</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t('addMusic.pageTitle', 'Thêm nhạc mới')}</h1>
+            <p className="text-gray-600 mt-1">{t('addMusic.subtitle', 'Tải lên nhạc học tập của bạn')}</p>
           </div>
         </div>
       </div>
@@ -280,7 +290,7 @@ export default function AddMusicPage() {
       {uploadSuccess && (
         <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center space-x-3">
           <CheckCircleIcon className="w-5 h-5 text-green-600 flex-shrink-0" />
-          <p className="text-green-800">Tải lên nhạc thành công!</p>
+          <p className="text-green-800">{t('addMusic.uploadSuccess', 'Tải lên nhạc thành công!')}</p>
         </div>
       )}
 
@@ -290,7 +300,7 @@ export default function AddMusicPage() {
           {/* Title Input */}
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-              Tiêu đề bài hát <span className="text-red-500">*</span>
+              {t('addMusic.form.titleLabel', 'Tiêu đề bài hát')} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -300,7 +310,7 @@ export default function AddMusicPage() {
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
                 errors.title ? 'border-red-300' : 'border-gray-300'
               }`}
-              placeholder="Nhập tiêu đề bài hát (3-100 ký tự)"
+              placeholder={t('addMusic.form.titlePlaceholder', 'Nhập tiêu đề bài hát (3-100 ký tự)')}
               maxLength={100}
             />
             {errors.title && (
@@ -317,7 +327,7 @@ export default function AddMusicPage() {
           {/* File Input */}
           <div>
             <label htmlFor="file" className="block text-sm font-medium text-gray-700 mb-2">
-              File nhạc (.mp3) <span className="text-red-500">*</span>
+              {t('addMusic.form.fileLabel', 'File nhạc (.mp3)')} <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <input
@@ -345,8 +355,8 @@ export default function AddMusicPage() {
                 ) : (
                   <div className="space-y-2">
                     <CloudArrowUpIcon className="w-8 h-8 text-gray-400 mx-auto" />
-                    <p className="text-gray-600">Click để chọn file .mp3</p>
-                    <p className="text-sm text-gray-500">Chỉ chấp nhận file .mp3</p>
+                    <p className="text-gray-600">{t('addMusic.form.fileSelect', 'Click để chọn file .mp3')}</p>
+                    <p className="text-sm text-gray-500">{t('addMusic.form.fileOnly', 'Chỉ chấp nhận file .mp3')}</p>
                   </div>
                 )}
               </div>
@@ -362,7 +372,7 @@ export default function AddMusicPage() {
           {/* Duration Input (Read-only) */}
           <div>
             <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-2">
-              Thời lượng
+              {t('addMusic.form.durationLabel', 'Thời lượng')}
             </label>
             <div className="relative">
               <input
@@ -371,7 +381,7 @@ export default function AddMusicPage() {
                 value={`${formData.duration} giây (${formatDuration(formData.duration)})`}
                 readOnly
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
-                placeholder="Tự động tính khi tải file"
+                placeholder={t('addMusic.form.durationPlaceholder', 'Tự động tính khi tải file')}
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                 <MusicalNoteIcon className="w-4 h-4 text-gray-400" />
@@ -392,10 +402,10 @@ export default function AddMusicPage() {
               {isUploading ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Đang tải lên...</span>
+                  <span>{t('addMusic.form.uploading', 'Đang tải lên...')}</span>
                 </div>
               ) : (
-                'Thêm nhạc'
+                t('addMusic.form.submit', 'Thêm nhạc')
               )}
             </button>
           </div>
@@ -404,12 +414,9 @@ export default function AddMusicPage() {
 
       {/* Instructions */}
       <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-medium text-blue-900 mb-2">Hướng dẫn:</h3>
+        <h3 className="font-medium text-blue-900 mb-2">{t('addMusic.instructionsTitle', 'Hướng dẫn:')}</h3>
         <ul className="text-blue-800 text-sm space-y-1">
-          <li>• Tiêu đề phải có từ 3-100 ký tự</li>
-          <li>• Chỉ chấp nhận file .mp3</li>
-          <li>• Thời lượng sẽ được tự động tính toán</li>
-          <li>• File nhạc sẽ được sử dụng trong chế độ Pomodoro</li>
+          {instructionList.map((text,i)=>(<li key={i}>• {text}</li>))}
         </ul>
       </div>
 
@@ -417,14 +424,14 @@ export default function AddMusicPage() {
       <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
           <h2 className="text-lg font-semibold text-gray-900">
-            Kho nhạc hiện có {!loadingMusic && `(${existingMusic.length})`}
+            {t('addMusic.musicLibrary', 'Kho nhạc hiện có')} {!loadingMusic && `(${existingMusic.length})`}
           </h2>
         </div>
 
         {loadingMusic ? (
           <div className="text-center py-12">
             <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-500">Đang tải danh sách nhạc...</p>
+            <p className="text-gray-500">{t('addMusic.loadingMusic', 'Đang tải danh sách nhạc...')}</p>
           </div>
         ) : existingMusic.length > 0 ? (
           <div className="overflow-x-auto">
@@ -432,19 +439,19 @@ export default function AddMusicPage() {
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
-                    STT
+                    {t('addMusic.table.index', 'STT')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tên bài hát
+                    {t('addMusic.table.title', 'Tên bài hát')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-                    Thời lượng
+                    {t('addMusic.table.duration', 'Thời lượng')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
-                    Nguồn
+                    {t('addMusic.table.source', 'Nguồn')}
                   </th>
                   <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-                    Thao tác
+                    {t('addMusic.table.actions', 'Thao tác')}
                   </th>
                 </tr>
               </thead>
@@ -484,9 +491,9 @@ export default function AddMusicPage() {
                         <button
                           onClick={() => removeMusic(music.id)}
                           className="inline-flex items-center justify-center w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-full transition-colors"
-                          title="Xóa bài hát"
+                          title={t('addMusic.table.delete', 'Xóa')}
                         >
-                          <TrashIcon className="w-4 h-4" />
+                          <TrashIcon className="w-4 h-4 text-red-600" />
                         </button>
                       ) : (
                         <span className="text-gray-400 text-sm">Không thể xóa</span>

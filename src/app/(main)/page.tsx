@@ -8,10 +8,12 @@ import {
   UserGroupIcon,
   ChartBarIcon,
 } from "@heroicons/react/24/outline";
+import { useTranslation } from "@/contexts/I18nContext";
 
 import FlashcardOverview from "@/components/features/flashcards/FlashcardOverview";
 
 function DashboardPage() {
+  const { t } = useTranslation();
   const [targetScores, setTargetScores] = useState({
     listening: 400,
     speaking: 150,
@@ -101,11 +103,13 @@ function DashboardPage() {
       {/* Greeting Section */}
       <div className="mb-4 sm:mb-6">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
-          Xin chào, Tên!
+          {t("home.greeting", "Xin chào, {{name}}!", { name: "Tên" })}
         </h1>
         <p className="text-gray-600 text-sm sm:text-base">
-          Chào mừng bạn trở lại với Edutic. Hãy bắt đầu hành trình học tập hôm
-          nay!
+          {t(
+            "home.welcomeBack",
+            "Chào mừng bạn trở lại với Edutic. Hãy bắt đầu hành trình học tập hôm nay!"
+          )}
         </p>
       </div>
 
@@ -122,7 +126,7 @@ function DashboardPage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">
-                    Kỳ thi gần nhất
+                    {t("home.nearestExam", "Kỳ thi gần nhất")}
                   </p>
                   <p className="text-xl font-bold text-gray-900">5 ngày</p>
                 </div>
@@ -136,7 +140,7 @@ function DashboardPage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">
-                    Ngày dự thi
+                    {t("home.examDate", "Ngày dự thi")}
                   </p>
                   <p className="text-xl font-bold text-gray-900">15/12/2024</p>
                 </div>
@@ -150,13 +154,15 @@ function DashboardPage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">
-                    Target Score
+                    {t("home.targetScore", "Target Score")}
                   </p>
                   {isEditingTarget ? (
                     <div className="space-y-2">
                       <div className="grid grid-cols-2 gap-1">
                         <div>
-                          <label className="text-xs text-gray-500">Nghe</label>
+                          <label className="text-xs text-gray-500">
+                            {t("home.skill.listening", "Nghe")}
+                          </label>
                           <input
                             type="number"
                             value={targetScores.listening}
@@ -172,7 +178,9 @@ function DashboardPage() {
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-gray-500">Nói</label>
+                          <label className="text-xs text-gray-500">
+                            {t("home.skill.speaking", "Nói")}
+                          </label>
                           <input
                             type="number"
                             value={targetScores.speaking}
@@ -188,7 +196,9 @@ function DashboardPage() {
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-gray-500">Đọc</label>
+                          <label className="text-xs text-gray-500">
+                            {t("home.skill.reading", "Đọc")}
+                          </label>
                           <input
                             type="number"
                             value={targetScores.reading}
@@ -204,7 +214,9 @@ function DashboardPage() {
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-gray-500">Viết</label>
+                          <label className="text-xs text-gray-500">
+                            {t("home.skill.writing", "Viết")}
+                          </label>
                           <input
                             type="number"
                             value={targetScores.writing}
@@ -224,24 +236,36 @@ function DashboardPage() {
                         onClick={() => setIsEditingTarget(false)}
                         className="text-xs text-green-600 hover:text-green-800"
                       >
-                        ✓ Lưu
+                        ✓ {t("home.save", "Lưu")}
                       </button>
                     </div>
                   ) : (
                     <div className="space-y-1">
                       <div className="flex justify-between text-xs">
-                        <span>Nghe: {targetScores.listening}</span>
-                        <span>Nói: {targetScores.speaking}</span>
+                        <span>
+                          {t("home.skill.listening", "Nghe")}:{" "}
+                          {targetScores.listening}
+                        </span>
+                        <span>
+                          {t("home.skill.speaking", "Nói")}:{" "}
+                          {targetScores.speaking}
+                        </span>
                       </div>
                       <div className="flex justify-between text-xs">
-                        <span>Đọc: {targetScores.reading}</span>
-                        <span>Viết: {targetScores.writing}</span>
+                        <span>
+                          {t("home.skill.reading", "Đọc")}:{" "}
+                          {targetScores.reading}
+                        </span>
+                        <span>
+                          {t("home.skill.writing", "Viết")}:{" "}
+                          {targetScores.writing}
+                        </span>
                       </div>
                       <button
                         onClick={() => setIsEditingTarget(true)}
                         className="text-xs text-blue-600 hover:text-blue-800"
                       >
-                        ✏️ Chỉnh sửa
+                        ✏️ {t("home.edit", "Chỉnh sửa")}
                       </button>
                     </div>
                   )}
@@ -254,7 +278,7 @@ function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-4 mb-4 sm:mb-6">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Kết quả thi gần nhất
+                {t("home.recentResults", "Kết quả thi gần nhất")}
               </h2>
               <div className="space-y-3">
                 {recentTests.map((test) => (
@@ -276,7 +300,7 @@ function DashboardPage() {
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Đề thi mới nhất
+                {t("home.latestTests", "Đề thi mới nhất")}
               </h2>
               <div className="grid grid-cols-2 gap-3">
                 {latestTests.slice(0, 6).map((test) => (
@@ -297,7 +321,7 @@ function DashboardPage() {
           {/* Flashcard Section */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-6 mb-4 sm:mb-6">
             <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-4">
-              Flashcard
+              {t("home.flashcard", "Flashcard")}
             </h2>
             <FlashcardOverview />
           </div>
@@ -310,7 +334,7 @@ function DashboardPage() {
             <div className="flex items-center mb-2 sm:mb-4">
               <UserGroupIcon className="w-5 h-5 text-green-600 mr-2" />
               <h2 className="text-sm sm:text-base font-semibold text-gray-900">
-                Thành viên đang online
+                {t("home.onlineMembers", "Thành viên đang online")}
               </h2>
               <span className="ml-auto bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
                 {onlineMembers.length}
@@ -333,7 +357,7 @@ function DashboardPage() {
                       {member.name}
                     </p>
                     <p className="text-xs text-gray-500">
-                      Score: {member.score}
+                      {t("home.score", "Score")}: {member.score}
                     </p>
                   </div>
                 </div>
@@ -346,7 +370,7 @@ function DashboardPage() {
             <div className="flex items-center mb-2 sm:mb-4">
               <ChartBarIcon className="w-5 h-5 text-yellow-600 mr-2" />
               <h2 className="text-sm sm:text-base font-semibold text-gray-900">
-                Bảng xếp hạng
+                {t("home.leaderboard", "Bảng xếp hạng")}
               </h2>
             </div>
             <div className="space-y-2 max-h-48 sm:max-h-80 overflow-y-auto">

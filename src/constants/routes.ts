@@ -9,8 +9,8 @@ const ROUTES = {
     QUIZLET: `${BASE_URL}vocabularies/quizlet`,
   },
   EXAM_ATTEMPT: {
-    BASE: `${BASE_URL}exam`,
-    DO: (attempt_id: string) => `${BASE_URL}exam/${attempt_id}`,
+    DO: (id: string) => `${BASE_URL}exam-attempt/${id}`,
+    RESULT: (id: string) => `${BASE_URL}exam-attempt/${id}/results`,
   },
   EXAM: {
     OVERVIEW: `${BASE_URL}exam/overview`,

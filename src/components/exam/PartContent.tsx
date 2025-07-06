@@ -15,6 +15,8 @@ function PartContent({ activePart }: PartContentProps) {
   const { data: partDetail, loading } = usePartDetail(activePart!);
   const { selectedAnswers, setSelectedAnswers } = useSelectedAnswers();
 
+  // console.log(partDetail);
+
   const [currentPage, setCurrentPage] = useState(1);
   const questionsPerPage = 3;
 
@@ -54,6 +56,8 @@ function PartContent({ activePart }: PartContentProps) {
 
   const currentPart = partDetail?.part;
   const questions = combinedQuestions;
+  // console.log(questions);
+
   const totalPages = Math.ceil(questions.length / questionsPerPage);
 
   const paginatedQuestions = useMemo(() => {
@@ -206,9 +210,8 @@ function PartContent({ activePart }: PartContentProps) {
                   <p className="text-sm font-semibold mb-2">
                     {question.groupContent}
                   </p>
-                  {
-                    question.groupImages && (
-                      // <div className="flex flex-wrap gap-2">
+                  {question?.groupImages &&
+                    question?.groupImages.length > 0 && (
                       <>
                         {question.groupImages.map(
                           (img: string, idx: number) => (
@@ -221,9 +224,7 @@ function PartContent({ activePart }: PartContentProps) {
                           )
                         )}
                       </>
-                    )
-                    // </div>
-                  }
+                    )}
                 </div>
               )}
 

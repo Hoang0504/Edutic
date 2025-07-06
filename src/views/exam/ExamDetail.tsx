@@ -233,7 +233,9 @@ function ExamDetailView({ examId }: ExamProp) {
             <div className="flex items-center gap-3">
               {examData?.status === "completed" && (
                 <Link
-                  href={`${ROUTES.EXAM_ATTEMPT.BASE}/${examData?.attemptId}/results`}
+                  href={ROUTES.EXAM_ATTEMPT.RESULT(
+                    examData?.attemptId?.toString()!
+                  )}
                   className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
                 >
                   Xem đáp án
@@ -299,7 +301,11 @@ function ExamDetailView({ examId }: ExamProp) {
             </button>
           ) : (
             <Link
-              href={ROUTES.EXAM.CHOOSE_PARTS(examId)}
+              href={
+                examData.attemptId
+                  ? ROUTES.EXAM_ATTEMPT.DO(examData.attemptId.toString())
+                  : ROUTES.EXAM.CHOOSE_PARTS(examId)
+              }
               className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
               Bắt đầu làm

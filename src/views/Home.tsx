@@ -16,9 +16,14 @@ import { useTranslation } from "@/contexts/I18nContext";
 import Link from "next/link";
 import ROUTES from "@/constants/routes";
 import FullPageLoading from "@/components/features/FullPageLoading";
+import { useAuth } from "@/contexts/AuthContext";
 
 function HomePage() {
+  const { token } = useAuth();
+
   const [latestTests, setLatestTests] = useState<any[]>([]);
+  const [recentTests, setRecentTests] = useState<any[]>([]);
+
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -35,6 +40,28 @@ function HomePage() {
     fetchLatestTests();
   }, []);
 
+  useEffect(() => {
+    const fetchRecentAttempts = async () => {
+      try {
+        const res = await fetch(API_ENDPOINTS.EXAM_ATTEMPTS.RECENT, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+
+        // console.log(data);
+
+        setRecentTests(data);
+      } catch (err) {
+        console.error("Lỗi khi lấy kết quả thi gần nhất:", err);
+      }
+    };
+    if (token) {
+      fetchRecentAttempts();
+    }
+  }, [token]);
+
   const [targetScores, setTargetScores] = useState({
     listening: 400,
     speaking: 150,
@@ -43,11 +70,11 @@ function HomePage() {
   });
   const [isEditingTarget, setIsEditingTarget] = useState(false);
 
-  const recentTests = [
-    { id: 1, title: "Bài 1", status: "Xem chi tiết" },
-    { id: 2, title: "Bài 1", status: "Xem chi tiết" },
-    { id: 3, title: "Bài 1", status: "Xem chi tiết" },
-  ];
+  // const recentTests = [
+  //   { id: 1, title: "Bài 1", status: "Xem chi tiết" },
+  //   { id: 2, title: "Bài 1", status: "Xem chi tiết" },
+  //   { id: 3, title: "Bài 1", status: "Xem chi tiết" },
+  // ];
 
   // const latestTests = [
   //   { id: 1, title: "TOEIC Full Test 1 - ETS 2024", status: "Xem chi tiết" },
@@ -302,20 +329,28 @@ function HomePage() {
                 {t("home.recentResults", "Kết quả thi gần nhất")}
               </h2>
               <div className="space-y-3">
-                {recentTests.map((test) => (
-                  <div
-                    key={test.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium text-gray-900">{test.title}</p>
-                      <p className="text-sm text-gray-600">2 ngày trước</p>
+                {recentTests.length === 0 ? (
+                  <FullPageLoading />
+                ) : (
+                  recentTests.map((test) => (
+                    <div
+                      key={test.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {test.title}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {test.daysAgo} ngày trước
+                        </p>
+                      </div>
+                      <div className="text-lg font-bold text-blue-600">
+                        {test.score}
+                      </div>
                     </div>
-                    <div className="text-lg font-bold text-blue-600">
-                      {800 + test.id * 20}
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
 

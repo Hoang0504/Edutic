@@ -5,14 +5,22 @@ import React, { useMemo } from "react";
 import { useExamAttemptInfo } from "@/contexts/ExamAttemptInfoContext";
 import { useSelectedAnswers } from "@/contexts/SelectedAnswersContext";
 
+type Part = {
+  id: number;
+  name: string;
+  questionStart: number;
+  questionCount: number;
+  questionIdStart: number;
+};
+
 const QuestionNavigator: React.FC = () => {
   const { data } = useExamAttemptInfo();
   const { selectedAnswers } = useSelectedAnswers();
 
-  const parts = useMemo(() => {
-    if (!data) return [];
+  const parts: Part[] | undefined = useMemo(() => {
+    if (data?.parts.length === 0) return [];
 
-    return data.parts.map((part) => ({
+    return data?.parts.map((part) => ({
       id: part.part_id,
       name: part.title,
       questionStart: part.questionStart,
@@ -21,7 +29,7 @@ const QuestionNavigator: React.FC = () => {
     }));
   }, [data]);
 
-  const getQuestionInfos = (part: (typeof parts)[0]): any => {
+  const getQuestionInfos = (part: Part): any => {
     return Array.from({ length: part.questionCount }, (_, i) => ({
       id: part.questionIdStart + i,
       number: part.questionStart + i,
@@ -40,14 +48,15 @@ const QuestionNavigator: React.FC = () => {
   return (
     <div className="bg-white rounded-lg shadow-sm border">
       <div className="p-4 space-y-4">
-        {parts.map((part) => {
+        {parts?.map((part) => {
           const questionInfos = getQuestionInfos(part);
           return (
             <div key={part.id} className="space-y-3">
               <div className="text-sm font-medium text-gray-700">
                 {part.name}:
               </div>
-              <div className={`grid gap-2 ${getGridCols(part.questionCount)}`}>
+              {/* ${getGridCols(part.questionCount)} */}
+              <div className={`grid gap-2 grid-cols-6`}>
                 {questionInfos.map((q: any) => (
                   <button
                     key={q.id}

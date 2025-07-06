@@ -88,11 +88,12 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
     onExamCancel: () => {
       console.log("Exam cancelled by proctoring system");
       alert("Bài thi đã bị hủy bởi hệ thống giám sát");
+      handleCancel();
     },
   });
 
   useEffect(() => {
-    loadData(examAttemptId);
+    if (examAttemptId) loadData(examAttemptId);
   }, [examAttemptId]);
 
   // Get time for each skill (in minutes)
@@ -124,31 +125,53 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
     // setTimeLeft(getSkillTime(activeSkill) * 60);
   };
 
+  const handleCancel = async () => {
+    try {
+      const res = await fetch(
+        API_ENDPOINTS.EXAM_ATTEMPTS.CANCEL(examAttemptId),
+        {
+          method: "PATCH",
+        }
+      );
+
+      if (res.ok) {
+        router.push(ROUTES.BASE_URL);
+      }
+    } catch (error) {
+      console.error("Failed to cancel exam info:", error);
+    }
+  };
+
   const submitExam = async () => {
     // Implement your exam submission logic here
     // console.log("Exam submitted with answers:", selectedAnswers);
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      const res = await fetch(API_ENDPOINTS.EXAM.SUBMIT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userExamAttemptId: 1,
-          startTime,
-          selectedAnswers,
-        }),
-      });
+      const res = await fetch(
+        API_ENDPOINTS.EXAM_ATTEMPTS.SUBMIT(examAttemptId),
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            startTime,
+            selectedAnswers,
+          }),
+        }
+      );
 
       if (!res.ok) {
+        console.log(res);
+
         setSubmitError(
           "Edutic đang gặp lỗi nộp bài thi của bạn, xin lỗi vì sự bất tiện, xin vui lòng thử lại sau!"
         );
+        return;
       }
 
-      router.push(`/${ROUTES.EXAM.OVERVIEW}/${data?.exam_id}`);
+      router.push(`${ROUTES.EXAM.OVERVIEW}/${data?.exam_id}`);
     } catch (error) {
       console.error("Failed to fetch exam info:", error);
       setSubmitError(
@@ -496,62 +519,51 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
               <h3 className="font-medium text-gray-800 mb-2">
                 Thời gian làm bài
               </h3>
-              <div
-                className={`text-2xl font-bold mb-4 ${
-                  isTimerPaused || proctoringSystem.isTimerPaused
-                    ? "text-orange-600"
-                    : "text-red-600"
-                }`}
-              >
-                <h3 className="font-medium text-gray-800 mb-2">
-                  Thời gian làm bài
-                </h3>
-                <div className="text-2xl font-bold text-red-600 mb-4">
-                  {formatTime(timeLeft ?? 0)}
-                </div>
-                <button
-                  onClick={handleExamSubmit}
-                  disabled={isSubmitting}
-                  className={`w-full ${
-                    isSubmitting
-                      ? "bg-red-400 cursor-not-allowed"
-                      : "bg-green-500 hover:bg-green-600"
-                  } text-white py-2 rounded-lg font-medium transition-colors`}
-                >
-                  {isSubmitting ? "Đang nộp bài..." : "Nộp bài"}
-                </button>
-                {submitError && (
-                  <p className="text-red-600 text-sm mt-2">{submitError}</p>
-                )}
+              <div className="text-2xl font-bold text-red-600 mb-4">
+                {formatTime(timeLeft ?? 0)}
               </div>
+              <button
+                onClick={handleExamSubmit}
+                disabled={isSubmitting}
+                className={`w-full ${
+                  isSubmitting
+                    ? "bg-red-400 cursor-not-allowed"
+                    : "bg-green-500 hover:bg-green-600"
+                } text-white py-2 rounded-lg font-medium transition-colors`}
+              >
+                {isSubmitting ? "Đang nộp bài..." : "Nộp bài"}
+              </button>
+              {submitError && (
+                <p className="text-red-600 text-sm mt-2">{submitError}</p>
+              )}
+            </div>
 
-              {/* Question Navigator */}
-              <QuestionNavigator
-              // onQuestionClick={handleQuestionClick}
-              />
+            {/* Question Navigator */}
+            <QuestionNavigator
+            // onQuestionClick={handleQuestionClick}
+            />
 
-              {/* Progress Summary */}
-              <div className="bg-white rounded-lg shadow-sm border p-4">
-                <h3 className="font-medium text-gray-800 mb-3">
-                  Progress Summary
-                </h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Listening:</span>
-                    <span className="font-medium">Completed</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Reading:</span>
-                    <span className="font-medium">Not started</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Writing:</span>
-                    <span className="font-medium">In progress</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Speaking:</span>
-                    <span className="font-medium">Not started</span>
-                  </div>
+            {/* Progress Summary */}
+            <div className="bg-white rounded-lg shadow-sm border p-4">
+              <h3 className="font-medium text-gray-800 mb-3">
+                Progress Summary
+              </h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Listening:</span>
+                  <span className="font-medium">Completed</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Reading:</span>
+                  <span className="font-medium">Not started</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Writing:</span>
+                  <span className="font-medium">In progress</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Speaking:</span>
+                  <span className="font-medium">Not started</span>
                 </div>
               </div>
             </div>

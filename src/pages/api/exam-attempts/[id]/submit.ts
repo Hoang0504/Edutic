@@ -17,13 +17,21 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   await sequelize.authenticate();
 
   const endTime = new Date();
-  const { userExamAttemptId, startTime, selectedAnswers } = req.body;
+
+  const { id: attemptId } = req.query;
+  const { startTime, selectedAnswers } = req.body;
+
+  // console.log({
+  //   attemptId,
+  //   startTime,
+  //   selectedAnswers,
+  // });
 
   if (
-    !userExamAttemptId ||
+    !attemptId ||
     !selectedAnswers ||
-    typeof userExamAttemptId !== "number" ||
     !startTime ||
+    typeof attemptId !== "string" ||
     typeof startTime !== "string" ||
     typeof selectedAnswers !== "object"
   ) {
@@ -49,7 +57,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
       await UserAnswer.create(
         {
-          user_exam_attempt_id: userExamAttemptId,
+          user_exam_attempt_id: parseInt(attemptId),
           question_id: parseInt(questionId),
           answer_id: parseInt(answerId as string),
           is_correct,
@@ -118,7 +126,7 @@ Now please give me the feedback for the following:
       const feedback = await AIFeedback.create(
         {
           content_type: "user_attempt_part",
-          content_id: userExamAttemptId,
+          content_id: parseInt(attemptId),
           feedback_text: feedbackJson.feedback_text || "No feedback provided",
           suggestions:
             JSON.stringify(feedbackJson.suggestions) ||
@@ -135,7 +143,7 @@ Now please give me the feedback for the following:
         { ai_feedback_id: feedback.id, score },
         {
           where: {
-            user_exam_attempt_id: userExamAttemptId,
+            user_exam_attempt_id: attemptId,
             part_id,
           },
           transaction,
@@ -151,7 +159,7 @@ Now please give me the feedback for the following:
         status: "completed",
       },
       {
-        where: { id: userExamAttemptId },
+        where: { id: attemptId },
         transaction,
       }
     );

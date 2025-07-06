@@ -58,8 +58,6 @@ function ExamResults({ examId }: { examId: string }) {
         const summary = await fetch(
           `${API_ENDPOINTS.EXAM_ATTEMPTS.DETAILS(examId)}?user_id=2`
         ).then((res) => res.json());
-
-        // console.log(summary);
         if (summary) {
           setExamData(summary);
           fetchPartDetail(summary.parts[0].part_number);

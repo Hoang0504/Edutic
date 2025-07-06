@@ -41,6 +41,9 @@ const API_ENDPOINTS = {
       `${BASE_URL}/exam-attempts/${id}/parts/${partNumber}/overview`,
     QUESTION_DETAILS: (id: string, questionId: string) =>
       `${BASE_URL}/exam-attempts/${id}/questions/${questionId}/details`,
+    SUBMIT: (id: string) => `${BASE_URL}/exam-attempts/${id}/submit`,
+    CANCEL: (id: string) => `${BASE_URL}/exam-attempts/${id}/cancel`,
+    RECENT: `${BASE_URL}/exam-attempts/recent`,
   },
 
   PART: {
@@ -48,9 +51,8 @@ const API_ENDPOINTS = {
   },
 
   EXAM: {
-    START: `${BASE_URL}/exam/start`,
+    START: (id: string) => `${BASE_URL}/exam/${id}/start`,
     PARTS: (id: string) => `${BASE_URL}/exam/${id}/parts`,
-    SUBMIT: `${BASE_URL}/exam/submit`,
     INFO: `${BASE_URL}/exam/info`,
   },
 

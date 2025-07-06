@@ -8,7 +8,15 @@ const ROUTES = {
   VOCABULARIES: {
     QUIZLET: `${BASE_URL}vocabularies/quizlet`,
   },
-  OVERVIEW_EXAM: `${BASE_URL}exam/overview`,
+  EXAM_ATTEMPT: {
+    BASE: `${BASE_URL}exam`,
+    DO: (attempt_id: string) => `${BASE_URL}exam/${attempt_id}`,
+  },
+  EXAM: {
+    OVERVIEW: `${BASE_URL}exam/overview`,
+    CHOOSE_PARTS: (id: string) => `${BASE_URL}exam/${id}/choose-parts`,
+  },
+  EXAMS: `${BASE_URL}exams`,
 };
 
 export default ROUTES;

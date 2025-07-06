@@ -148,7 +148,7 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
         );
       }
 
-      router.push(`/${ROUTES.OVERVIEW_EXAM}/${data?.exam_id}`);
+      router.push(`/${ROUTES.EXAM.OVERVIEW}/${data?.exam_id}`);
     } catch (error) {
       console.error("Failed to fetch exam info:", error);
       setSubmitError(

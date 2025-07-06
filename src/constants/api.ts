@@ -48,9 +48,13 @@ const API_ENDPOINTS = {
   },
 
   EXAM: {
+    START: `${BASE_URL}/exam/start`,
+    PARTS: (id: string) => `${BASE_URL}/exam/${id}/parts`,
     SUBMIT: `${BASE_URL}/exam/submit`,
     INFO: `${BASE_URL}/exam/info`,
   },
+
+  EXAMS: `${BASE_URL}/exams`,
 
   // Add other endpoints
   AUTH: {

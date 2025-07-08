@@ -15,6 +15,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const { id: attemptId, part_number: partNumber } = req.query;
 
+  // console.log({ attemptId, partNumber });
+
   if (!attemptId || !partNumber)
     return res
       .status(400)
@@ -31,24 +33,25 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       {
         model: UserAnswer,
         where: { user_exam_attempt_id: attemptId },
-        required: true,
+        required: false,
       },
       {
         model: Answer,
         as: "answers",
-        required: false,
       },
     ],
   });
 
+  // console.log(questions);
+
   const questionList = questions.map((q) => {
-    const userAns = q.user_answers[0];
+    const userAns = q.user_answers ? q.user_answers[0] : null;
     const correctAns = q.answers.find((a) => a.is_correct);
 
     return {
       question_id: q.id,
       question_number: q.question_number,
-      user_answer: getAnswerOption(q.answers, userAns.answer_id),
+      user_answer: userAns ? getAnswerOption(q.answers, userAns.answer_id) : "",
       correct_answer: getAnswerOption(q.answers, correctAns?.id),
       is_correct: userAns?.is_correct ?? false,
     };

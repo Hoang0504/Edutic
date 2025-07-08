@@ -11,12 +11,16 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== "GET")
-    return res.status(405).json({ message: "Method Not Allowed" });
+    return res
+      .status(405)
+      .json({ success: false, message: "Method Not Allowed" });
 
   const { id: attemptId, user_id: userId } = req.query;
 
   if (!attemptId || !userId)
-    return res.status(400).json({ message: "Missing attempt_id or user_id" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing attempt_id or user_id" });
 
   await sequelize.authenticate();
 
@@ -25,7 +29,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     include: [{ model: Exam }],
   });
 
-  if (!attempt) return res.status(404).json({ message: "Attempt not found" });
+  if (!attempt)
+    return res
+      .status(404)
+      .json({ success: false, message: "Attempt not found" });
 
   const start = dayjs(attempt.start_time);
   const end = dayjs(attempt.end_time);
@@ -84,12 +91,15 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   });
 
   return res.json({
-    exam_title: attempt.exam.title,
-    score,
-    correctAnswers,
-    totalQuestions,
-    durationInMinutes,
-    parts,
+    success: true,
+    data: {
+      exam_title: attempt.exam.title,
+      score,
+      correctAnswers,
+      totalQuestions,
+      durationInMinutes,
+      parts,
+    },
   });
 };
 

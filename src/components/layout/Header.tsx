@@ -762,27 +762,27 @@ export default function Header() {
                         href="/profile"
                         className="block px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        Thông tin cá nhân
+                        {t("header.profile", "Thông tin cá nhân")}
                       </a>
                       <a
                         href="/add-music"
                         className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100"
                       >
                         <MusicalNoteIcon className="h-4 w-4 mr-2" />
-                        Thêm nhạc
+                        {t("header.addMusic", "Thêm nhạc")}
                       </a>
                       <a
                         href="/settings"
                         className="block px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        Cài đặt
+                        {t("header.settings", "Cài đặt")}
                       </a>
                       <div className="border-t border-gray-100"></div>
                       <button
                         onClick={logout}
                         className="block w-full text-left px-3 sm:px-4 py-2 text-xs sm:text-sm text-red-600 hover:bg-gray-100"
                       >
-                        Đăng xuất
+                        {t("header.logout", "Đăng xuất")}
                       </button>
                     </div>
                   </div>

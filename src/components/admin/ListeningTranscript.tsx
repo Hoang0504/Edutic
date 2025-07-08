@@ -1,19 +1,22 @@
 'use client';
-import React, { useState } from 'react';
-// import { useRouter } from 'next/navigation';
-import {  XMarkIcon } from '@heroicons/react/24/outline';
-import AudioDetailEditor from './edit/AudioDetailEditor'; 
+import React, { useState, useEffect } from 'react';
+import { XMarkIcon } from '@heroicons/react/24/outline';
+import AudioDetailEditor from './edit/AudioDetailEditor';
 
 interface AudioItem {
   id: number;
   fileName: string;
-  duration: string;
+  filePath: string;
+  duration: number;
+  transcript: string;
+  vietnameseTranslation?: string;
   levels: number;
   updatedAt: string;
   audioUrl?: string;
 }
 
 interface Transcript {
+  id: number;
   audioFileId: number;
   level: 'easy' | 'medium' | 'hard';
   blanks: { index: number; position: number; length: number }[];
@@ -22,23 +25,59 @@ interface Transcript {
 }
 
 const ListeningTranscript = () => {
-//   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
-  const [audioItems, setAudioItems] = useState<AudioItem[]>([
-    { id: 1, fileName: 'test01.mp3', duration: '01:30', levels: 3, updatedAt: '17/06/2025' },
-    { id: 2, fileName: 'test02.mp3', duration: '02:10', levels: 2, updatedAt: '16/06/2025' },
-  ]);
+  const [audioItems, setAudioItems] = useState<AudioItem[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newAudioFile, setNewAudioFile] = useState<File | null>(null);
   const [newTranscript, setNewTranscript] = useState('');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedAudio, setSelectedAudio] = useState<AudioItem | null>(null);
-const [transcripts, setTranscripts] = useState<Transcript[]>([
-    { audioFileId: 1, level: 'easy', blanks: [], fullText: 'She is eating in a picnic area.', vietnameseTranslation: '' },
-    { audioFileId: 1, level: 'medium', blanks: [], fullText: 'She is eating in a picnic area with friends.', vietnameseTranslation: '' },
-    { audioFileId: 1, level: 'hard', blanks: [], fullText: 'She is eating in a picnic area with friends and family.', vietnameseTranslation: '' },
-  ]); 
+  const [transcripts, setTranscripts] = useState<Transcript[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    fetchAudioItems();
+  }, []);
+
+  const fetchAudioItems = async () => {
+  setLoading(true);
+  try {
+    const response = await fetch('/api/admin/listening_transcripts?page=1&limit=10');
+    if (!response.ok) {
+      const text = await response.text(); // Get the full response text
+      console.error("API Error Response:", text);
+      throw new Error('Failed to fetch audio items');
+    }
+    const data = await response.json();
+    const items = data.data.map((file: any) => ({
+      id: file.id,
+      fileName: file.file_path.split('/').pop() || '',
+      filePath: file.file_path,
+      duration: file.duration,
+      transcript: file.transcript,
+      vietnameseTranslation: file.vietnameseTranslation,
+      levels: file.listeningTranscripts.length,
+      updatedAt: new Date(file.created_at).toLocaleDateString(),
+      audioUrl: file.file_path,
+    }));
+    const allTranscripts = data.data.flatMap((file: any) =>
+      file.listeningTranscripts.map((transcript: any) => ({
+        id: transcript.id,
+        audioFileId: file.id,
+        level: transcript.level,
+        blanks: transcript.blanks,
+        fullText: file.transcript,
+        vietnameseTranslation: file.vietnameseTranslation,
+      }))
+    );
+    setAudioItems(items);
+    setTranscripts(allTranscripts);
+  } catch (err) {
+    console.error("Fetch Error:", err);
+  } finally {
+    setLoading(false);
+  }
+};
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
@@ -52,30 +91,78 @@ const [transcripts, setTranscripts] = useState<Transcript[]>([
     if (file) setNewAudioFile(file);
   };
 
- const handleSaveNewAudio = () => {
-  if (newAudioFile && newTranscript) {
-    const newId = audioItems.length + 1;
-    setAudioItems([...audioItems, { id: newId, fileName: newAudioFile.name, duration: '00:00', levels: 0, updatedAt: new Date().toLocaleDateString() }]);
-    setTranscripts([...transcripts, { audioFileId: newId, level: 'easy', blanks: [], fullText: newTranscript, vietnameseTranslation: '' }]);
-    setIsAddModalOpen(false);
-    setNewAudioFile(null);
-    setNewTranscript('');
-  }
-};
-
-  const handleEditAudio = (audio: AudioItem) => {
-    setSelectedAudio(audio);
-    setIsEditModalOpen(true);
+  const handleSaveNewAudio = async () => {
+    if (newAudioFile && newTranscript) {
+      const formData = new FormData();
+      formData.append('file', newAudioFile);
+      formData.append('transcript', newTranscript);
+      try {
+        const response = await fetch('/api/admin/listening_transcripts/create', {
+          method: 'POST',
+          body: formData,
+        });
+        if (response.ok) {
+          fetchAudioItems();
+          setIsAddModalOpen(false);
+          setNewAudioFile(null);
+          setNewTranscript('');
+        } else {
+          const errorData = await response.json();
+          console.error("Error:", errorData.error);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
   };
 
-  const handleDeleteAudio = (id: number) => {
-    setAudioItems(audioItems.filter(item => item.id !== id));
-    setTranscripts(transcripts.filter(t => t.audioFileId !== id));
+  const handleEditAudio = async (audio: AudioItem) => {
+    try {
+      const response = await fetch(`/api/admin/audio_files/${audio.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        const updatedAudio = { ...audio, ...data };
+        setSelectedAudio(updatedAudio);
+        setIsEditModalOpen(true);
+      } else {
+        console.error("Error fetching audio details:", await response.json());
+        setSelectedAudio(audio);
+        setIsEditModalOpen(true);
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      setSelectedAudio(audio);
+      setIsEditModalOpen(true);
+    }
+  };
+
+  const handleDeleteAudio = async (id: number) => {
+    if (confirm("Are you sure you want to delete this audio file?")) {
+      try {
+        const response = await fetch(`/api/admin/audio_files/${id}`, {
+          method: 'DELETE',
+        });
+        if (response.ok) {
+          fetchAudioItems();
+        } else {
+          const errorData = await response.json();
+          console.error("Error:", errorData.error);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
+  const handleRefresh = () => {
+    fetchAudioItems();
   };
 
   const filteredAudioItems = audioItems.filter(item =>
     item.fileName.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (loading) return <div className="text-center p-4">Loading...</div>;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -109,7 +196,7 @@ const [transcripts, setTranscripts] = useState<Transcript[]>([
                   <th className="p-2 border">No</th>
                   <th className="p-2 border">File Name</th>
                   <th className="p-2 border">Duration</th>
-                  <th className="p-2 border">#Levels</th>
+                  <th className="p-2 border">Levels</th>
                   <th className="p-2 border">Updated At</th>
                   <th className="p-2 border">Actions</th>
                 </tr>
@@ -119,7 +206,7 @@ const [transcripts, setTranscripts] = useState<Transcript[]>([
                   <tr key={item.id} className="border-t">
                     <td className="p-2 border">{index + 1}</td>
                     <td className="p-2 border">{item.fileName}</td>
-                    <td className="p-2 border">{item.duration}</td>
+                    <td className="p-2 border">{item.duration} seconds</td>
                     <td className="p-2 border">{item.levels}</td>
                     <td className="p-2 border">{item.updatedAt}</td>
                     <td className="p-2 border flex space-x-2">
@@ -130,10 +217,10 @@ const [transcripts, setTranscripts] = useState<Transcript[]>([
                         Edit
                       </button>
                       <button
-                       className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                        className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
                         onClick={() => handleDeleteAudio(item.id)}
                       >
-                       Delete
+                        Delete
                       </button>
                     </td>
                   </tr>
@@ -212,12 +299,13 @@ const [transcripts, setTranscripts] = useState<Transcript[]>([
               <XMarkIcon className="h-6 w-6" />
             </button>
             <AudioDetailEditor
-              audio={{ ...selectedAudio, audioUrl: 'path-to-audio-url' }} 
-  transcripts={transcripts.filter(t => t.audioFileId === selectedAudio.id)}
-  onClose={() => {
-    setIsEditModalOpen(false);
-    setSelectedAudio(null);
+              audio={{ ...selectedAudio, duration: String(selectedAudio.duration), audioUrl: selectedAudio.audioUrl }}
+              transcripts={transcripts.filter(t => t.audioFileId === selectedAudio.id)}
+              onClose={() => {
+                setIsEditModalOpen(false);
+                setSelectedAudio(null);
               }}
+              onRefresh={handleRefresh}
             />
           </div>
         </div>

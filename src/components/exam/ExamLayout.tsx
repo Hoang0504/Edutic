@@ -1,30 +1,35 @@
 "use client";
 
+import Link from "next/link";
 import React, { useState, useEffect } from "react";
 
-import QuestionNavigator from "./QuestionNavigator";
-import LRExam from "./LRExam";
-import SpeakingExam from "./SpeakingExam";
-import WritingExam from "./WritingExam";
-
-import { useExamAttemptInfo } from "@/contexts/ExamAttemptInfoContext";
-import Link from "next/link";
-import ROUTES from "@/constants/routes";
-import { useSelectedAnswers } from "@/contexts/SelectedAnswersContext";
-import API_ENDPOINTS from "@/constants/api";
 import { useRouter } from "next/navigation";
 
-interface ExamLayoutProps {
-  // mode: "lr" | "sw";
-  // examTitle: string;
-  // totalTime: number; // in minutes
-  onExit: () => void;
-  onSubmit: () => void;
-  children: React.ReactNode;
-  onSkillChange?: (skill: string) => void;
-  selectedAnswers?: { [key: number]: string };
-  onQuestionClick?: (questionId: number) => void;
-}
+import LRExam from "./LRExam";
+import WritingExam from "./WritingExam";
+import ROUTES from "@/constants/routes";
+import SpeakingExam from "./SpeakingExam";
+import API_ENDPOINTS from "@/constants/api";
+import QuestionNavigator from "./QuestionNavigator";
+
+import { useExamAttemptInfo } from "@/contexts/ExamAttemptInfoContext";
+import { useSelectedAnswers } from "@/contexts/SelectedAnswersContext";
+import { useExamProctoring } from "@/hooks/UseExamProctoring";
+import ExamProctoring from "./ExamProctoring";
+import ExamPermissionDialog from "../ExamPermissionDialog";
+import ExamViolationAlert from "./ExamViolationAlert";
+
+// interface ExamLayoutProps {
+//   // mode: "lr" | "sw";
+//   // examTitle: string;
+//   // totalTime: number; // in minutes
+//   onExit: () => void;
+//   onSubmit: () => void;
+//   children: React.ReactNode;
+//   onSkillChange?: (skill: string) => void;
+//   selectedAnswers?: { [key: number]: string };
+//   onQuestionClick?: (questionId: number) => void;
+// }
 
 const getInitialActiveSkill = (mode: string | undefined) => {
   if (mode === "l") return "listening";
@@ -69,11 +74,26 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
   const [submitWarning, setSubmitWarning] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isTimerPaused, setIsTimerPaused] = useState(false);
 
   const router = useRouter();
 
+  const proctoringSystem = useExamProctoring({
+    isEnabled: true,
+    // currentSkill: activeSkill,
+    onTimerPause: (pause: boolean) => {
+      setIsTimerPaused(pause);
+      console.log("Timer paused:", pause);
+    },
+    onExamCancel: () => {
+      console.log("Exam cancelled by proctoring system");
+      alert("Bài thi đã bị hủy bởi hệ thống giám sát");
+      handleCancel();
+    },
+  });
+
   useEffect(() => {
-    loadData(examAttemptId);
+    if (examAttemptId) loadData(examAttemptId);
   }, [examAttemptId]);
 
   // Get time for each skill (in minutes)
@@ -105,31 +125,53 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
     // setTimeLeft(getSkillTime(activeSkill) * 60);
   };
 
+  const handleCancel = async () => {
+    try {
+      const res = await fetch(
+        API_ENDPOINTS.EXAM_ATTEMPTS.CANCEL(examAttemptId),
+        {
+          method: "PATCH",
+        }
+      );
+
+      if (res.ok) {
+        router.push(ROUTES.BASE_URL);
+      }
+    } catch (error) {
+      console.error("Failed to cancel exam info:", error);
+    }
+  };
+
   const submitExam = async () => {
     // Implement your exam submission logic here
     // console.log("Exam submitted with answers:", selectedAnswers);
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      const res = await fetch(API_ENDPOINTS.EXAM.SUBMIT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userExamAttemptId: 1,
-          startTime,
-          selectedAnswers,
-        }),
-      });
+      const res = await fetch(
+        API_ENDPOINTS.EXAM_ATTEMPTS.SUBMIT(examAttemptId),
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            startTime,
+            selectedAnswers,
+          }),
+        }
+      );
 
       if (!res.ok) {
+        console.log(res);
+
         setSubmitError(
           "Edutic đang gặp lỗi nộp bài thi của bạn, xin lỗi vì sự bất tiện, xin vui lòng thử lại sau!"
         );
+        return;
       }
 
-      router.push(`/${ROUTES.OVERVIEW_EXAM}/${data?.exam_id}`);
+      router.push(`${ROUTES.EXAM.OVERVIEW}/${data?.exam_id}`);
     } catch (error) {
       console.error("Failed to fetch exam info:", error);
       setSubmitError(
@@ -160,18 +202,30 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
     if (timeLeft === null) return;
 
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev !== null && prev <= 1) {
-          clearInterval(timer);
-          submitExam();
-          return 0;
-        }
-        return (prev ?? 0) - 1;
-      });
+      if (!isTimerPaused && !proctoringSystem.isTimerPaused) {
+        setTimeLeft((prev) => {
+          if (prev !== null && prev <= 1) {
+            clearInterval(timer);
+            submitExam();
+            return 0;
+          }
+          return (prev ?? 0) - 1;
+        });
+      }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft]);
+  }, [timeLeft, isTimerPaused, proctoringSystem.isTimerPaused]);
+
+  // Show permission dialog when exam starts
+  useEffect(() => {
+    // Show permission dialog after a short delay to ensure page is loaded
+    const timeout = setTimeout(() => {
+      proctoringSystem.requestProctoringPermission();
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, []);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -346,6 +400,49 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-xl font-semibold text-gray-800">{examTitle}</h1>
+
+            {/* Proctoring status indicator */}
+            {proctoringSystem.proctoringEnabled && (
+              <div className="flex items-center space-x-2 text-sm">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-green-600 font-medium">
+                  Giám sát đang hoạt động
+                </span>
+              </div>
+            )}
+
+            {/* Violation warning */}
+            {proctoringSystem.shouldShowRiskWarning() && (
+              <div className="flex items-center space-x-2 text-sm">
+                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                <span className="text-red-600 font-medium">
+                  Cảnh báo: {proctoringSystem.getViolationStats().total} vi phạm
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center space-x-3">
+            {/* Timer pause indicator */}
+            {(isTimerPaused || proctoringSystem.isTimerPaused) && (
+              <div className="flex items-center space-x-2 text-orange-600">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span className="text-sm font-medium">Đã tạm dừng</span>
+              </div>
+            )}
+
             <Link
               href={ROUTES.BASE_URL}
               className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
@@ -471,37 +568,62 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
               </div>
             </div>
           </div>
+
+          {showSubmitModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
+                <h2 className="text-lg font-semibold mb-4 text-red-600">
+                  Xác nhận nộp bài
+                </h2>
+                <p className="text-gray-700 mb-4">{submitWarning}</p>
+                <div className="flex justify-end space-x-3">
+                  <button
+                    className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg text-sm"
+                    onClick={() => setShowSubmitModal(false)}
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm"
+                    onClick={() => {
+                      setShowSubmitModal(false);
+                      handleConfirmSubmit();
+                      // onSubmit(); // Uncomment if you want to trigger real submit logic
+                    }}
+                  >
+                    Xác nhận nộp bài
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* Proctoring Camera */}
+          <ExamProctoring
+            isEnabled={proctoringSystem.proctoringEnabled}
+            onViolation={proctoringSystem.handleViolation}
+            onPauseTimer={(pause) => setIsTimerPaused(pause)}
+            currentSkill="reading"
+          />
+          {/* {activeSkill} */}
+
+          {/* Permission Dialog */}
+          <ExamPermissionDialog
+            isOpen={proctoringSystem.showPermissionDialog}
+            onPermissionGranted={proctoringSystem.handlePermissionGranted}
+            onSkipProctoring={proctoringSystem.handleSkipProctoring}
+            onCancel={proctoringSystem.handlePermissionCancel}
+          />
+
+          {/* Violation Alert */}
+          <ExamViolationAlert
+            isVisible={proctoringSystem.showViolationAlert}
+            violationType={proctoringSystem.currentViolation?.type || "face"}
+            message={proctoringSystem.currentViolation?.message || ""}
+            onContinue={proctoringSystem.handleContinueAfterViolation}
+            onCancel={proctoringSystem.handleCancelFromViolation}
+          />
         </div>
       </div>
-
-      {showSubmitModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
-            <h2 className="text-lg font-semibold mb-4 text-red-600">
-              Xác nhận nộp bài
-            </h2>
-            <p className="text-gray-700 mb-4">{submitWarning}</p>
-            <div className="flex justify-end space-x-3">
-              <button
-                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg text-sm"
-                onClick={() => setShowSubmitModal(false)}
-              >
-                Hủy
-              </button>
-              <button
-                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm"
-                onClick={() => {
-                  setShowSubmitModal(false);
-                  handleConfirmSubmit();
-                  // onSubmit(); // Uncomment if you want to trigger real submit logic
-                }}
-              >
-                Xác nhận nộp bài
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

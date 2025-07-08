@@ -36,6 +36,7 @@ export default function SpeakingDemoPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const recognitionRef = useRef<any>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const interimTranscriptRef = useRef<string>('');
   const finalTranscriptRef = useRef<string>('');
 
   useEffect(() => {
@@ -60,22 +61,43 @@ export default function SpeakingDemoPage() {
       recognition.onresult = (event: any) => {
         let interimTranscript = '';
         
-        // Process only new results from the last index
+        // Iterate through new results (starting from resultIndex)
         for (let i = event.resultIndex; i < event.results.length; ++i) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            // Add final transcript to the accumulated final transcript
-            finalTranscriptRef.current += transcript + ' ';
-            setTranscription(finalTranscriptRef.current);
+          const result = event.results[i];
+          const transcript: string = result[0].transcript;
+
+          if (result.isFinal) {
+            // Determine the portion that has not been added yet to avoid duplication
+            let addition = transcript;
+            const currentFinal = finalTranscriptRef.current;
+            if (
+              currentFinal &&
+              transcript.toLowerCase().startsWith(currentFinal.toLowerCase())
+            ) {
+              addition = transcript.slice(currentFinal.length);
+            }
+
+            if (addition.trim()) {
+              finalTranscriptRef.current =
+                (currentFinal + addition).replace(/\s+/g, ' ').trim() + ' ';
+              // Update the visible transcription with the new cumulative final transcript
+              setTranscription(
+                finalTranscriptRef.current + interimTranscriptRef.current
+              );
+              // Reset interim reference after committing final words
+              interimTranscriptRef.current = '';
+            }
           } else {
-            // Show interim results temporarily
             interimTranscript += transcript;
           }
         }
-        
-        // Show interim results combined with final transcript
+
+        // Show interim transcript (not yet final) without committing to state permanently
         if (interimTranscript) {
-          setTranscription(finalTranscriptRef.current + interimTranscript);
+          interimTranscriptRef.current = interimTranscript;
+          setTranscription(
+            finalTranscriptRef.current + interimTranscriptRef.current
+          );
         }
       };
 
@@ -145,6 +167,7 @@ export default function SpeakingDemoPage() {
       setIsRecording(true);
       setRecordingTime(0);
       setTranscription('');
+      interimTranscriptRef.current = '';
       finalTranscriptRef.current = '';
       setError('');
       setManualEdit(false);
@@ -249,6 +272,7 @@ export default function SpeakingDemoPage() {
   const resetRecording = () => {
     setAudioURL('');
     setTranscription('');
+    interimTranscriptRef.current = '';
     finalTranscriptRef.current = '';
     setRecordingTime(0);
     setFeedback(null);

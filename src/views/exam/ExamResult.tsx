@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -27,6 +27,7 @@ interface Question {
 function ExamResults({ examId }: { examId: string }) {
   const [loading, setLoading] = useState(true);
   const [examData, setExamData] = useState<any>(null);
+  const partCacheRef = useRef<Record<string, any>>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [questionLoading, setQuestionLoading] = useState(false);
   const [activePartDetail, setActivePartDetail] = useState<any>(null);
@@ -55,20 +56,24 @@ function ExamResults({ examId }: { examId: string }) {
       setLoading(true);
 
       try {
-        const summary = await fetch(
+        const res = await fetch(
           `${API_ENDPOINTS.EXAM_ATTEMPTS.DETAILS(examId)}?user_id=2`
-        ).then((res) => res.json());
+        );
+        const result = await res.json();
 
-        // console.log(summary);
-        if (summary) {
-          setExamData(summary);
-          fetchPartDetail(summary.parts[0].part_number);
+        // console.log(result);
+
+        if (result.success && result.data) {
+          setExamData(result.data);
+          fetchPartDetail(result.data.parts[0].part_number);
+        } else {
+          console.log(result.message);
         }
-      } catch {
-        console.log("Error system");
+      } catch (error) {
+        console.error("Lỗi khi tải exam summary", error);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
     fetchExamSummary();
@@ -76,13 +81,26 @@ function ExamResults({ examId }: { examId: string }) {
 
   const fetchPartDetail = async (partNumber: string) => {
     setActivePartNumber(partNumber);
-    setActivePartDetail(null); // loading state
+    // setActivePartDetail(null); // loading state
 
-    const res = await fetch(
-      API_ENDPOINTS.EXAM_ATTEMPTS.PART(examId, partNumber)
-    );
-    const data = await res.json();
-    setActivePartDetail(data);
+    // Nếu đã có trong cache thì lấy ra luôn
+    if (partCacheRef.current[partNumber]) {
+      setActivePartDetail(partCacheRef.current[partNumber]);
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        API_ENDPOINTS.EXAM_ATTEMPTS.PART(examId, partNumber)
+      );
+      const data = await res.json();
+
+      partCacheRef.current[partNumber] = data;
+      setActivePartDetail(data);
+    } catch (error) {
+      console.error("Không thể tải dữ liệu part", error);
+      setActivePartDetail(null); // reset
+    }
   };
 
   const feedbackLabels: Record<string, string> = {
@@ -234,7 +252,8 @@ function ExamResults({ examId }: { examId: string }) {
                   </div>
                   <div>
                     <span className="text-sm text-gray-600">
-                      {question.user_answer} / {question.correct_answer}
+                      {question.user_answer ? `${question.user_answer} / ` : ""}
+                      {question.correct_answer}
                     </span>
                   </div>
                 </div>
@@ -263,6 +282,8 @@ function ExamResults({ examId }: { examId: string }) {
           </div>
         </div>
       )}
+
+      {loading && <FullPageLoading />}
 
       {isModalOpen && selectedQuestion && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">

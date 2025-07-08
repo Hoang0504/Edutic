@@ -117,7 +117,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(200).json({
       exam_id: attempt.exam.id,
       title: attempt.exam.title,
-      estimated_time: attempt.exam.estimated_time,
+      estimated_time: attempt.estimated_time,
       totalQuestionCount,
       mode,
       parts,

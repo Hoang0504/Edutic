@@ -20,7 +20,17 @@ interface Exam {
   id: number;
   title: string;
   type: string;
-  estimatedTime: string;
+  estimated_time: number;
+  is_published: boolean;
+  description: string;
+}
+
+// Structure used for modals (Edit / Detail) that rely on legacy field names
+interface ExamDetail {
+  id: number;
+  title: string;
+  type: string;
+  estimatedTime: string; // e.g. "120 minutes"
   isPublished: boolean;
   description: string;
 }
@@ -35,16 +45,32 @@ export default function AdminExamsPage() {
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isEditExamModalVisible, setIsEditExamModalVisible] = useState(false);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
-  const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
+  const [selectedExam, setSelectedExam] = useState<ExamDetail | null>(null);
+  const [exams, setExams] = useState<Exam[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data với nhiều exam hơn để test
-  const mockData: Exam[] = [
-    { id: 1, title: 'TOEIC Practice Test 1', type: 'TOEIC Sample', estimatedTime: '120 minutes', isPublished: true, description: 'Đề thi thực hành TOEIC cơ bản' },
-    { id: 2, title: 'TOEIC Full Test 2024', type: 'TOEIC Full', estimatedTime: '120 minutes', isPublished: false, description: 'Đề thi TOEIC đầy đủ mới nhất' },
-    { id: 3, title: 'Writing Test Set A', type: 'Writing', estimatedTime: '60 minutes', isPublished: true, description: 'Bộ đề kiểm tra kỹ năng viết' },
-    { id: 4, title: 'Speaking Test Set B', type: 'Speaking', estimatedTime: '20 minutes', isPublished: true, description: 'Bộ đề kiểm tra kỹ năng nói' },
-    { id: 5, title: 'TOEIC Reading Practice', type: 'TOEIC Sample', estimatedTime: '75 minutes', isPublished: false, description: 'Luyện tập kỹ năng đọc TOEIC' },
-  ];
+  // Fetch exams from API
+  const fetchExams = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/admin/exams');
+      const json = await res.json();
+      if (json.success) {
+        setExams(json.data.exams);
+      } else {
+        setError(json.data?.message || 'Không thể lấy danh sách đề thi');
+      }
+    } catch (err) {
+      setError('Có lỗi xảy ra khi lấy danh sách đề thi');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchExams();
+  }, []);
 
   // Filter và search functions
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,7 +84,7 @@ export default function AdminExamsPage() {
   };
 
   // Lọc exam theo title và type
-  const filteredExams = mockData.filter((exam: Exam) => {
+  const filteredExams = exams.filter((exam: Exam) => {
     const searchLower = filterTitle.toLowerCase();
     const titleLower = exam.title.toLowerCase();
     const typeMatch = examType === 'All' || exam.type === examType;
@@ -80,19 +106,46 @@ export default function AdminExamsPage() {
   };
 
   const handleEditExam = (exam: Exam) => {
-    setSelectedExam(exam);
+    const convertedExam: ExamDetail = {
+      id: exam.id,
+      title: exam.title,
+      type: exam.type,
+      estimatedTime: `${exam.estimated_time} minutes`,
+      isPublished: exam.is_published,
+      description: exam.description,
+    };
+    setSelectedExam(convertedExam);
     setIsEditExamModalVisible(true);
   };
 
   const handleDetail = (exam: Exam) => {
-    setSelectedExam(exam);
+    const convertedExam: ExamDetail = {
+      id: exam.id,
+      title: exam.title,
+      type: exam.type,
+      estimatedTime: `${exam.estimated_time} minutes`,
+      isPublished: exam.is_published,
+      description: exam.description,
+    };
+    setSelectedExam(convertedExam);
     setIsDetailModalVisible(true);
   };
 
-  const handleDeleteExam = (examId: number) => {
-    if (confirm('Bạn có chắc chắn muốn xóa đề thi này?')) {
-      console.log('Delete exam:', examId);
-      // TODO: Implement delete functionality
+  const handleDeleteExam = async (examId: number) => {
+    if (!confirm('Bạn có chắc chắn muốn xóa đề thi này?')) return;
+
+    try {
+      const res = await fetch(`/api/admin/exams/${examId}`, {
+        method: 'DELETE',
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setExams((prev) => prev.filter((e) => e.id !== examId));
+      } else {
+        alert(json.data?.message || 'Không thể xoá đề thi');
+      }
+    } catch (err) {
+      alert('Có lỗi xảy ra khi xoá đề thi');
     }
   };
 
@@ -111,8 +164,8 @@ export default function AdminExamsPage() {
   };
 
   // Statistics calculation
-  const totalPublished = mockData.filter(exam => exam.isPublished).length;
-  const totalDraft = mockData.filter(exam => !exam.isPublished).length;
+  const totalPublished = exams.filter((exam) => exam.is_published).length;
+  const totalDraft = exams.filter((exam) => !exam.is_published).length;
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -159,7 +212,7 @@ export default function AdminExamsPage() {
                   <dt className="text-sm font-medium text-gray-500 truncate">
                     Tổng số đề thi
                   </dt>
-                  <dd className="text-lg font-medium text-gray-900">{mockData.length}</dd>
+                  <dd className="text-lg font-medium text-gray-900">{exams.length}</dd>
                 </dl>
               </div>
             </div>
@@ -286,12 +339,12 @@ export default function AdminExamsPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {exam.estimatedTime}
+                    {exam.estimated_time} phút
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {exam.isPublished ? (
+                    {exam.is_published ? (
                       <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                        Công khai
+                        Đã công khai
                       </span>
                     ) : (
                       <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">

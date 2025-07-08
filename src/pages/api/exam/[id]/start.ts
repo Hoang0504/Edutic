@@ -6,6 +6,7 @@ import sequelize from "@/lib/db";
 import { withErrorHandler } from "@/lib/withErrorHandler";
 import { UserExamAttempt } from "@/models/UserExamAttempt";
 import { UserAttemptPart } from "@/models/UserAttemptPart";
+import { Part } from "@/models/Part";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
@@ -42,10 +43,23 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const transaction = await sequelize.transaction();
 
   try {
+    const partIds = partOrder.map((p) => p.part_id);
+
+    const parts = await Part.findAll({
+      where: { id: partIds },
+      attributes: ["id", "time_limit"],
+    });
+
+    const estimatedTime = parts.reduce(
+      (total, p) => total + (p.time_limit || 0),
+      0
+    );
+
     const examAttempt = await UserExamAttempt.create(
       {
         user_id: userId,
         exam_id: parseInt(examId as string),
+        estimated_time: estimatedTime,
         status: "in_progress",
       },
       { transaction }

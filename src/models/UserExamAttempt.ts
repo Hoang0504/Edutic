@@ -20,6 +20,7 @@ interface UserExamAttemptCreationAttributes {
   id?: number;
   user_id: number;
   exam_id: number;
+  estimated_time: number;
   start_time?: Date;
   end_time?: Date | null; // Can be null
   score?: number | null; // Can be null
@@ -44,6 +45,9 @@ export class UserExamAttempt extends Model<
   @ForeignKey(() => Exam)
   @Column({ type: DataType.INTEGER, allowNull: false })
   exam_id!: number;
+
+  @Column({ type: DataType.INTEGER, allowNull: false })
+  estimated_time!: number;
 
   @Column({ type: DataType.DATE, allowNull: true })
   start_time!: Date;

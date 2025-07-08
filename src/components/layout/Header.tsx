@@ -10,7 +10,6 @@ import {
   ChevronDownIcon,
   DocumentTextIcon,
   CalendarIcon,
-  AcademicCapIcon,
   BookOpenIcon,
   ClipboardDocumentListIcon,
   Bars3Icon,
@@ -24,6 +23,7 @@ import {
   SpeakerWaveIcon,
   LanguageIcon,
   NewspaperIcon,
+  ForwardIcon,
 } from "@heroicons/react/24/outline";
 
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,7 +32,6 @@ import ConfirmModal from "../ui/ConfirmModal";
 import { useMusic } from "@/contexts/MusicContext";
 import { useTranslation } from "@/contexts/I18nContext";
 import MarqueeText from "../ui/MarqueeText";
-import { ForwardIcon } from "lucide-react";
 
 export default function Header() {
   const { user, isLoggedIn, logout } = useAuth();
@@ -305,10 +304,12 @@ export default function Header() {
 
               {/* Mobile Menu Dropdown */}
               {isMobileMenuOpen && (
-                <div className="fixed top-16 left-1/2 right-auto transform -translate-x-1/2 w-[95vw] max-w-sm
+                <div
+                  className="fixed top-16 left-1/2 right-auto transform -translate-x-1/2 w-[95vw] max-w-sm
                   sm:absolute sm:top-auto sm:left-auto sm:right-0 sm:transform-none sm:w-56 sm:max-w-none sm:mt-2
                   mt-0
-                  bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                  bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+                >
                   <div className="py-1">
                     <a
                       href="/flashcards"
@@ -390,7 +391,10 @@ export default function Header() {
                     </button>
 
                     {/* Music Control Icon */}
-                    <div className="hidden sm:block relative" ref={musicDropdownRef}>
+                    <div
+                      className="hidden sm:block relative"
+                      ref={musicDropdownRef}
+                    >
                       <button
                         onClick={() =>
                           setIsMusicDropdownOpen(!isMusicDropdownOpen)
@@ -583,10 +587,12 @@ export default function Header() {
 
               {/* Notification Dropdown */}
               {isNotificationOpen && (
-                <div className="fixed top-16 left-1/2 right-auto transform -translate-x-1/2 w-[95vw] max-w-sm
+                <div
+                  className="fixed top-16 left-1/2 right-auto transform -translate-x-1/2 w-[95vw] max-w-sm
                   sm:absolute sm:top-auto sm:left-auto sm:right-0 sm:transform-none sm:w-80 sm:max-w-xs sm:mt-2
                   mt-0
-                  bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                  bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+                >
                   {/* Header */}
                   <div className="px-4 py-3 border-b border-gray-200">
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900">
@@ -756,27 +762,27 @@ export default function Header() {
                         href="/profile"
                         className="block px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        Thông tin cá nhân
+                        {t("header.profile", "Thông tin cá nhân")}
                       </a>
                       <a
                         href="/add-music"
                         className="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100"
                       >
                         <MusicalNoteIcon className="h-4 w-4 mr-2" />
-                        Thêm nhạc
+                        {t("header.addMusic", "Thêm nhạc")}
                       </a>
                       <a
                         href="/settings"
                         className="block px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        Cài đặt
+                        {t("header.settings", "Cài đặt")}
                       </a>
                       <div className="border-t border-gray-100"></div>
                       <button
                         onClick={logout}
                         className="block w-full text-left px-3 sm:px-4 py-2 text-xs sm:text-sm text-red-600 hover:bg-gray-100"
                       >
-                        Đăng xuất
+                        {t("header.logout", "Đăng xuất")}
                       </button>
                     </div>
                   </div>

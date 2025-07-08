@@ -35,7 +35,7 @@ async function handler(
         id: progress.id,
         user_id: progress.user_id,
         name: progress.user?.name || progress.user?.email || "Unknown",
-        avatar: progress.user?.avatar || "https://via.placeholder.com/50",
+        avatar: progress.user?.avatar || "",
         listening_score: progress.listening_score,
         reading_score: progress.reading_score,
         speaking_score: progress.speaking_score,

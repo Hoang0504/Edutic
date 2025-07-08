@@ -1,60 +1,100 @@
 "use client";
 
+import Link from "next/link";
 import React, { useState, useEffect } from "react";
 
-import QuestionNavigator from "./QuestionNavigator";
-import ListeningExam from "./ListeningExam";
-import SpeakingExam from "./SpeakingExam";
+import { useRouter } from "next/navigation";
+
+import LRExam from "./LRExam";
 import WritingExam from "./WritingExam";
+import ROUTES from "@/constants/routes";
+import SpeakingExam from "./SpeakingExam";
+import API_ENDPOINTS from "@/constants/api";
+import QuestionNavigator from "./QuestionNavigator";
 
 import { useExamAttemptInfo } from "@/contexts/ExamAttemptInfoContext";
+import { useSelectedAnswers } from "@/contexts/SelectedAnswersContext";
+import { useExamProctoring } from "@/hooks/UseExamProctoring";
+import ExamProctoring from "./ExamProctoring";
+import ExamPermissionDialog from "../ExamPermissionDialog";
+import ExamViolationAlert from "./ExamViolationAlert";
 
-interface ExamLayoutProps {
-  // mode: "lr" | "sw";
-  // examTitle: string;
-  // totalTime: number; // in minutes
-  onExit: () => void;
-  onSubmit: () => void;
-  children: React.ReactNode;
-  onSkillChange?: (skill: string) => void;
-  selectedAnswers?: { [key: number]: string };
-  onQuestionClick?: (questionId: number) => void;
-}
+// interface ExamLayoutProps {
+//   // mode: "lr" | "sw";
+//   // examTitle: string;
+//   // totalTime: number; // in minutes
+//   onExit: () => void;
+//   onSubmit: () => void;
+//   children: React.ReactNode;
+//   onSkillChange?: (skill: string) => void;
+//   selectedAnswers?: { [key: number]: string };
+//   onQuestionClick?: (questionId: number) => void;
+// }
 
-const getInitialSkill = (mode: string | undefined) => {
+const getInitialActiveSkill = (mode: string | undefined) => {
+  if (mode === "l") return "listening";
+  if (mode === "r") return "reading";
   if (mode === "lr") return "listening";
+  if (mode === "s") return "speaking";
+  if (mode === "w") return "writing";
   if (mode === "sw") return "speaking";
   return "listening"; // fallback default
 };
 
-const ExamLayout: React.FC<ExamLayoutProps> = ({
-  // mode,
-  // examTitle,
-  // totalTime,
-  onExit,
-  onSubmit,
-  children,
-  onSkillChange,
-  selectedAnswers: initialSelectedAnswers = {},
-  onQuestionClick = () => {},
-}) => {
-  const { data } = useExamAttemptInfo(); // Custom context hook
+const getInitialSkills = (mode: string | undefined) => {
+  if (mode === "l") return ["Listening"];
+  if (mode === "r") return ["Reading"];
+  if (mode === "lr") return ["Listening", "Reading"];
+  if (mode === "s") return ["Speaking"];
+  if (mode === "w") return ["Writing"];
+  if (mode === "sw") return ["Speaking", "Writing"];
+  return []; // fallback default
+};
+
+function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
+  const { data, loadData } = useExamAttemptInfo(); // Custom context hook
   const mode = data?.mode;
   const examTitle = data?.title;
+  const totalQuestions = data?.totalQuestionCount ?? 0;
   const totalTime = data?.estimated_time ?? 120;
 
   const [activeSkill, setActiveSkill] = useState<
-    "listening" | "reading" | "writing" | "speaking"
-  >(getInitialSkill(mode));
+    "listening" | "reading" | "writing" | "speaking" | null
+  >(null);
+  const [skills, setSkills] = useState<string[]>([]);
+  const [startTime, setStartTime] = useState<Date | null>(null); // convert to seconds
   const [timeLeft, setTimeLeft] = useState<number | null>(null); // convert to seconds
   const [responses, setResponses] = useState<{ [key: number]: any }>({});
-  const [selectedAnswers, setSelectedAnswers] = useState<{
-    [key: number]: string;
-  }>(initialSelectedAnswers);
   const [currentQuestionId, setCurrentQuestionId] = useState<
     number | undefined
   >(undefined);
   const [isPartActive, setIsPartActive] = useState(false);
+  const { selectedAnswers, setSelectedAnswers } = useSelectedAnswers();
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [submitWarning, setSubmitWarning] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isTimerPaused, setIsTimerPaused] = useState(false);
+
+  const router = useRouter();
+
+  const proctoringSystem = useExamProctoring({
+    isEnabled: true,
+    // currentSkill: activeSkill,
+    onTimerPause: (pause: boolean) => {
+      setIsTimerPaused(pause);
+      console.log("Timer paused:", pause);
+    },
+    onExamCancel: () => {
+      console.log("Exam cancelled by proctoring system");
+      alert("Bài thi đã bị hủy bởi hệ thống giám sát");
+      handleCancel();
+    },
+  });
+
+  useEffect(() => {
+    if (examAttemptId) loadData(examAttemptId);
+  }, [examAttemptId]);
 
   // Get time for each skill (in minutes)
   const getSkillTime = (skill: string) => {
@@ -72,27 +112,88 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
     }
   };
 
-  const skills = [
-    { id: "listening", name: "Listening", color: "bg-blue-500" },
-    { id: "reading", name: "Reading", color: "bg-green-500" },
-    { id: "writing", name: "Writing", color: "bg-yellow-500" },
-    { id: "speaking", name: "Speaking", color: "bg-red-500" },
-  ];
+  // const skills = [
+  //   { id: "listening", name: "Listening", color: "bg-blue-500" },
+  //   { id: "reading", name: "Reading", color: "bg-green-500" },
+  //   { id: "writing", name: "Writing", color: "bg-yellow-500" },
+  //   { id: "speaking", name: "Speaking", color: "bg-red-500" },
+  // ];
 
   // Start part timer
   const startPartTimer = () => {
     setIsPartActive(true);
-    setTimeLeft(getSkillTime(activeSkill) * 60);
+    // setTimeLeft(getSkillTime(activeSkill) * 60);
   };
 
-  // Reset when skill changes
+  const handleCancel = async () => {
+    try {
+      const res = await fetch(
+        API_ENDPOINTS.EXAM_ATTEMPTS.CANCEL(examAttemptId),
+        {
+          method: "PATCH",
+        }
+      );
+
+      if (res.ok) {
+        router.push(ROUTES.BASE_URL);
+      }
+    } catch (error) {
+      console.error("Failed to cancel exam info:", error);
+    }
+  };
+
+  const submitExam = async () => {
+    // Implement your exam submission logic here
+    // console.log("Exam submitted with answers:", selectedAnswers);
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      const res = await fetch(
+        API_ENDPOINTS.EXAM_ATTEMPTS.SUBMIT(examAttemptId),
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            startTime,
+            selectedAnswers,
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        console.log(res);
+
+        setSubmitError(
+          "Edutic đang gặp lỗi nộp bài thi của bạn, xin lỗi vì sự bất tiện, xin vui lòng thử lại sau!"
+        );
+        return;
+      }
+
+      router.push(`${ROUTES.EXAM.OVERVIEW}/${data?.exam_id}`);
+    } catch (error) {
+      console.error("Failed to fetch exam info:", error);
+      setSubmitError(
+        "Edutic đang gặp lỗi nộp bài thi của bạn, xin lỗi vì sự bất tiện, xin vui lòng thử lại sau!"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   useEffect(() => {
-    setIsPartActive(false);
-    setTimeLeft(getSkillTime(activeSkill) * 60);
-  }, [activeSkill]);
+    if (mode && !activeSkill) {
+      setActiveSkill(getInitialActiveSkill(mode));
+    }
+    if (mode && skills.length === 0) {
+      setSkills(getInitialSkills(mode));
+    }
+  }, [mode]);
 
   useEffect(() => {
     if (totalTime) {
+      setStartTime(new Date());
       setTimeLeft(totalTime * 60); // convert to seconds
     }
   }, [totalTime]);
@@ -101,19 +202,30 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
     if (timeLeft === null) return;
 
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev !== null && prev <= 1) {
-          clearInterval(timer);
-          setIsPartActive(false);
-          onSubmit();
-          return 0;
-        }
-        return (prev ?? 0) - 1;
-      });
+      if (!isTimerPaused && !proctoringSystem.isTimerPaused) {
+        setTimeLeft((prev) => {
+          if (prev !== null && prev <= 1) {
+            clearInterval(timer);
+            submitExam();
+            return 0;
+          }
+          return (prev ?? 0) - 1;
+        });
+      }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft, onSubmit]);
+  }, [timeLeft, isTimerPaused, proctoringSystem.isTimerPaused]);
+
+  // Show permission dialog when exam starts
+  useEffect(() => {
+    // Show permission dialog after a short delay to ensure page is loaded
+    const timeout = setTimeout(() => {
+      proctoringSystem.requestProctoringPermission();
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, []);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -128,10 +240,10 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
     skill: "listening" | "reading" | "writing" | "speaking"
   ) => {
     setActiveSkill(skill);
-    setCurrentQuestionId(undefined);
-    if (onSkillChange) {
-      onSkillChange(skill);
-    }
+    // setCurrentQuestionId(undefined);
+    // if (onSkillChange) {
+    //   onSkillChange(skill);
+    // }
   };
 
   // Handle speaking/writing responses
@@ -144,20 +256,14 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
       ...prev,
       [questionId]: { response, audioBlob },
     }));
-
-    // Mark this question as answered
-    setSelectedAnswers((prev) => ({
-      ...prev,
-      [questionId]: response || "submitted",
-    }));
   };
 
   // Handle individual question submission (for writing/speaking specific questions)
   const handleQuestionSubmit = (questionId: number, answer: string) => {
-    setSelectedAnswers((prev) => ({
-      ...prev,
-      [questionId]: answer,
-    }));
+    // setSelectedAnswers((prev) => ({
+    //   ...prev,
+    //   [questionId]: answer,
+    // }));
   };
 
   // Handle question navigation when clicking on question numbers
@@ -168,7 +274,7 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
     }
 
     // Call the original onQuestionClick for other functionality
-    onQuestionClick(questionId);
+    // onQuestionClick(questionId);
   };
 
   // Get parts structure for current active skill
@@ -266,19 +372,83 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
     }
   };
 
+  const handleExamSubmit = () => {
+    // console.log(selectedAnswers);
+    const totalSelectedAnswers = Object.keys(selectedAnswers).length;
+
+    if ((timeLeft ?? 0) > 0 && totalSelectedAnswers < totalQuestions) {
+      setSubmitWarning(
+        `Bạn chưa làm xong bài (đã trả lời ${totalSelectedAnswers}/${totalQuestions} câu) hoặc thời gian chưa hết. Bạn có chắc chắn muốn nộp bài không?`
+      );
+      setShowSubmitModal(true);
+      return;
+    }
+
+    submitExam();
+  };
+
+  const handleConfirmSubmit = () => {
+    setShowSubmitModal(false);
+    setTimeLeft(null);
+    submitExam();
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white shadow-sm rounded-tl-lg rounded-tr-lg">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-xl font-semibold text-gray-800">{examTitle}</h1>
-            <button
-              onClick={onExit}
+
+            {/* Proctoring status indicator */}
+            {proctoringSystem.proctoringEnabled && (
+              <div className="flex items-center space-x-2 text-sm">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-green-600 font-medium">
+                  Giám sát đang hoạt động
+                </span>
+              </div>
+            )}
+
+            {/* Violation warning */}
+            {proctoringSystem.shouldShowRiskWarning() && (
+              <div className="flex items-center space-x-2 text-sm">
+                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                <span className="text-red-600 font-medium">
+                  Cảnh báo: {proctoringSystem.getViolationStats().total} vi phạm
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center space-x-3">
+            {/* Timer pause indicator */}
+            {(isTimerPaused || proctoringSystem.isTimerPaused) && (
+              <div className="flex items-center space-x-2 text-orange-600">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span className="text-sm font-medium">Đã tạm dừng</span>
+              </div>
+            )}
+
+            <Link
+              href={ROUTES.BASE_URL}
               className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
             >
               Thoát
-            </button>
+            </Link>
           </div>
         </div>
       </div>
@@ -287,37 +457,38 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex space-x-1">
+            {/* handleSkillChange(skill.id as any) */}
             {skills.map((skill) => (
               <button
-                key={skill.id}
-                onClick={() => handleSkillChange(skill.id as any)}
+                key={skill}
+                onClick={() =>
+                  setActiveSkill(
+                    skill.toLowerCase() as
+                      | "listening"
+                      | "reading"
+                      | "writing"
+                      | "speaking"
+                  )
+                }
                 className={`px-6 py-3 font-medium text-sm rounded-t-lg transition-colors ${
-                  activeSkill === skill.id
+                  activeSkill === skill.toLowerCase()
                     ? "bg-gray-100 text-gray-800 border-b-2 border-blue-500"
                     : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                 }`}
               >
-                {skill.name}
+                {skill}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto py-6">
         <div className="flex gap-6">
           {/* Main Content */}
-          <div className="flex-1">
-            {activeSkill === "listening" && children}
-            {activeSkill === "reading" && (
-              <div className="bg-white rounded-lg shadow-sm border p-6">
-                <h2 className="text-lg font-medium text-gray-800 mb-4">
-                  Reading Section
-                </h2>
-                <p className="text-gray-600">
-                  Reading interface will be implemented here.
-                </p>
-              </div>
+          <div className="flex-1 min-w-0">
+            {(activeSkill === "listening" || activeSkill === "reading") && (
+              <LRExam activeSkill={activeSkill} />
             )}
             {activeSkill === "writing" && (
               <WritingExam
@@ -342,30 +513,34 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
           </div>
 
           {/* Right Sidebar */}
-          <div className="w-80 space-y-6">
+          <div className="w-64 space-y-6">
             {/* Timer */}
             <div className="bg-white rounded-lg shadow-sm border p-4">
               <h3 className="font-medium text-gray-800 mb-2">
                 Thời gian làm bài
               </h3>
               <div className="text-2xl font-bold text-red-600 mb-4">
-                {isPartActive
-                  ? formatTime(timeLeft ?? 0)
-                  : `${getSkillTime(activeSkill)}:00`}
+                {formatTime(timeLeft ?? 0)}
               </div>
               <button
-                onClick={onSubmit}
-                className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-medium transition-colors"
+                onClick={handleExamSubmit}
+                disabled={isSubmitting}
+                className={`w-full ${
+                  isSubmitting
+                    ? "bg-red-400 cursor-not-allowed"
+                    : "bg-green-500 hover:bg-green-600"
+                } text-white py-2 rounded-lg font-medium transition-colors`}
               >
-                Nộp bài
+                {isSubmitting ? "Đang nộp bài..." : "Nộp bài"}
               </button>
+              {submitError && (
+                <p className="text-red-600 text-sm mt-2">{submitError}</p>
+              )}
             </div>
 
             {/* Question Navigator */}
             <QuestionNavigator
-              selectedAnswers={selectedAnswers}
-              onQuestionClick={handleQuestionClick}
-              activeSkill={activeSkill}
+            // onQuestionClick={handleQuestionClick}
             />
 
             {/* Progress Summary */}
@@ -393,10 +568,64 @@ const ExamLayout: React.FC<ExamLayoutProps> = ({
               </div>
             </div>
           </div>
+
+          {showSubmitModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
+                <h2 className="text-lg font-semibold mb-4 text-red-600">
+                  Xác nhận nộp bài
+                </h2>
+                <p className="text-gray-700 mb-4">{submitWarning}</p>
+                <div className="flex justify-end space-x-3">
+                  <button
+                    className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg text-sm"
+                    onClick={() => setShowSubmitModal(false)}
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm"
+                    onClick={() => {
+                      setShowSubmitModal(false);
+                      handleConfirmSubmit();
+                      // onSubmit(); // Uncomment if you want to trigger real submit logic
+                    }}
+                  >
+                    Xác nhận nộp bài
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* Proctoring Camera */}
+          <ExamProctoring
+            isEnabled={proctoringSystem.proctoringEnabled}
+            onViolation={proctoringSystem.handleViolation}
+            onPauseTimer={(pause) => setIsTimerPaused(pause)}
+            currentSkill="reading"
+          />
+          {/* {activeSkill} */}
+
+          {/* Permission Dialog */}
+          <ExamPermissionDialog
+            isOpen={proctoringSystem.showPermissionDialog}
+            onPermissionGranted={proctoringSystem.handlePermissionGranted}
+            onSkipProctoring={proctoringSystem.handleSkipProctoring}
+            onCancel={proctoringSystem.handlePermissionCancel}
+          />
+
+          {/* Violation Alert */}
+          <ExamViolationAlert
+            isVisible={proctoringSystem.showViolationAlert}
+            violationType={proctoringSystem.currentViolation?.type || "face"}
+            message={proctoringSystem.currentViolation?.message || ""}
+            onContinue={proctoringSystem.handleContinueAfterViolation}
+            onCancel={proctoringSystem.handleCancelFromViolation}
+          />
         </div>
       </div>
     </div>
   );
-};
+}
 
 export default ExamLayout;

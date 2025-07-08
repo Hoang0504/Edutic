@@ -1,12 +1,10 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { XMarkIcon } from '@heroicons/react/24/outline';
 
 interface UserProgress {
   id: string;
@@ -20,8 +18,7 @@ interface UserProgress {
   total_study_time: number;
   last_activity_date: string | null;
   updated_at: string;
-  details?: { [date: string]: { listening: number; reading: number; speaking: number; writing: number } };
-  totalScore?: number; // Thêm để tính tổng điểm
+  totalScore?: number;
 }
 
 interface Filter {
@@ -50,7 +47,6 @@ const UserAnalytics = () => {
   const [users, setUsers] = useState<UserProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedUser, setSelectedUser] = useState<UserProgress | null>(null);
   const [exportColumns, setExportColumns] = useState({
     listening_score: true,
     reading_score: true,
@@ -79,25 +75,20 @@ const UserAnalytics = () => {
       const data: ApiResponse = await response.json();
 
       let filteredUsers = data.data.map((progress) => ({
-        id: progress.id,
-        user_id: progress.user_id,
-        name: progress.name,
-        avatar: progress.avatar,
-        listening_score: progress.listening_score,
-        reading_score: progress.reading_score,
-        speaking_score: progress.speaking_score,
-        writing_score: progress.writing_score,
-        total_study_time: progress.total_study_time,
-        last_activity_date: progress.last_activity_date,
-        updated_at: progress.updated_at,
-        details: progress.details || {},
-        totalScore: progress.listening_score + progress.reading_score + progress.speaking_score + progress.writing_score, // Tính tổng điểm
+        ...progress,
+        totalScore:
+          progress.listening_score +
+          progress.reading_score +
+          progress.speaking_score +
+          progress.writing_score,
       }));
 
       if (filter.type === 'inactive') {
         filteredUsers = filteredUsers.filter((u) => !u.last_activity_date);
       } else if (filter.type === 'topPerformers' && filter.minScore) {
-        filteredUsers = filteredUsers.filter((u) => u.totalScore >= parseInt(filter.minScore));
+        filteredUsers = filteredUsers.filter(
+          (u) => u.totalScore >= parseInt(filter.minScore)
+        );
       }
 
       if (filter.startDate && filter.endDate) {
@@ -105,10 +96,8 @@ const UserAnalytics = () => {
           const activeDate = u.last_activity_date ? new Date(u.last_activity_date) : null;
           return (
             activeDate &&
-            filter.startDate &&
-            filter.endDate &&
-            activeDate >= filter.startDate &&
-            activeDate <= filter.endDate
+            activeDate >= filter.startDate! &&
+            activeDate <= filter.endDate!
           );
         });
       }
@@ -126,7 +115,7 @@ const UserAnalytics = () => {
     const { name, value } = e.target;
     setFilter((prev) => ({
       ...prev,
-      [name]: name === 'minScore' ? value : value,
+      [name]: value,
     }));
   };
 
@@ -159,7 +148,9 @@ const UserAnalytics = () => {
       columns.writing_score ? 'Writing Score' : '',
       columns.total_study_time ? 'Total Study Time' : '',
       columns.last_activity_date ? 'Last Activity Date' : '',
-    ].filter(Boolean).join(',');
+    ]
+      .filter(Boolean)
+      .join(',');
     const rows = users.map((u) =>
       [
         columns.listening_score ? u.listening_score : '',
@@ -168,13 +159,11 @@ const UserAnalytics = () => {
         columns.writing_score ? u.writing_score : '',
         columns.total_study_time ? u.total_study_time : '',
         columns.last_activity_date ? u.last_activity_date || '' : '',
-      ].filter(Boolean).join(',')
+      ]
+        .filter(Boolean)
+        .join(',')
     );
     return headers + '\n' + rows.join('\n');
-  };
-
-  const handleViewDetails = (user: UserProgress) => {
-    setSelectedUser(user);
   };
 
   const paginatedUsers = users.slice(0, pageSize);
@@ -187,26 +176,12 @@ const UserAnalytics = () => {
     <div className="min-h-screen flex flex-col">
       <header className="bg-[#006494] text-white flex justify-between items-center p-4">
         <h1 className="text-2xl font-semibold mx-auto">User Analytics</h1>
-        <div className="flex space-x-2">
-          <button
-            className="flex items-center bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
-            onClick={() => router.push('/admin/login')}
-          >
-            <svg
-              className="w-5 h-5 mr-1"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fillRule="evenodd"
-                d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z"
-                clipRule="evenodd"
-              />
-            </svg>
-            Logout
-          </button>
-        </div>
+        <button
+          className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
+          onClick={() => router.push('/admin/login')}
+        >
+          Logout
+        </button>
       </header>
 
       <main className="flex-1 p-4">
@@ -219,7 +194,7 @@ const UserAnalytics = () => {
                 <DatePicker
                   selected={filter.startDate}
                   onChange={(date) => setFilter((prev) => ({ ...prev, startDate: date }))}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600"
+                  className="mt-1 block w-full rounded-md border-gray-300"
                   placeholderText="Chọn ngày"
                 />
               </div>
@@ -228,7 +203,7 @@ const UserAnalytics = () => {
                 <DatePicker
                   selected={filter.endDate}
                   onChange={(date) => setFilter((prev) => ({ ...prev, endDate: date }))}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600"
+                  className="mt-1 block w-full rounded-md border-gray-300"
                   placeholderText="Chọn ngày"
                 />
               </div>
@@ -238,10 +213,10 @@ const UserAnalytics = () => {
                   name="type"
                   value={filter.type}
                   onChange={handleFilterChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600"
+                  className="mt-1 block w-full rounded-md border-gray-300"
                 >
                   <option value="all">Tất cả</option>
-                  <option value="inactive">Người dùng không hoạt động</option>
+                  <option value="inactive">Không hoạt động</option>
                   <option value="topPerformers">Top performers</option>
                 </select>
               </div>
@@ -253,7 +228,7 @@ const UserAnalytics = () => {
                     name="minScore"
                     value={filter.minScore}
                     onChange={handleFilterChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600"
+                    className="mt-1 block w-full rounded-md border-gray-300"
                     placeholder="Nhập điểm"
                   />
                 </div>
@@ -261,25 +236,25 @@ const UserAnalytics = () => {
             </div>
             <div className="flex space-x-2">
               <button
-                className="flex items-center bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                 onClick={handleAnalyze}
               >
-                <span className="mr-2">🔍</span> Phân tích
+                🔍 Phân tích
               </button>
               <button
-                className="flex items-center bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
                 onClick={handleExport}
               >
-                <span className="mr-2">📥</span> Xuất báo cáo
+                📥 Xuất báo cáo
               </button>
             </div>
           </div>
 
-          {/* Export Section */}
+          {/* Export Column Selection */}
           <div className="mb-4 p-4 border rounded">
             <h3 className="text-lg font-medium mb-2">Chọn cột để xuất</h3>
             <div className="flex space-x-4">
-              {['listening_score', 'reading_score', 'speaking_score', 'writing_score', 'total_study_time', 'last_activity_date'].map((col) => (
+              {Object.keys(exportColumns).map((col) => (
                 <label key={col} className="flex items-center">
                   <input
                     type="checkbox"
@@ -288,13 +263,15 @@ const UserAnalytics = () => {
                       setExportColumns((prev) => ({ ...prev, [col]: e.target.checked }))
                     }
                   />
-                  <span className="ml-2 capitalize">{col.replace('_', ' ').replace('total study time', 'Tổng thời gian học').replace('last activity date', 'Ngày hoạt động cuối')}</span>
+                  <span className="ml-2 capitalize">
+                    {col.replace(/_/g, ' ').replace('total study time', 'Tổng thời gian học').replace('last activity date', 'Ngày hoạt động cuối')}
+                  </span>
                 </label>
               ))}
             </div>
           </div>
 
-          {/* Result Table */}
+          {/* Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -306,8 +283,7 @@ const UserAnalytics = () => {
                   <th className="p-2 border">Speaking</th>
                   <th className="p-2 border">Writing</th>
                   <th className="p-2 border">Tổng điểm</th>
-                  <th className="p-2 border">Ngày hoạt động gần nhất</th>
-                  <th className="p-2 border">Hành động</th>
+                  <th className="p-2 border">Ngày hoạt động</th>
                 </tr>
               </thead>
               <tbody>
@@ -321,18 +297,12 @@ const UserAnalytics = () => {
                     <td className="p-2 border">{user.writing_score}</td>
                     <td className="p-2 border">{user.totalScore}</td>
                     <td className="p-2 border">{user.last_activity_date || 'Chưa hoạt động'}</td>
-                    <td className="p-2 border">
-                      <button
-                        className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
-                        onClick={() => handleViewDetails(user)}
-                      >
-                        🔍 Xem chi tiết
-                      </button>
-                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+
+            {/* Pagination */}
             <div className="mt-4 flex justify-end">
               <button
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
@@ -352,43 +322,6 @@ const UserAnalytics = () => {
             </div>
           </div>
         </div>
-
-        {/* Detail Modal */}
-        {selectedUser && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-6 w-1/3 relative">
-              <button
-                className="absolute top-2 right-2 text-red-600 hover:text-red-800"
-                onClick={() => setSelectedUser(null)}
-              >
-                <XMarkIcon className="h-6 w-6" />
-              </button>
-              <h2 className="text-2xl font-semibold mb-4">Chi tiết điểm - {selectedUser.name}</h2>
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-200">
-                    <th className="p-2 border">Ngày</th>
-                    <th className="p-2 border">Listening</th>
-                    <th className="p-2 border">Reading</th>
-                    <th className="p-2 border">Speaking</th>
-                    <th className="p-2 border">Writing</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.entries(selectedUser.details || {}).map(([date, scores]) => (
-                    <tr key={date} className="border-t">
-                      <td className="p-2 border">{date}</td>
-                      <td className="p-2 border">{scores.listening}</td>
-                      <td className="p-2 border">{scores.reading}</td>
-                      <td className="p-2 border">{scores.speaking}</td>
-                      <td className="p-2 border">{scores.writing}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
       </main>
     </div>
   );

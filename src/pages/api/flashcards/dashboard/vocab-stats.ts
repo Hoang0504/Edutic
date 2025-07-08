@@ -1,9 +1,10 @@
+import { Op } from "sequelize";
 import { NextApiRequest, NextApiResponse } from "next";
 
 import { Flashcard } from "@/models/Flashcard";
 import { Vocabulary } from "@/models/Vocabulary";
 import { withErrorHandler } from "@/lib/withErrorHandler";
-import { Op } from "sequelize";
+
 import sequelize from "@/lib/db";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {

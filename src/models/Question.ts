@@ -19,7 +19,7 @@ import type { UserAnswer as UserAnswerType } from "./UserAnswer";
 interface QuestionCreationAttributes {
   id?: number;
   part_id: number;
-  group_id: number;
+  group_id: number | null;
   question_number: number;
   content: string;
   question_type:
@@ -45,8 +45,8 @@ export class Question extends Model<Question, QuestionCreationAttributes> {
   part_id!: number;
 
   @ForeignKey(() => QuestionGroup)
-  @Column({ type: DataType.INTEGER, allowNull: false })
-  group_id!: number;
+  @Column({ type: DataType.INTEGER, allowNull: true })
+  group_id!: number | null;
 
   @Column({ type: DataType.INTEGER, allowNull: false })
   question_number!: number;

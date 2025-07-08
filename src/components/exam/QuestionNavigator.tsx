@@ -1,56 +1,82 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React, { useMemo } from "react";
 
-interface QuestionNavigatorProps {
-  selectedAnswers: { [key: number]: string };
-  onQuestionClick: (questionId: number) => void;
-}
+import { useExamAttemptInfo } from "@/contexts/ExamAttemptInfoContext";
+import { useSelectedAnswers } from "@/contexts/SelectedAnswersContext";
 
-const QuestionNavigator: React.FC<QuestionNavigatorProps> = ({
-  selectedAnswers,
-  onQuestionClick
-}) => {
-  const parts = [
-    { id: 1, name: 'Part 1', questionStart: 1, questionCount: 6 },
-    { id: 2, name: 'Part 2', questionStart: 7, questionCount: 6 },
-    { id: 3, name: 'Part 3', questionStart: 13, questionCount: 6 },
-    { id: 4, name: 'Part 4', questionStart: 19, questionCount: 6 }
-  ];
+type Part = {
+  id: number;
+  name: string;
+  questionStart: number;
+  questionCount: number;
+  questionIdStart: number;
+};
 
-  const getQuestionNumbers = (part: typeof parts[0]) => {
-    return Array.from(
-      { length: part.questionCount },
-      (_, i) => part.questionStart + i
-    );
+const QuestionNavigator: React.FC = () => {
+  const { data } = useExamAttemptInfo();
+  const { selectedAnswers } = useSelectedAnswers();
+
+  const parts: Part[] | undefined = useMemo(() => {
+    if (data?.parts.length === 0) return [];
+
+    return data?.parts.map((part) => ({
+      id: part.part_id,
+      name: part.title,
+      questionStart: part.questionStart,
+      questionCount: part.questionCount,
+      questionIdStart: part.questionIdStart,
+    }));
+  }, [data]);
+
+  const getQuestionInfos = (part: Part): any => {
+    return Array.from({ length: part.questionCount }, (_, i) => ({
+      id: part.questionIdStart + i,
+      number: part.questionStart + i,
+    }));
+  };
+
+  // Determine grid columns based on question count
+  const getGridCols = (questionCount: number) => {
+    if (questionCount <= 6) return "grid-cols-6";
+    if (questionCount <= 10) return "grid-cols-5";
+    if (questionCount <= 16) return "grid-cols-4";
+    if (questionCount <= 25) return "grid-cols-5";
+    return "grid-cols-6";
   };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border">
       <div className="p-4 space-y-4">
-        {parts.map((part) => (
-          <div key={part.id} className="space-y-3">
-            <div className="text-sm font-medium text-gray-700">{part.name}:</div>
-            <div className="grid grid-cols-6 gap-2">
-              {getQuestionNumbers(part).map((questionNum) => (
-                <button
-                  key={questionNum}
-                  className={`w-8 h-8 rounded text-xs font-medium transition-colors ${
-                    selectedAnswers[questionNum]
-                      ? 'bg-green-500 text-white hover:bg-green-600'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-300'
-                  }`}
-                  onClick={() => onQuestionClick(questionNum)}
-                >
-                  {questionNum}
-                </button>
-              ))}
+        {parts?.map((part) => {
+          const questionInfos = getQuestionInfos(part);
+          return (
+            <div key={part.id} className="space-y-3">
+              <div className="text-sm font-medium text-gray-700">
+                {part.name}:
+              </div>
+              {/* ${getGridCols(part.questionCount)} */}
+              <div className={`grid gap-2 grid-cols-6`}>
+                {questionInfos.map((q: any) => (
+                  <button
+                    key={q.id}
+                    className={`w-8 h-8 rounded text-xs font-medium transition-colors bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-300 ${
+                      selectedAnswers[q.id]
+                        ? "bg-green-500 text-white hover:bg-green-600"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-300"
+                    }`}
+                    onClick={() => {}}
+                  >
+                    {q.number}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 };
 
-export default QuestionNavigator; 
+export default QuestionNavigator;

@@ -36,19 +36,11 @@ export class Exam extends Model<Exam, ExamCreationAttributes> {
   year_of_release!: number;
 
   @Column({
-    type: DataType.ENUM("random", "full_test"),
+    type: DataType.ENUM("random", "full_test", "speaking", "writing"),
     allowNull: false,
     defaultValue: "full_test",
-    // Map speaking/writing to full_test for now until DB schema is updated
-    set(value: string) {
-      if (value === 'speaking' || value === 'writing') {
-        this.setDataValue('type', 'full_test');
-      } else {
-        this.setDataValue('type', value as any);
-      }
-    }
   })
-  type!: string;
+  type!: "random" | "full_test" | "speaking" | "writing";
 
   @Column(DataType.TEXT)
   description!: string;

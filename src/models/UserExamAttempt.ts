@@ -20,7 +20,8 @@ interface UserExamAttemptCreationAttributes {
   id?: number;
   user_id: number;
   exam_id: number;
-  start_time: Date;
+  estimated_time: number;
+  start_time?: Date;
   end_time?: Date | null; // Can be null
   score?: number | null; // Can be null
   status?: "in_progress" | "completed" | "abandoned";
@@ -45,7 +46,10 @@ export class UserExamAttempt extends Model<
   @Column({ type: DataType.INTEGER, allowNull: false })
   exam_id!: number;
 
-  @Column({ type: DataType.DATE, allowNull: false })
+  @Column({ type: DataType.INTEGER, allowNull: false })
+  estimated_time!: number;
+
+  @Column({ type: DataType.DATE, allowNull: true })
   start_time!: Date;
 
   @Column(DataType.DATE)

@@ -11,6 +11,7 @@ import {
   PencilIcon
 } from '@heroicons/react/24/outline';
 import { TOEIC_TOPICS } from '@/data/toeicKnowledge';
+import { useTranslation } from '@/contexts/I18nContext';
 
 interface KnowledgeItem {
   id: string;
@@ -29,6 +30,7 @@ interface KnowledgeCategory {
 }
 
 export default function BlogPage() {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
@@ -79,10 +81,10 @@ export default function BlogPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          Kiến thức TOEIC
+          {t('blog.title', 'Kiến thức TOEIC')}
         </h1>
         <p className="text-lg text-gray-600">
-          Tổng hợp kiến thức và mẹo làm bài để chinh phục TOEIC
+          {t('blog.subtitle', 'Tổng hợp kiến thức và mẹo làm bài để chinh phục TOEIC')}
         </p>
       </div>
 
@@ -92,7 +94,7 @@ export default function BlogPage() {
           <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Tìm kiếm kiến thức..."
+            placeholder={t('blog.searchPlaceholder', 'Tìm kiếm kiến thức...')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -108,7 +110,7 @@ export default function BlogPage() {
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            Tất cả
+            {t('blog.filter.all', 'Tất cả')}
           </button>
           {TOEIC_TOPICS.map((topic) => (
             <button
@@ -140,7 +142,7 @@ export default function BlogPage() {
                   </div>
                   <div>
                     <h2 className="text-xl font-semibold text-gray-900">{topic.category}</h2>
-                    <p className="text-gray-600 text-sm">{topic.items.length} bài học</p>
+                    <p className="text-gray-600 text-sm">{t('blog.lessonsCount', '{{count}} bài học', { count: topic.items.length })}</p>
                   </div>
                 </div>
               </div>
@@ -187,10 +189,10 @@ export default function BlogPage() {
             <MagnifyingGlassIcon className="w-12 h-12 mx-auto" />
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            Không tìm thấy kết quả
+            {t('blog.noResults.title', 'Không tìm thấy kết quả')}
           </h3>
           <p className="text-gray-600">
-            Hãy thử tìm kiếm với từ khóa khác hoặc chọn danh mục khác.
+            {t('blog.noResults.message', 'Hãy thử tìm kiếm với từ khóa khác hoặc chọn danh mục khác.')}
           </p>
         </div>
       )}

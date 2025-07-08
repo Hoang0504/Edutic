@@ -51,7 +51,10 @@ export class AudioFile extends Model<AudioFile, AudioFileCreationAttributes> {
   @HasMany(() => require("./ListeningTranscript").ListeningTranscript)
   listeningTranscripts!: ListeningTranscriptType[];
 
-  @HasOne(() => require("./Translation").Translation, { foreignKey: 'content_id', constraints: false })
+  @HasOne(() => require("./Translation").Translation, {
+    foreignKey: "content_id",
+    constraints: false,
+  })
   translation!: TranslationType;
 
   @BelongsTo(() => require("./Part").Part)

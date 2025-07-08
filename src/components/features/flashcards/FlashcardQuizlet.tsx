@@ -3,20 +3,22 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import {
-  Volume2,
-  RefreshCcw,
-  SkipBack,
-  SkipForward,
-  Play,
-  Pause,
-  Star,
-} from "lucide-react";
 
 import API_ENDPOINTS from "@/constants/api";
 
 import FullPageLoading from "../FullPageLoading";
 
+import {
+  PauseIcon,
+  PlayIcon,
+  SpeakerWaveIcon,
+} from "@heroicons/react/24/solid";
+import {
+  ArrowPathIcon,
+  BackwardIcon,
+  ForwardIcon,
+  StarIcon,
+} from "@heroicons/react/24/outline";
 import { useQueryParams } from "@/hooks";
 
 interface Flashcard {
@@ -138,7 +140,7 @@ export default function FlashcardQuizlet() {
         {/* Mặt trước */}
         <div className="absolute inset-0 backface-hidden p-6 flex flex-col justify-between">
           <div className="flex justify-end text-sm text-gray-500">
-            <Volume2
+            <SpeakerWaveIcon
               className="w-5 h-5 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
@@ -150,7 +152,7 @@ export default function FlashcardQuizlet() {
             <h2 className="text-3xl font-semibold">{current.word}</h2>
           </div>
           <div className="flex justify-end text-gray-400">
-            <Star className="w-5 h-5" />
+            <StarIcon className="w-5 h-5" />
           </div>
         </div>
 
@@ -177,24 +179,24 @@ export default function FlashcardQuizlet() {
       {/* Controls */}
       <div className="flex items-center justify-between mt-6">
         <button onClick={handleShuffle}>
-          <RefreshCcw className="w-6 h-6" />
+          <ArrowPathIcon className="w-6 h-6" />
         </button>
         <div className="flex items-center gap-4">
           <button onClick={handleBack}>
-            <SkipBack className="w-6 h-6" />
+            <BackwardIcon className="w-6 h-6" />
           </button>
           <span className="text-gray-700 font-medium">
             {index + 1} / {flashcards.length}
           </span>
           <button onClick={handleNext}>
-            <SkipForward className="w-6 h-6" />
+            <ForwardIcon className="w-6 h-6" />
           </button>
         </div>
         <button onClick={() => setautoPlay((a) => !a)}>
           {autoPlay ? (
-            <Pause className="w-6 h-6 text-blue-500" />
+            <PauseIcon className="w-6 h-6 text-blue-500" />
           ) : (
-            <Play className="w-6 h-6 text-gray-500" />
+            <PlayIcon className="w-6 h-6 text-gray-500" />
           )}
         </button>
       </div>

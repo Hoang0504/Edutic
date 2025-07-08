@@ -156,4 +156,4 @@ For pronunciation analysis, base your assessment on grammar complexity, word cho
     console.error('Error analyzing speaking:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
-} 
+}

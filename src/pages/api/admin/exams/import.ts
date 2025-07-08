@@ -131,16 +131,16 @@ async function handler(req: MulterRequest, res: NextApiResponse) {
       });
     }
 
-    // Set default values for missing fields
+    // Preserve provided exam type / exam_type while ensuring required defaults
     const processedExamData = {
       ...examData,
       exam: {
-        title: examData.exam.title,
-        type: examData.exam.type || 'full_test',
-        description: examData.exam.description,
+        ...examData.exam,
+        // Fallbacks
+        type: examData.exam.type || examData.exam.exam_type || 'full_test',
         estimated_time: examData.exam.estimated_time || 120,
-        year_of_release: examData.exam.year_of_release || new Date().getFullYear()
-      }
+        year_of_release: examData.exam.year_of_release || new Date().getFullYear(),
+      },
     };
 
     // Create exam with all data in database

@@ -1,30 +1,32 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef } from "react";
 
 interface UseExamProctoringOptions {
   isEnabled: boolean;
-  currentSkill: 'listening' | 'reading' | 'writing' | 'speaking';
+  // currentSkill: 'listening' | 'reading' | 'writing' | 'speaking';
   onTimerPause: (pause: boolean) => void;
   onExamCancel: () => void;
 }
 
 interface ViolationData {
-  type: 'face' | 'audio';
+  type: "face" | "audio";
   message: string;
   timestamp: number;
 }
 
 export const useExamProctoring = (options: UseExamProctoringOptions) => {
-  const { isEnabled, currentSkill, onTimerPause, onExamCancel } = options;
-  
+  // currentSkill
+  const { isEnabled, onTimerPause, onExamCancel } = options;
+
   const [showPermissionDialog, setShowPermissionDialog] = useState(false);
   const [proctoringEnabled, setProctoringEnabled] = useState(false);
   const [showViolationAlert, setShowViolationAlert] = useState(false);
-  const [currentViolation, setCurrentViolation] = useState<ViolationData | null>(null);
+  const [currentViolation, setCurrentViolation] =
+    useState<ViolationData | null>(null);
   const [violationHistory, setViolationHistory] = useState<ViolationData[]>([]);
   const [isTimerPaused, setIsTimerPaused] = useState(false);
-  
+
   const violationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Show permission dialog when starting exam
@@ -51,43 +53,45 @@ export const useExamProctoring = (options: UseExamProctoringOptions) => {
   }, [onExamCancel]);
 
   // Handle violation detection
-  const handleViolation = useCallback((type: 'face' | 'audio', message: string) => {
-    const violation: ViolationData = {
-      type,
-      message,
-      timestamp: Date.now()
-    };
+  const handleViolation = useCallback(
+    (type: "face" | "audio", message: string) => {
+      const violation: ViolationData = {
+        type,
+        message,
+        timestamp: Date.now(),
+      };
 
-    // Add to violation history
-    setViolationHistory(prev => [...prev, violation]);
+      // Add to violation history
+      setViolationHistory((prev) => [...prev, violation]);
 
-    // Prevent multiple alerts for the same violation type within 5 seconds
-    if (violationTimeoutRef.current) {
-      return;
-    }
+      // Prevent multiple alerts for the same violation type within 5 seconds
+      if (violationTimeoutRef.current) {
+        return;
+      }
 
-    // Set current violation and show alert
-    setCurrentViolation(violation);
-    setShowViolationAlert(true);
-    
-    // Pause timer
-    if (!isTimerPaused) {
-      setIsTimerPaused(true);
-      onTimerPause(true);
-    }
+      // Set current violation and show alert
+      setCurrentViolation(violation);
+      setShowViolationAlert(true);
 
-    // Set timeout to prevent spam
-    violationTimeoutRef.current = setTimeout(() => {
-      violationTimeoutRef.current = null;
-    }, 5000);
+      // Pause timer
+      if (!isTimerPaused) {
+        setIsTimerPaused(true);
+        onTimerPause(true);
+      }
 
-  }, [isTimerPaused, onTimerPause]);
+      // Set timeout to prevent spam
+      violationTimeoutRef.current = setTimeout(() => {
+        violationTimeoutRef.current = null;
+      }, 5000);
+    },
+    [isTimerPaused, onTimerPause]
+  );
 
   // Handle continue after violation
   const handleContinueAfterViolation = useCallback(() => {
     setShowViolationAlert(false);
     setCurrentViolation(null);
-    
+
     // Resume timer
     if (isTimerPaused) {
       setIsTimerPaused(false);
@@ -104,13 +108,17 @@ export const useExamProctoring = (options: UseExamProctoringOptions) => {
 
   // Get violation statistics
   const getViolationStats = useCallback(() => {
-    const faceViolations = violationHistory.filter(v => v.type === 'face').length;
-    const audioViolations = violationHistory.filter(v => v.type === 'audio').length;
-    
+    const faceViolations = violationHistory.filter(
+      (v) => v.type === "face"
+    ).length;
+    const audioViolations = violationHistory.filter(
+      (v) => v.type === "audio"
+    ).length;
+
     return {
       total: violationHistory.length,
       face: faceViolations,
-      audio: audioViolations
+      audio: audioViolations,
     };
   }, [violationHistory]);
 
@@ -128,7 +136,7 @@ export const useExamProctoring = (options: UseExamProctoringOptions) => {
     setCurrentViolation(null);
     setViolationHistory([]);
     setIsTimerPaused(false);
-    
+
     if (violationTimeoutRef.current) {
       clearTimeout(violationTimeoutRef.current);
       violationTimeoutRef.current = null;
@@ -143,7 +151,7 @@ export const useExamProctoring = (options: UseExamProctoringOptions) => {
     currentViolation,
     violationHistory,
     isTimerPaused,
-    
+
     // Actions
     requestProctoringPermission,
     handlePermissionGranted,
@@ -153,9 +161,9 @@ export const useExamProctoring = (options: UseExamProctoringOptions) => {
     handleContinueAfterViolation,
     handleCancelFromViolation,
     resetProctoringState,
-    
+
     // Utilities
     getViolationStats,
-    shouldShowRiskWarning
+    shouldShowRiskWarning,
   };
-}; 
+};

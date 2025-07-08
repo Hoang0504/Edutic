@@ -20,7 +20,7 @@ interface UserAnswerCreationAttributes {
   user_exam_attempt_id: number;
   question_id: number;
   answer_id: number;
-  user_text_answer: string;
+  user_text_answer?: string;
   is_correct: boolean;
   created_at?: Date;
 }

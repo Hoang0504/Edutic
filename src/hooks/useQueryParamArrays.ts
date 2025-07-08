@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { useMemo } from "react";
 
-export function useQueryParamArrays(): Record<string, string[]> {
+function useQueryParamArrays(): Record<string, string[]> {
   const router = useRouter();
 
   return useMemo(() => {
@@ -22,3 +22,5 @@ export function useQueryParamArrays(): Record<string, string[]> {
     return result;
   }, [router.query, router.isReady]);
 }
+
+export default useQueryParamArrays;

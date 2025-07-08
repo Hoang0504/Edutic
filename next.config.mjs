@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // reactStrictMode: false, // ✅ Tắt strict mode
   webpack: (config, { isServer }) => {
     if (isServer) {
       // Add mysql2 as external to prevent bundling issues
@@ -21,10 +22,6 @@ const nextConfig = {
       "sequelize",
       "sequelize-typescript",
     ],
-  },
-  reactStrictMode: true,
-  images: {
-    domains: ["images.unsplash.com"],
   },
 };
 

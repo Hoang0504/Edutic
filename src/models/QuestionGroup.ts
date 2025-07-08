@@ -5,18 +5,13 @@ import {
   Column,
   Model,
   DataType,
-  ForeignKey,
-  BelongsTo,
   CreatedAt,
   HasMany,
 } from "sequelize-typescript";
-import { Part } from "./Part";
-import type { Part as PartType } from "./Part";
 import type { Question as QuestionType } from "./Question";
 
 interface QuestionGroupCreationAttributes {
   id?: number;
-  part_id: number;
   image_url?: string | null;
   content?: string | null;
   created_at?: Date;
@@ -37,13 +32,6 @@ export class QuestionGroup extends Model<
   })
   id!: number;
 
-  @ForeignKey(() => Part)
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-  })
-  part_id!: number;
-
   @Column({
     type: DataType.STRING(255),
     allowNull: true,
@@ -63,9 +51,6 @@ export class QuestionGroup extends Model<
     defaultValue: DataType.NOW,
   })
   created_at!: Date;
-
-  @BelongsTo(() => require("./Part").Part)
-  part!: PartType;
 
   @HasMany(() => require("./Question").Question)
   questions!: QuestionType[];

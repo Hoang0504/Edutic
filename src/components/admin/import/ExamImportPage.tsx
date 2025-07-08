@@ -48,6 +48,69 @@ const ExamImportPage: React.FC = () => {
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Reusable textarea component that keeps local state while editing
+  const EditableTextarea: React.FC<{
+    value: string;
+    onSave: (val: string) => void;
+    rows?: number;
+    className?: string;
+  }> = ({ value, onSave, rows = 3, className = "" }) => {
+    const [localVal, setLocalVal] = React.useState(value);
+
+    // Sync when external value changes (e.g., navigate to other question)
+    React.useEffect(() => {
+      setLocalVal(value);
+    }, [value]);
+
+    return (
+      <textarea
+        value={localVal}
+        onChange={(e) => setLocalVal(e.target.value)}
+        onBlur={() => onSave(localVal)}
+        rows={rows}
+        className={`w-full p-3 border border-gray-300 rounded-md bg-white ${className}`}
+      />
+    );
+  };
+
+  // Helper functions to update exam data
+  const updateQuestionField = (
+    questionNumber: number,
+    field: string,
+    value: any
+  ) => {
+    setExamData((prev) => {
+      if (!prev) return prev;
+      const questions = prev.questions.map((q) =>
+        q.question_number === questionNumber ? { ...q, [field]: value } : q
+      );
+      return { ...prev, questions };
+    });
+  };
+
+  const updateGroupPassage = (groupId: number, newPassage: string) => {
+    setExamData((prev) => {
+      if (!prev || !prev.question_groups) return prev;
+      const question_groups = prev.question_groups.map((g) =>
+        g.group_id === groupId ? { ...g, passage: newPassage } : g
+      );
+      return { ...prev, question_groups };
+    });
+  };
+
+  // Set correct answer for a question
+  const setCorrectAnswer = (questionNumber: number, answerLetter: string) => {
+    setExamData((prev) => {
+      if (!prev) return prev;
+      const answers = prev.answers.map((ans) =>
+        ans.question_number === questionNumber
+          ? { ...ans, is_correct: ans.answer_letter === answerLetter }
+          : ans
+      );
+      return { ...prev, answers };
+    });
+  };
+
   // Handle Excel file selection
   const handleFileSelect = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -160,7 +223,7 @@ const ExamImportPage: React.FC = () => {
     if (!currentStructure || currentStructure.type !== 'group' || !examData?.question_groups) {
       return null;
     }
-    return examData.question_groups.find(g => g.group_id === currentStructure.groupId);
+    return examData.question_groups.find((g) => g.group_id === currentStructure.groupId);
   };
 
   // Get all questions in the same group
@@ -630,32 +693,40 @@ const ExamImportPage: React.FC = () => {
                       <h4 className="font-medium text-blue-900">
                         Nhóm câu hỏi {currentQuestionStructure.groupId} (Câu {currentQuestionStructure.questions[0].question_number}-{currentQuestionStructure.questions[currentQuestionStructure.questions.length - 1].question_number})
                       </h4>
-                      <button
+                <button
                         onClick={() => groupImageRef.current?.click()}
                         className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                      >
+                >
                         📷 Upload ảnh nhóm
-                      </button>
-                      <input
+                </button>
+                <input
                         ref={groupImageRef}
-                        type="file"
-                        accept="image/*"
+                  type="file"
+                  accept="image/*"
                         multiple
                         onChange={handleGroupImageUpload}
-                        className="hidden"
-                      />
-                    </div>
+                  className="hidden"
+                />
+              </div>
                     
                     {(() => {
                       const currentGroupData = getCurrentQuestionGroup();
-                      return currentGroupData?.passage ? (
+                      const passageText = currentGroupData?.passage || (currentGroupData as any)?.content;
+                      return passageText && passageText.trim() !== "" ? (
                         <div className="mb-3">
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             Đoạn văn/Mô tả nhóm
                           </label>
-                          <div className="p-3 bg-white border border-gray-300 rounded-md">
-                            {currentGroupData.passage}
-                          </div>
+                          <EditableTextarea
+                            value={passageText}
+                            rows={4}
+                            className="text-black"
+                            onSave={(val) => {
+                              if (currentQuestionStructure.groupId) {
+                                updateGroupPassage(currentQuestionStructure.groupId, val);
+                              }
+                            }}
+                          />
                         </div>
                       ) : null;
                     })()}
@@ -722,11 +793,16 @@ const ExamImportPage: React.FC = () => {
                               <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Nội dung câu hỏi
                               </label>
-                              <textarea
+                              <EditableTextarea
                                 value={question.content}
-                                readOnly
-                                className="w-full p-3 border border-gray-300 rounded-md bg-gray-50"
                                 rows={2}
+                                onSave={(val) =>
+                                  updateQuestionField(
+                                    question.question_number,
+                                    'content',
+                                    val
+                                  )
+                                }
                               />
                             </div>
 
@@ -735,11 +811,16 @@ const ExamImportPage: React.FC = () => {
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                   Bản dịch tiếng Việt
                                 </label>
-                                <textarea
-                                  value={question.vietnamese_translation}
-                                  readOnly
-                                  className="w-full p-3 border border-gray-300 rounded-md bg-gray-50"
+                                <EditableTextarea
+                                  value={question.vietnamese_translation || ""}
                                   rows={1}
+                                  onSave={(val) =>
+                                    updateQuestionField(
+                                      question.question_number,
+                                      'vietnamese_translation',
+                                      val
+                                    )
+                                  }
                                 />
                               </div>
                             )}
@@ -764,8 +845,13 @@ const ExamImportPage: React.FC = () => {
                                         type="radio"
                                         name={`question-${question.question_number}`}
                                         checked={answer.is_correct}
-                                        readOnly
-                                        className="mt-1"
+                                        onChange={() =>
+                                          setCorrectAnswer(
+                                            question.question_number,
+                                            answer.answer_letter
+                                          )
+                                        }
+                                        className="mt-1 cursor-pointer"
                                       />
                                       <div className="flex-1">
                                         <div className="text-sm font-medium text-gray-900">
@@ -809,80 +895,95 @@ const ExamImportPage: React.FC = () => {
                   {/* Question Image Preview */}
                   <SingleQuestionImagePreview questionNumber={currentQuestionStructure.questions[0].question_number} />
 
-                  {/* Question Content */}
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Nội dung câu hỏi
-                      </label>
-                      <textarea
+              {/* Question Content */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nội dung câu hỏi
+                  </label>
+                  <EditableTextarea
                         value={currentQuestionStructure.questions[0].content}
-                        readOnly
-                        className="w-full p-3 border border-gray-300 rounded-md bg-gray-50"
                         rows={3}
-                      />
-                    </div>
+                        onSave={(val) =>
+                          updateQuestionField(
+                            currentQuestionStructure.questions[0].question_number,
+                            'content',
+                            val
+                          )
+                        }
+                  />
+                </div>
 
                     {currentQuestionStructure.questions[0].vietnamese_translation && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Bản dịch tiếng Việt (câu hỏi)
-                        </label>
-                        <textarea
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Bản dịch tiếng Việt (câu hỏi)
+                  </label>
+                  <EditableTextarea
                           value={currentQuestionStructure.questions[0].vietnamese_translation || ""}
-                          readOnly
-                          className="w-full p-3 border border-gray-300 rounded-md bg-gray-50"
                           rows={2}
-                        />
-                      </div>
+                          onSave={(val) =>
+                            updateQuestionField(
+                              currentQuestionStructure.questions[0].question_number,
+                              'vietnamese_translation',
+                              val
+                            )
+                          }
+                  />
+                </div>
                     )}
 
                     {/* Single Question Answers */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3">
-                        Đáp án
-                      </label>
-                      <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Đáp án
+                  </label>
+                  <div className="space-y-3">
                         {getAnswersForQuestion(currentQuestionStructure.questions[0].question_number).map((answer) => (
-                          <div
-                            key={answer.answer_letter}
-                            className={`p-3 border rounded-lg ${
-                              answer.is_correct
-                                ? "border-green-300 bg-green-50"
-                                : "border-gray-300 bg-white"
-                            }`}
-                          >
-                            <div className="flex items-start space-x-3">
-                              <input
-                                type="radio"
+                      <div
+                        key={answer.answer_letter}
+                        className={`p-3 border rounded-lg ${
+                          answer.is_correct
+                            ? "border-green-300 bg-green-50"
+                            : "border-gray-300 bg-white"
+                        }`}
+                      >
+                        <div className="flex items-start space-x-3">
+                          <input
+                            type="radio"
                                 name={`question-${currentQuestionStructure.questions[0].question_number}`}
-                                checked={answer.is_correct}
-                                readOnly
-                                className="mt-1"
-                              />
-                              <div className="flex-1">
-                                <div className="font-medium text-gray-900">
+                            checked={answer.is_correct}
+                            onChange={() =>
+                              setCorrectAnswer(
+                                currentQuestionStructure.questions[0].question_number,
+                                answer.answer_letter
+                              )
+                            }
+                            className="mt-1 cursor-pointer"
+                          />
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-900">
                                   {answer.content}
-                                </div>
+                            </div>
                                 {answer.vietnamese_translation && (
-                                  <div className="text-sm text-gray-600 mt-1">
-                                    {answer.vietnamese_translation}
-                                  </div>
+                            <div className="text-sm text-gray-600 mt-1">
+                              {answer.vietnamese_translation}
+                            </div>
                                 )}
                                 {answer.explanation && (
                                   <div className={`text-sm mt-1 font-medium ${
                                     answer.is_correct ? "text-green-700" : "text-gray-600"
                                   }`}>
                                     {answer.explanation}
-                                  </div>
-                                )}
                               </div>
-                            </div>
+                            )}
                           </div>
-                        ))}
+                        </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
+                </div>
+              </div>
                 </div>
               )}
             </div>

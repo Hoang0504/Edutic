@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { PencilIcon, SpeakerWaveIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, SpeakerWaveIcon, SparklesIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
 
 export default function DemoPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center mb-6">
@@ -24,7 +24,7 @@ export default function DemoPage() {
         </div>
 
         {/* Demo Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
           {/* Writing Demo */}
           <Link href="/demo/writing" className="group">
             <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-8 border border-gray-100 hover:border-blue-200 transform hover:-translate-y-1">
@@ -96,6 +96,42 @@ export default function DemoPage() {
               </div>
             </div>
           </Link>
+
+          {/* Full Exam Demo */}
+          <Link href="/demo/exam" className="group">
+            <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-8 border border-gray-100 hover:border-green-200 transform hover:-translate-y-1">
+              <div className="flex items-center mb-6">
+                <div className="bg-green-100 p-3 rounded-full mr-4 group-hover:bg-green-200 transition-colors">
+                  <AcademicCapIcon className="h-8 w-8 text-green-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800">Full Exam</h2>
+              </div>
+              
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                Trải nghiệm đầy đủ kỳ thi TOEIC với giao diện ExamLayout, 
+                tích hợp cả Speaking và Writing với AI phân tích theo part.
+              </p>
+              
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center text-sm text-gray-500">
+                  <span className="w-2 h-2 bg-green-400 rounded-full mr-3"></span>
+                  Giao diện thi thật với timer
+                </div>
+                <div className="flex items-center text-sm text-gray-500">
+                  <span className="w-2 h-2 bg-green-400 rounded-full mr-3"></span>
+                  Navigation giữa các skills
+                </div>
+                <div className="flex items-center text-sm text-gray-500">
+                  <span className="w-2 h-2 bg-green-400 rounded-full mr-3"></span>
+                  AI phân tích theo từng part
+                </div>
+              </div>
+              
+              <div className="text-green-600 font-medium group-hover:text-green-700 flex items-center">
+                Thử ngay →
+              </div>
+            </div>
+          </Link>
         </div>
 
         {/* Technical Info */}
@@ -109,15 +145,17 @@ export default function DemoPage() {
                 <li>• Web Speech API cho Speech-to-Text</li>
                 <li>• Next.js 14 với App Router</li>
                 <li>• Tailwind CSS cho giao diện</li>
+                <li>• Sequelize ORM cho database</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-medium text-gray-700 mb-2">📝 Cần tích hợp</h4>
+              <h4 className="font-medium text-gray-700 mb-2">📝 Đã tích hợp</h4>
               <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Database lưu feedback vào bảng ai_feedbacks</li>
-                <li>• Authentication để lấy user_id</li>
-                <li>• Environment variable DEEPSEEK_API_KEY</li>
-                <li>• Xử lý lỗi và retry logic</li>
+                <li>• ✅ Database lưu feedback vào ai_feedbacks</li>
+                <li>• ✅ API routes cho Speaking & Writing</li>
+                <li>• ✅ ExamLayout với navigation</li>
+                <li>• ✅ Real-time Speech-to-Text</li>
+                <li>• ⏳ Authentication để lấy user_id</li>
               </ul>
             </div>
           </div>
@@ -135,8 +173,8 @@ export default function DemoPage() {
               <h3 className="text-sm font-medium text-yellow-800">Lưu ý</h3>
               <div className="mt-2 text-sm text-yellow-700">
                 <p>
-                  Hiện tại API đang sử dụng mock data để demo. Khi tích hợp thực tế, 
-                  cần cấu hình DEEPSEEK_API_KEY và kết nối database.
+                  API đã tích hợp DeepSeek AI và lưu feedback vào database. 
+                  Cần cấu hình DEEPSEEK_API_KEY trong environment variables để hoạt động đầy đủ.
                 </p>
               </div>
             </div>

@@ -6,6 +6,7 @@ import {
   PrimaryKey,
   AutoIncrement,
   HasMany,
+  HasOne,
 } from "sequelize-typescript";
 import type { Question as QuestionType } from "./Question";
 import type { AudioFile as AudioFileType } from "./AudioFile";
@@ -62,8 +63,8 @@ export class Part extends Model<Part, PartCreationAttributes> {
   @HasMany(() => require("./Question").Question)
   questions!: QuestionType[];
 
-  @HasMany(() => require("./AudioFile").AudioFile)
-  audioFiles!: AudioFileType[];
+  @HasOne(() => require("./AudioFile").AudioFile)
+  audioFile!: AudioFileType;
 
   @HasMany(() => require("./ExamPart").ExamPart)
   examParts!: ExamPartType[];

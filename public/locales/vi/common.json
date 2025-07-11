@@ -18,6 +18,7 @@
     "stop": "Dừng",
     "musicControl": "Điều khiển nhạc",
     "language": "Ngôn ngữ",
+    "practiceSmartListening": "Luyện nghe thông minh",
     "blog": "Kiến thức TOEIC"
   },
   "notifications": {
@@ -44,7 +45,9 @@
   },
   "home": {
     "greeting": "Xin chào, {{name}}!",
+    "defaultGreeting": "Chào mừng bạn đến với Edutic",
     "welcomeBack": "Chào mừng bạn trở lại với Edutic. Hãy bắt đầu hành trình học tập hôm nay!",
+    "defaultMessage": "Khám phá lộ trình luyện thi TOEIC cùng Edutic ngay hôm nay.",
     "nearestExam": "Kỳ thi gần nhất",
     "examDate": "Ngày dự thi",
     "targetScore": "Target Score",
@@ -64,6 +67,7 @@
     "score": "Điểm"
   },
   "exams": {
+    "noExams": "Không có bài thi nào.",
     "library": "Thư viện đề thi",
     "tabs": {
       "all": "Tất cả",
@@ -143,4 +147,4 @@
       "delete": "Xóa"
     }
   }
-} 
+}

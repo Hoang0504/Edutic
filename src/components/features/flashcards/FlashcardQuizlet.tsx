@@ -113,7 +113,7 @@ export default function FlashcardQuizlet() {
   };
 
   const handleSpeak = async () => {
-    const audio = new Audio(`/flashcards/${current.speech_audio_url}`);
+    const audio = new Audio(`${current.speech_audio_url}`);
     await audio.play();
   };
 
@@ -165,7 +165,7 @@ export default function FlashcardQuizlet() {
           <div className="text-gray-500 italic">"{current.example}"</div>
           <div className="flex justify-center">
             <Image
-              src={`/flashcards/${current.image_url}`}
+              src={`${current.image_url}`}
               width={0}
               height={0}
               sizes="100vw"

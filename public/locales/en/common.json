@@ -1,7 +1,7 @@
 {
   "header": {
     "home": "Home",
-    "dashboard": "Dashboard", 
+    "dashboard": "Dashboard",
     "studyMode": "Study Mode",
     "examMode": "Exam Mode",
     "flashcards": "My Flashcards",
@@ -18,12 +18,13 @@
     "stop": "Stop",
     "musicControl": "Music Control",
     "language": "Language",
+    "practiceSmartListening": "Practice smart listening",
     "blog": "TOEIC Knowledge"
   },
   "notifications": {
     "title": "Notifications",
     "all": "All",
-    "unread": "Unread", 
+    "unread": "Unread",
     "read": "Read",
     "empty": "No notifications"
   },
@@ -44,7 +45,9 @@
   },
   "home": {
     "greeting": "Hello, {{name}}!",
+    "defaultGreeting": "Welcome to Edutic.",
     "welcomeBack": "Welcome back to Edutic. Let's start your learning journey today!",
+    "defaultMessage": "Start your TOEIC success journey with Edutic today.",
     "nearestExam": "Next Exam",
     "examDate": "Exam Date",
     "targetScore": "Target Score",
@@ -64,6 +67,7 @@
     "score": "Score"
   },
   "exams": {
+    "noExams": "There are no tests.",
     "library": "Exam Library",
     "tabs": {
       "all": "All",
@@ -143,4 +147,4 @@
       "delete": "Delete"
     }
   }
-} 
+}

@@ -1,19 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
+import { useEffect, useMemo, useRef, useState } from "react";
+
 import {
   ClockIcon,
   ArrowLeftIcon,
   CheckCircleIcon,
   XCircleIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
 } from "@heroicons/react/24/outline";
+
+import NotFound from "@/app/not-found";
+import ROUTES from "@/constants/routes";
 import API_ENDPOINTS from "@/constants/api";
 import FullPageLoading from "@/components/features/FullPageLoading";
-import NotFound from "@/app/not-found";
+
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuestionDetailQuery } from "@/hooks/useQuestionDetailQuery";
 
 // Interface for question
 interface Question {
@@ -24,40 +28,48 @@ interface Question {
   userContent?: string;
 }
 
-function ExamResults({ examId }: { examId: string }) {
+function ExamResults({ examAttemptId }: { examAttemptId: string }) {
+  const { user } = useAuth();
+
   const [loading, setLoading] = useState(true);
   const [examData, setExamData] = useState<any>(null);
   const partCacheRef = useRef<Record<string, any>>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [questionLoading, setQuestionLoading] = useState(false);
   const [activePartDetail, setActivePartDetail] = useState<any>(null);
-  const [selectedQuestion, setSelectedQuestion] = useState<any>(null);
   const [activePartNumber, setActivePartNumber] = useState<string | null>(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<
+    number | null
+  >(null);
 
-  const handleQuestionDetail = async (questionId: string) => {
-    setQuestionLoading(true);
-    try {
-      const res = await fetch(
-        API_ENDPOINTS.EXAM_ATTEMPTS.QUESTION_DETAILS(examId, questionId)
-      );
-      const data = await res.json();
-      setSelectedQuestion(data);
-      setIsModalOpen(true);
-    } catch (err) {
-      console.error("Lỗi tải câu hỏi", err);
-    }
-    setQuestionLoading(false);
+  const questionList = useMemo(() => {
+    return activePartDetail?.questions ?? [];
+  }, [activePartDetail]);
+  const questionId =
+    currentQuestionIndex !== null
+      ? questionList[currentQuestionIndex].question_id
+      : null;
+
+  const { data: selectedQuestion, isLoading: questionLoading } =
+    useQuestionDetailQuery(examAttemptId, questionId);
+
+  const handleOpenQuestionModal = (questionId: number) => {
+    const index = questionList.findIndex(
+      (q: any) => q.question_id === questionId
+    );
+
+    setCurrentQuestionIndex(index);
+    setIsModalOpen(true);
   };
 
   useEffect(() => {
-    if (!examId) return;
+    if (!examAttemptId || !user) return;
 
     const fetchExamSummary = async () => {
       setLoading(true);
 
       try {
         const res = await fetch(
-          `${API_ENDPOINTS.EXAM_ATTEMPTS.DETAILS(examId)}?user_id=2`
+          API_ENDPOINTS.EXAM_ATTEMPTS.DETAILS(examAttemptId, user.id.toString())
         );
         const result = await res.json();
 
@@ -77,7 +89,7 @@ function ExamResults({ examId }: { examId: string }) {
     };
 
     fetchExamSummary();
-  }, [examId]);
+  }, [examAttemptId, user]);
 
   const fetchPartDetail = async (partNumber: string) => {
     setActivePartNumber(partNumber);
@@ -91,11 +103,12 @@ function ExamResults({ examId }: { examId: string }) {
 
     try {
       const res = await fetch(
-        API_ENDPOINTS.EXAM_ATTEMPTS.PART(examId, partNumber)
+        API_ENDPOINTS.EXAM_ATTEMPTS.PART(examAttemptId, partNumber)
       );
       const data = await res.json();
 
       partCacheRef.current[partNumber] = data;
+
       setActivePartDetail(data);
     } catch (error) {
       console.error("Không thể tải dữ liệu part", error);
@@ -119,7 +132,7 @@ function ExamResults({ examId }: { examId: string }) {
       {/* Back Button */}
       <div className="mb-4">
         <Link
-          href={`/exams/${examId}`}
+          href={ROUTES.EXAM.OVERVIEW_HISTORY(examData.exam_id, examAttemptId)}
           className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
         >
           <ArrowLeftIcon className="h-4 w-4" />
@@ -259,7 +272,7 @@ function ExamResults({ examId }: { examId: string }) {
                 </div>
                 <div
                   className="flex items-center gap-2 cursor-pointer"
-                  onClick={() => handleQuestionDetail(question.question_id)}
+                  onClick={() => handleOpenQuestionModal(question.question_id)}
                 >
                   {question.is_correct ? (
                     <>
@@ -290,67 +303,169 @@ function ExamResults({ examId }: { examId: string }) {
           {questionLoading ? (
             <FullPageLoading />
           ) : (
-            <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl p-8 relative overflow-y-auto max-h-[90vh]">
               <button
-                className="absolute top-0 right-0 p-4 text-gray-400 hover:text-gray-600"
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl"
                 onClick={() => {
                   setIsModalOpen(false);
-                  setSelectedQuestion(null);
                 }}
               >
                 ✕
               </button>
 
-              <h3 className="text-lg font-semibold mb-2 text-gray-900">
-                Câu hỏi {selectedQuestion.question_number}
+              <h3 className="text-2xl font-bold mb-4 text-gray-900">
+                Câu {selectedQuestion.question_number}
               </h3>
 
-              <p className="text-sm text-gray-700 mb-2 whitespace-pre-line">
-                {selectedQuestion.content}
-              </p>
+              <div className="grid grid-cols-1 gap-6 mb-6">
+                <div>
+                  {activePartDetail.audio_file_path && (
+                    <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <p className="text-sm font-semibold text-gray-700 mb-2">
+                        🎧 Nghe đoạn hội thoại:
+                      </p>
+                      <audio
+                        controls
+                        src={`${activePartDetail.audio_file_path}`}
+                        className="w-full mb-2"
+                      >
+                        Trình duyệt của bạn không hỗ trợ phát âm thanh.
+                      </audio>
 
-              <p className="text-sm text-gray-700 mb-2 whitespace-pre-line">
-                {selectedQuestion.group_content}
-              </p>
+                      {activePartDetail.audio_status && (
+                        <Link
+                          href={`/practice/audio/${selectedQuestion.question_id}`}
+                          className="inline-flex items-center gap-1 px-4 py-2 bg-blue-100 text-blue-700 font-medium rounded-lg hover:bg-blue-200 transition-colors no-underline"
+                        >
+                          <span>🎧 Sang trang luyện nghe thông minh</span>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={2}
+                            stroke="currentColor"
+                            className="w-4 h-4"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                            />
+                          </svg>
+                        </Link>
+                      )}
+                    </div>
+                  )}
+                  <p className="text-sm font-semibold text-gray-700 mb-2">
+                    Văn bản đoạn hội thoại:
+                  </p>
+                  <p className="text-sm text-gray-800 whitespace-pre-line">
+                    {selectedQuestion.group_content}
+                  </p>
 
-              {selectedQuestion.question_image_url && (
-                <img
-                  src={`/${selectedQuestion.question_image_url}`}
-                  alt="Câu hỏi"
-                  className="mb-3 rounded shadow max-h-64 object-contain"
-                />
-              )}
+                  {selectedQuestion.group_image_url && (
+                    <div className="relative w-full mt-3 rounded border overflow-hidden">
+                      <Image
+                        src={`/${selectedQuestion.group_image_url}`}
+                        alt={`anh doan van ${selectedQuestion.question_id}`}
+                        width={0}
+                        height={0}
+                        sizes="100vw"
+                        className="w-full h-auto object-contain"
+                      />
+                    </div>
+                  )}
 
-              {selectedQuestion.group_image_url && (
-                <img
-                  src={`/${selectedQuestion.group_image_url}`}
-                  alt="Câu hỏi"
-                  className="mb-3 rounded shadow max-h-64 object-contain"
-                />
-              )}
+                  {selectedQuestion.group_translation && (
+                    <p className="mt-2 text-sm italic text-gray-500">
+                      Dịch: {selectedQuestion.group_translation}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-700 mb-2">
+                    Nội dung câu hỏi:
+                  </p>
+                  <p className="text-sm text-gray-800 whitespace-pre-line">
+                    {selectedQuestion.content}
+                  </p>
 
-              <ul className="space-y-2 mb-4">
-                {selectedQuestion.answers.map((a: any) => (
+                  {selectedQuestion.question_image_url && (
+                    <div className="relative w-full mt-3 rounded border overflow-hidden">
+                      <Image
+                        src={`/${selectedQuestion.question_image_url}`}
+                        alt="Ảnh câu hỏi"
+                        width={0}
+                        height={0}
+                        sizes="100vw"
+                        className="w-full h-auto object-contain"
+                      />
+                    </div>
+                  )}
+
+                  {selectedQuestion.question_translation && (
+                    <p className="mt-2 text-sm italic text-gray-500">
+                      Dịch: {selectedQuestion.question_translation}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <ul className="space-y-3 mb-4">
+                {selectedQuestion.answers.map((a: any, idx: number) => (
                   <li
-                    key={a.option}
-                    className={`text-sm px-3 py-2 rounded border ${
+                    key={idx}
+                    className={`text-sm px-4 py-2 rounded-lg border transition-all ${
                       a.is_correct
                         ? "bg-green-100 border-green-400 text-green-900 font-semibold"
-                        : selectedQuestion.user_answer?.option === a.option
+                        : selectedQuestion.user_answer?.content === a.content
                         ? "bg-red-100 border-red-400 text-red-900"
                         : "border-gray-300"
                     }`}
                   >
-                    {a.content}
+                    <div className="flex items-center justify-between">
+                      <span>{a.content}</span>
+                      <span className="text-xs text-gray-500">
+                        {a.translation}
+                      </span>
+                    </div>
+                    {a.explanation && (
+                      <p className="text-sm text-gray-500 mt-1 italic">
+                        Giải thích: {a.explanation}
+                      </p>
+                    )}
                   </li>
                 ))}
               </ul>
 
               {selectedQuestion.explanation && (
-                <div className="text-sm text-gray-700">
-                  <strong>Giải thích:</strong> {selectedQuestion.explanation}
+                <div className="bg-blue-50 border-l-4 border-blue-400 px-4 py-3 rounded text-sm text-gray-800">
+                  <strong>Giải thích tổng quan:</strong>{" "}
+                  {selectedQuestion.explanation}
                 </div>
               )}
+
+              <div className="flex justify-between mt-6">
+                <button
+                  disabled={currentQuestionIndex === 0}
+                  onClick={() =>
+                    setCurrentQuestionIndex((prev) => (prev ?? 0) - 1)
+                  }
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50"
+                >
+                  ← Quay lại
+                </button>
+
+                <button
+                  disabled={currentQuestionIndex === questionList.length - 1}
+                  onClick={() =>
+                    setCurrentQuestionIndex((prev) => (prev ?? 0) + 1)
+                  }
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                >
+                  Tiếp theo →
+                </button>
+              </div>
             </div>
           )}
         </div>

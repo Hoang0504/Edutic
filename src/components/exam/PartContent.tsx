@@ -1,18 +1,22 @@
-import { useSelectedAnswers } from "@/contexts/SelectedAnswersContext";
-import { usePartDetail } from "@/hooks";
+"use client";
+
 import {
   PauseIcon,
   PlayIcon,
   SpeakerWaveIcon,
 } from "@heroicons/react/24/outline";
-import { useEffect, useMemo, useRef, useState } from "react";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { useSelectedAnswers } from "@/contexts/SelectedAnswersContext";
+import { usePartDetail } from "@/hooks";
 
 interface PartContentProps {
   activePart: number;
 }
 
 function PartContent({ activePart }: PartContentProps) {
-  const { data: partDetail, loading } = usePartDetail(activePart!);
+  const { data: partDetail, isLoading } = usePartDetail(activePart!);
   const { selectedAnswers, setSelectedAnswers } = useSelectedAnswers();
 
   // console.log(partDetail);
@@ -53,6 +57,8 @@ function PartContent({ activePart }: PartContentProps) {
       ...(partDetail?.questions ?? []).map((q) => ({ ...q, groupId: null })),
     ];
   }, [partDetail]);
+
+  // console.log(combinedQuestions);
 
   const currentPart = partDetail?.part;
   const questions = combinedQuestions;
@@ -116,18 +122,21 @@ function PartContent({ activePart }: PartContentProps) {
     setIsPlaying(!isPlaying);
   };
 
-  const handleAnswerSelect = (questionId: number, answerId: number) => {
-    setSelectedAnswers((prev: any) => ({
-      ...prev,
-      [questionId]: answerId,
-    }));
-  };
+  const handleAnswerSelect = useCallback(
+    (questionId: number, answerId: number) => {
+      setSelectedAnswers((prev: any) => ({
+        ...prev,
+        [questionId]: answerId,
+      }));
+    },
+    []
+  );
 
   useEffect(() => {
-    if (!loading && questions.length > 0) {
+    if (!isLoading && questions.length > 0) {
       setCurrentPage(1);
     }
-  }, [loading, questions]);
+  }, [isLoading, questions]);
 
   return (
     <>
@@ -205,28 +214,34 @@ function PartContent({ activePart }: PartContentProps) {
           {paginatedQuestions.map((question) => (
             <div key={question.id} className="mb-6">
               {/* Group Info (Only for first question of the group) */}
-              {question.groupContent && (
-                <div className="mb-4 p-4 pb-2 border rounded-lg">
-                  <p className="text-sm font-semibold mb-2">
-                    {question.groupContent}
-                  </p>
-                  {question?.groupImages &&
-                    question?.groupImages.length > 0 && (
-                      <>
-                        {question.groupImages.map(
-                          (img: string, idx: number) => (
-                            <img
-                              key={idx}
-                              src={`/${img.trim()}`}
-                              alt={`Group illustration ${idx + 1}`}
-                              className="w-lg"
-                            />
-                          )
+              {("groupContent" in question && question.groupContent) ||
+                ("groupImages" in question &&
+                  question.groupImages &&
+                  question.groupImages.length > 0 && (
+                    <div className="mb-4 p-4 pb-2 border rounded-lg">
+                      {"groupContent" in question && question.groupContent && (
+                        <p className="text-sm font-semibold mb-2">
+                          {question.groupContent}
+                        </p>
+                      )}
+                      {"groupImages" in question &&
+                        question.groupImages &&
+                        question.groupImages.length > 0 && (
+                          <>
+                            {question.groupImages.map(
+                              (img: string, idx: number) => (
+                                <img
+                                  key={idx}
+                                  src={`/${img.trim()}`}
+                                  alt={`Group illustration ${idx + 1}`}
+                                  className="w-lg"
+                                />
+                              )
+                            )}
+                          </>
                         )}
-                      </>
-                    )}
-                </div>
-              )}
+                    </div>
+                  ))}
 
               {/* Question Content */}
               <div className="mb-8">

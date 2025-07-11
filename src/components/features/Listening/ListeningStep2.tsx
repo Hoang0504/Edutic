@@ -36,7 +36,7 @@ export default function ListeningStep2({
             Hiện / Ẩn Transcript Tiếng Việt
           </button>
           {openSection === "vi" && (
-            <div className="mt-2 bg-gray-50 p-4 rounded text-gray-800 whitespace-pre-wrap border">
+            <div className="mt-2 p-4 rounded text-gray-800 whitespace-pre-wrap border">
               {transcriptVi && transcriptVi.replace(/\\n/g, "\n")}
             </div>
           )}

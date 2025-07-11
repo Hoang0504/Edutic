@@ -15,76 +15,6 @@ import FullPageLoading from "@/components/features/FullPageLoading";
 import { useTranslation } from "@/contexts/I18nContext";
 import ROUTES from "@/constants/routes";
 
-// Dữ liệu mẫu cho đề thi
-// const sampleExams = [
-//   {
-//     id: 1,
-//     title: "Tên đề thi",
-//     duration: 90,
-//     year: 2000,
-//     questionCount: 1000,
-//     releaseDate: "05/6/2025",
-//     testDuration: 4,
-//     score: 80,
-//     status: "completed" as const,
-//   },
-//   {
-//     id: 2,
-//     title: "Tên đề thi",
-//     duration: 90,
-//     year: 2000,
-//     questionCount: 1000,
-//     releaseDate: "05/6/2025",
-//     testDuration: 4,
-//     score: 80,
-//     status: "incomplete" as const,
-//   },
-//   {
-//     id: 3,
-//     title: "Tên đề thi",
-//     duration: 90,
-//     year: 2000,
-//     questionCount: 1000,
-//     releaseDate: "05/6/2025",
-//     testDuration: 4,
-//     score: 80,
-//     status: "not_started" as const,
-//   },
-//   {
-//     id: 4,
-//     title: "Tên đề thi",
-//     duration: 90,
-//     year: 2000,
-//     questionCount: 1000,
-//     releaseDate: "05/6/2025",
-//     testDuration: 4,
-//     score: 80,
-//     status: "completed" as const,
-//   },
-//   {
-//     id: 5,
-//     title: "Tên đề thi",
-//     duration: 90,
-//     year: 2000,
-//     questionCount: 1000,
-//     releaseDate: "05/6/2025",
-//     testDuration: 4,
-//     score: 80,
-//     status: "incomplete" as const,
-//   },
-//   {
-//     id: 6,
-//     title: "Tên đề thi",
-//     duration: 90,
-//     year: 2000,
-//     questionCount: 1000,
-//     releaseDate: "05/6/2025",
-//     testDuration: 4,
-//     score: 80,
-//     status: "not_started" as const,
-//   },
-// ];
-
 type ExamStatus = "completed" | "incomplete" | "not_started";
 type TabType = "all" | "random" | "written" | "speaking";
 
@@ -106,10 +36,8 @@ export default function ExamsPage() {
   useEffect(() => {
     const fetchExams = async () => {
       try {
-        const res = await fetch(API_ENDPOINTS.EXAMS);
+        const res = await fetch(API_ENDPOINTS.EXAMS.BASE);
         const data = await res.json();
-
-        console.log(data);
 
         setExamList(data);
       } catch (error) {
@@ -227,7 +155,9 @@ export default function ExamsPage() {
         </div>
 
         {/* Exams Grid */}
-        {!isLoading && examList.length !== 0 ? (
+        {isLoading ? (
+          <FullPageLoading />
+        ) : examList.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {currentExams.map((exam: any) => (
               <div
@@ -294,7 +224,7 @@ export default function ExamsPage() {
                 {/* Action Buttons */}
                 <div className="flex gap-3">
                   <Link
-                    href={`${ROUTES.EXAM.OVERVIEW}/${exam.id}`}
+                    href={ROUTES.EXAM.OVERVIEW(exam.id)}
                     className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium text-center block"
                   >
                     {t("exams.viewDetails", "Xem chi tiết >>")}
@@ -304,7 +234,9 @@ export default function ExamsPage() {
             ))}
           </div>
         ) : (
-          <FullPageLoading />
+          <p className="text-gray-500 text-sm text-center mt-6">
+            {t("exams.noExams", "Không có bài thi nào.")}
+          </p>
         )}
 
         {/* Pagination */}

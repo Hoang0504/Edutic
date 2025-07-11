@@ -1,8 +1,12 @@
-import { withErrorHandler } from "@/lib/withErrorHandler";
-import { NextApiRequest, NextApiResponse } from "next";
 import jwt from "jsonwebtoken";
-import { UserExamAttempt } from "@/models/UserExamAttempt";
+
+import { NextApiRequest, NextApiResponse } from "next";
+
+import sequelize from "@/lib/db";
+
 import { Exam } from "@/models/Exam";
+import { withErrorHandler } from "@/lib/withErrorHandler";
+import { UserExamAttempt } from "@/models/UserExamAttempt";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
@@ -25,13 +29,15 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const userId = decoded.userId;
 
+  await sequelize.authenticate();
+
   const attempts = await UserExamAttempt.findAll({
     where: { user_id: userId },
     include: [
       {
         model: Exam,
         as: "exam",
-        attributes: ["title"],
+        attributes: ["id", "title"],
       },
     ],
     order: [["created_at", "DESC"]],
@@ -47,6 +53,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     return {
       id: attempt.id,
+      exam_id: attempt.exam.id,
       title: attempt.exam.title,
       daysAgo,
       score: attempt.score,

@@ -1,7 +1,10 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
-import AudioDetailEditor from './edit/AudioDetailEditor';
+"use client";
+
+import React, { useState, useEffect } from "react";
+
+import { XMarkIcon } from "@heroicons/react/24/outline";
+
+import AudioDetailEditor from "./edit/AudioDetailEditor";
 
 interface AudioItem {
   id: number;
@@ -18,18 +21,18 @@ interface AudioItem {
 interface Transcript {
   id: number;
   audioFileId: number;
-  level: 'easy' | 'medium' | 'hard';
+  level: "easy" | "medium" | "hard";
   blanks: { index: number; position: number; length: number }[];
   fullText: string;
   vietnameseTranslation?: string;
 }
 
 const ListeningTranscript = () => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [audioItems, setAudioItems] = useState<AudioItem[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newAudioFile, setNewAudioFile] = useState<File | null>(null);
-  const [newTranscript, setNewTranscript] = useState('');
+  const [newTranscript, setNewTranscript] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedAudio, setSelectedAudio] = useState<AudioItem | null>(null);
   const [transcripts, setTranscripts] = useState<Transcript[]>([]);
@@ -40,44 +43,47 @@ const ListeningTranscript = () => {
   }, []);
 
   const fetchAudioItems = async () => {
-  setLoading(true);
-  try {
-    const response = await fetch('/api/admin/listening_transcripts?page=1&limit=10');
-    if (!response.ok) {
-      const text = await response.text(); // Get the full response text
-      console.error("API Error Response:", text);
-      throw new Error('Failed to fetch audio items');
-    }
-    const data = await response.json();
-    const items = data.data.map((file: any) => ({
-      id: file.id,
-      fileName: file.file_path.split('/').pop() || '',
-      filePath: file.file_path,
-      duration: file.duration,
-      transcript: file.transcript,
-      vietnameseTranslation: file.vietnameseTranslation,
-      levels: file.listeningTranscripts.length,
-      updatedAt: new Date(file.created_at).toLocaleDateString(),
-      audioUrl: file.file_path,
-    }));
-    const allTranscripts = data.data.flatMap((file: any) =>
-      file.listeningTranscripts.map((transcript: any) => ({
-        id: transcript.id,
-        audioFileId: file.id,
-        level: transcript.level,
-        blanks: transcript.blanks,
-        fullText: file.transcript,
+    setLoading(true);
+    try {
+      const response = await fetch(
+        "/api/admin/listening_transcripts?page=1&limit=10"
+      );
+      if (!response.ok) {
+        const text = await response.text(); // Get the full response text
+        console.error("API Error Response:", text);
+        throw new Error("Failed to fetch audio items");
+      }
+      const data = await response.json();
+      const items = data.data.map((file: any) => ({
+        id: file.id,
+        fileName: file.file_path.split("/").pop() || "",
+        filePath: file.file_path,
+        duration: file.duration,
+        transcript: file.transcript,
         vietnameseTranslation: file.vietnameseTranslation,
-      }))
-    );
-    setAudioItems(items);
-    setTranscripts(allTranscripts);
-  } catch (err) {
-    console.error("Fetch Error:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+        levels: file.listeningTranscripts.length,
+        updatedAt: new Date(file.created_at).toLocaleDateString(),
+        audioUrl: file.file_path,
+      }));
+      const allTranscripts = data.data.flatMap((file: any) =>
+        file.listeningTranscripts.map((transcript: any) => ({
+          id: transcript.id,
+          audioFileId: file.id,
+          level: transcript.level,
+          blanks: transcript.blanks,
+          fullText: file.transcript,
+          vietnameseTranslation: file.vietnameseTranslation,
+        }))
+      );
+      setAudioItems(items);
+
+      setTranscripts(allTranscripts);
+    } catch (err) {
+      console.error("Fetch Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
@@ -94,18 +100,21 @@ const ListeningTranscript = () => {
   const handleSaveNewAudio = async () => {
     if (newAudioFile && newTranscript) {
       const formData = new FormData();
-      formData.append('file', newAudioFile);
-      formData.append('transcript', newTranscript);
+      formData.append("file", newAudioFile);
+      formData.append("transcript", newTranscript);
       try {
-        const response = await fetch('/api/admin/listening_transcripts/create', {
-          method: 'POST',
-          body: formData,
-        });
+        const response = await fetch(
+          "/api/admin/listening_transcripts/create",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
         if (response.ok) {
           fetchAudioItems();
           setIsAddModalOpen(false);
           setNewAudioFile(null);
-          setNewTranscript('');
+          setNewTranscript("");
         } else {
           const errorData = await response.json();
           console.error("Error:", errorData.error);
@@ -140,7 +149,7 @@ const ListeningTranscript = () => {
     if (confirm("Are you sure you want to delete this audio file?")) {
       try {
         const response = await fetch(`/api/admin/audio_files/${id}`, {
-          method: 'DELETE',
+          method: "DELETE",
         });
         if (response.ok) {
           fetchAudioItems();
@@ -158,7 +167,7 @@ const ListeningTranscript = () => {
     fetchAudioItems();
   };
 
-  const filteredAudioItems = audioItems.filter(item =>
+  const filteredAudioItems = audioItems.filter((item) =>
     item.fileName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -168,7 +177,9 @@ const ListeningTranscript = () => {
     <div className="min-h-screen flex flex-col">
       <header className="bg-[#006494] text-white">
         <div className="text-center py-2">
-          <h1 className="text-2xl font-semibold">Listening Transcript Management</h1>
+          <h1 className="text-2xl font-semibold">
+            Listening Transcript Management
+          </h1>
         </div>
         <div className="flex justify-between items-center p-4">
           <input
@@ -243,7 +254,10 @@ const ListeningTranscript = () => {
             <h2 className="text-2xl font-semibold mb-6">Add New Audio</h2>
             <div className="space-y-4">
               <div>
-                <label htmlFor="audioFile" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="audioFile"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Audio File
                 </label>
                 <input
@@ -255,7 +269,10 @@ const ListeningTranscript = () => {
                 />
               </div>
               <div>
-                <label htmlFor="transcript" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="transcript"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Initial Transcript
                 </label>
                 <textarea
@@ -299,8 +316,14 @@ const ListeningTranscript = () => {
               <XMarkIcon className="h-6 w-6" />
             </button>
             <AudioDetailEditor
-              audio={{ ...selectedAudio, duration: String(selectedAudio.duration), audioUrl: selectedAudio.audioUrl }}
-              transcripts={transcripts.filter(t => t.audioFileId === selectedAudio.id)}
+              audio={{
+                ...selectedAudio,
+                duration: String(selectedAudio.duration),
+                audioUrl: selectedAudio.audioUrl,
+              }}
+              transcripts={transcripts.filter(
+                (t) => t.audioFileId === selectedAudio.id
+              )}
               onClose={() => {
                 setIsEditModalOpen(false);
                 setSelectedAudio(null);

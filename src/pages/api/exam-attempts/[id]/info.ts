@@ -1,12 +1,14 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
+import sequelize from "@/lib/db";
+
 import { Exam } from "@/models/Exam";
 import { Part } from "@/models/Part";
+import { Question } from "@/models/Question";
+import { UserAnswer } from "@/models/UserAnswer";
 import { UserAttemptPart } from "@/models/UserAttemptPart";
 import { UserExamAttempt } from "@/models/UserExamAttempt";
 import { withErrorHandler } from "@/lib/withErrorHandler";
-import sequelize from "@/lib/db";
-import { Question } from "@/models/Question";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   await sequelize.authenticate();
@@ -25,6 +27,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     if (!attempt) {
       return res.status(404).json({ message: "User exam attempt not found" });
     }
+
+    await UserAnswer.destroy({ where: { user_exam_attempt_id: attempt.id } });
 
     const userParts = await UserAttemptPart.findAll({
       where: { user_exam_attempt_id: attemptId },

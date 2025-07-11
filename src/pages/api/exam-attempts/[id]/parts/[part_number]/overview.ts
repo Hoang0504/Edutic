@@ -2,11 +2,12 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 import sequelize from "@/lib/db";
 
-import { Answer } from "@/models/Answer";
 import { Part } from "@/models/Part";
-import { Question } from "@/models/Question";
-import { UserAnswer } from "@/models/UserAnswer";
+import { Answer } from "@/models/Answer";
 import { getAnswerOption } from "@/utils";
+import { Question } from "@/models/Question";
+import { AudioFile } from "@/models/AudioFile";
+import { UserAnswer } from "@/models/UserAnswer";
 import { withErrorHandler } from "@/lib/withErrorHandler";
 
 // kiểm tra xem user có phải là user đã làm đề thi này không thì mới cho lấy thông tin
@@ -24,7 +25,16 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   await sequelize.authenticate();
 
-  const part = await Part.findOne({ where: { part_number: partNumber } });
+  const part = await Part.findOne({
+    where: { part_number: partNumber },
+    include: [
+      {
+        model: AudioFile,
+        as: "audioFile",
+        attributes: ["file_path", "status"],
+      },
+    ],
+  });
   if (!part) return res.status(404).json({ message: "Part not found" });
 
   const questions = await Question.findAll({
@@ -61,6 +71,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   return res.json({
     part_number: part.part_number,
     part_title: part.title,
+    audio_file_path: part?.audioFile?.file_path ?? "",
+    audio_status: part?.audioFile?.status ?? "",
     total: questionList.length,
     question_correct: questionCorrectCount,
     score: questionCorrectCount * 5,

@@ -46,6 +46,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   });
 
   // console.log(question);
+  // return res.json(question);
 
   let groupTranslation;
   if (question.group) {

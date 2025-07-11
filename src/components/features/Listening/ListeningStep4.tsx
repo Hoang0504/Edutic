@@ -103,7 +103,7 @@ function ListeningStep4({
         ))}
       </div>
 
-      <div className="bg-gray-50 p-4 rounded text-gray-800 leading-relaxed">
+      <div className="p-4 rounded text-gray-800 leading-relaxed">
         {renderTextWithInputs()}
       </div>
 

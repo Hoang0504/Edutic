@@ -93,6 +93,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   return res.json({
     success: true,
     data: {
+      exam_id: attempt.exam.id,
       exam_title: attempt.exam.title,
       score,
       correctAnswers,

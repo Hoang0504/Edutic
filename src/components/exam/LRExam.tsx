@@ -35,9 +35,10 @@ function LRExam({ activeSkill }: LRExamProps) {
   useEffect(() => {
     if (filteredParts.length > 0) {
       const firstPart = filteredParts[0];
-      if (firstPart) {
-        setActivePart(firstPart.part_id);
-      }
+      setActivePart((prev) => {
+        if (prev !== firstPart.part_id) return firstPart.part_id;
+        return prev;
+      });
     }
   }, [filteredParts, activeSkill]);
 
@@ -53,7 +54,11 @@ function LRExam({ activeSkill }: LRExamProps) {
           {filteredParts.map((p) => (
             <button
               key={p.part_id}
-              onClick={() => setActivePart(p.part_id)}
+              onClick={() => {
+                if (activePart !== p.part_id) {
+                  setActivePart(p.part_id);
+                }
+              }}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 activePart === p.part_id
                   ? "bg-blue-500 text-white"

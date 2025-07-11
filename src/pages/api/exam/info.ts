@@ -1,11 +1,14 @@
+import dayjs from "dayjs";
 import sequelize from "@/lib/db";
-import { withErrorHandler } from "@/lib/withErrorHandler";
+
+import { NextApiRequest, NextApiResponse } from "next";
+
 import { Exam } from "@/models/Exam";
 import { Part } from "@/models/Part";
-import { UserAttemptPart } from "@/models/UserAttemptPart";
+import { formatDateTime } from "@/utils";
+import { withErrorHandler } from "@/lib/withErrorHandler";
 import { UserExamAttempt } from "@/models/UserExamAttempt";
-import dayjs from "dayjs";
-import { NextApiRequest, NextApiResponse } from "next";
+import { UserAttemptPart } from "@/models/UserAttemptPart";
 
 const questionCountsByPart: Record<number, number> = {
   1: 6,
@@ -44,7 +47,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   };
 
   if (user_id) {
-    const attempt = await UserExamAttempt.findOne({
+    const allAttempts = await UserExamAttempt.findAll({
       where: {
         exam_id: exam.id,
         user_id: user_id.toString(),
@@ -52,13 +55,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       order: [["created_at", "DESC"]],
     });
 
-    if (attempt) {
-      const start = dayjs(attempt.start_time);
-      const end = dayjs(attempt.end_time);
-      const durationInMinutes = end.diff(start, "minute");
+    const attempts = [];
 
+    for (const at of allAttempts) {
       const attemptParts = await UserAttemptPart.findAll({
-        where: { user_exam_attempt_id: attempt.id },
+        where: { user_exam_attempt_id: at.id },
         include: [
           {
             model: Part,
@@ -67,6 +68,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         ],
         attributes: [],
       });
+
       let totalQuestionsAnswered = 0;
       let partNumbers: number[] = [];
 
@@ -79,15 +81,45 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       }
 
       const maxScore = totalQuestionsAnswered * 5;
+      const durationInMinutes =
+        at.start_time && at.end_time
+          ? dayjs(at.end_time).diff(dayjs(at.start_time), "minute")
+          : 0;
 
-      examData.attemptId = attempt.id;
-      examData.maxScore = maxScore;
-      examData.score = attempt.score;
-      examData.status = attempt.status;
-      examData.partNumbers = partNumbers;
-      examData.testDuration = durationInMinutes;
-      examData.totalQuestionsAnswered = totalQuestionsAnswered;
+      const formattedStartTime = formatDateTime(at.start_time);
+
+      const summary = {
+        attemptId: at.id,
+        maxScore,
+        score: at.score,
+        status: at.status,
+        partNumbers,
+        estimatedDuration: at.estimated_time,
+        testDuration: durationInMinutes,
+        totalQuestionsAnswered,
+        startTime: formattedStartTime,
+      };
+
+      attempts.push(summary);
     }
+
+    // Nếu có ít nhất 1 bài làm => dùng bài mới nhất làm dữ liệu chính
+    if (attempts.length > 0) {
+      const latest = attempts[0];
+
+      examData.attemptId = latest.attemptId;
+      examData.maxScore = latest.maxScore;
+      examData.score = latest.score;
+      examData.status = latest.status;
+      examData.partNumbers = latest.partNumbers;
+      examData.estimatedDuration = latest.estimatedDuration;
+      examData.testDuration = latest.testDuration;
+      examData.totalQuestionsAnswered = latest.totalQuestionsAnswered;
+      examData.startTime = latest.startTime;
+    }
+
+    // Thêm mảng lịch sử
+    examData.attempts = attempts;
   }
 
   return res.status(200).json(examData);

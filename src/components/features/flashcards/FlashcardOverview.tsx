@@ -50,7 +50,7 @@ function FlashcardOverview() {
   };
 
   useEffect(() => {
-    if (!isLoading && user?.id) fetchData();
+    if (!isLoading) fetchData();
   }, [user, isLoading]);
 
   if (!data) {

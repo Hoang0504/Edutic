@@ -102,16 +102,16 @@ Input example:
 
 Output format (in JSON, but with Vietnamese text):
 {
-  "feedback_text": "...",
-  "suggestions": "...",
-  "strengths": "...",
-  "weaknesses": "..."
+  "feedback_text": ...,
+  "suggestions": ...,
+  "strengths": ...,
+  "weaknesses": ...
 }
 
 Now please give me the feedback for the following:
 
 {
-  "part_title": "${part?.title}",
+  "part_title": ${part?.title},
   "correct_answers": ${correct},
   "total_questions": ${total}
 }

@@ -727,6 +727,8 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
             onViolation={proctoringSystem.handleViolation}
             onPauseTimer={(pause) => setIsTimerPaused(pause)}
             currentSkill="reading"
+            noiseThreshold={15} // Ngưỡng tạp âm thấp hơn cho môi trường yên tĩnh
+            voiceThreshold={25} // Ngưỡng phát hiện tiếng nói
           />
           {/* {activeSkill} */}
 

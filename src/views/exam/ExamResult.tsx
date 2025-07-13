@@ -29,7 +29,7 @@ interface Question {
 }
 
 function ExamResults({ examAttemptId }: { examAttemptId: string }) {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [examData, setExamData] = useState<any>(null);
@@ -103,7 +103,13 @@ function ExamResults({ examAttemptId }: { examAttemptId: string }) {
 
     try {
       const res = await fetch(
-        API_ENDPOINTS.EXAM_ATTEMPTS.PART(examAttemptId, partNumber)
+        API_ENDPOINTS.EXAM_ATTEMPTS.PART(examAttemptId, partNumber),
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
       const data = await res.json();
 
@@ -250,7 +256,7 @@ function ExamResults({ examAttemptId }: { examAttemptId: string }) {
 
           {/* Questions */}
           <div className="grid grid-cols-2 gap-3">
-            {activePartDetail.questions.map((question: any) => (
+            {activePartDetail?.questions?.map((question: any) => (
               <div
                 key={question.question_id}
                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"

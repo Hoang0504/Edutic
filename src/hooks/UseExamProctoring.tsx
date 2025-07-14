@@ -93,11 +93,12 @@ export const useExamProctoring = (options: UseExamProctoringOptions) => {
     setCurrentViolation(null);
 
     // Resume timer
-    if (isTimerPaused) {
-      setIsTimerPaused(false);
-      onTimerPause(false);
-    }
-  }, [isTimerPaused, onTimerPause]);
+    // if (isTimerPaused) {
+    setIsTimerPaused(false);
+    onTimerPause(false);
+    // }
+    // isTimerPaused
+  }, [onTimerPause]);
 
   // Handle cancel exam from violation alert
   const handleCancelFromViolation = useCallback(() => {

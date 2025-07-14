@@ -259,27 +259,27 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
     return () => document.removeEventListener("fullscreenchange", handleChange);
   }, []);
 
-  useEffect(() => {
-    const handleBlur = () => {
-      setViolationCount((prev) => prev + 1);
-      setShowWarningModal(true);
-    };
+  // useEffect(() => {
+  //   const handleBlur = () => {
+  //     setViolationCount((prev) => prev + 1);
+  //     setShowWarningModal(true);
+  //   };
 
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        setViolationCount((prev) => prev + 1);
-        setShowWarningModal(true);
-      }
-    };
+  //   const handleVisibilityChange = () => {
+  //     if (document.hidden) {
+  //       setViolationCount((prev) => prev + 1);
+  //       setShowWarningModal(true);
+  //     }
+  //   };
 
-    window.addEventListener("blur", handleBlur);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+  //   window.addEventListener("blur", handleBlur);
+  //   document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    return () => {
-      window.removeEventListener("blur", handleBlur);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener("blur", handleBlur);
+  //     document.removeEventListener("visibilitychange", handleVisibilityChange);
+  //   };
+  // }, []);
 
   useEffect(() => {
     if (examAttemptId) loadData(examAttemptId);
@@ -726,6 +726,7 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
             isEnabled={proctoringSystem.proctoringEnabled}
             onViolation={proctoringSystem.handleViolation}
             onPauseTimer={(pause) => setIsTimerPaused(pause)}
+            isTimerPaused={proctoringSystem.isTimerPaused}
             currentSkill="reading"
             noiseThreshold={15} // Ngưỡng tạp âm thấp hơn cho môi trường yên tĩnh
             voiceThreshold={25} // Ngưỡng phát hiện tiếng nói

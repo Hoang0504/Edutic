@@ -1,138 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useParams } from "next/navigation";
 import Link from "next/link";
+import toast from "react-hot-toast";
+
+import { useEffect, useRef, useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+
 import {
   ClockIcon,
   CalendarIcon,
   ArrowLeftIcon,
-  SpeakerWaveIcon,
   QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
-import { useQueryParams } from "@/hooks";
-import API_ENDPOINTS from "@/constants/api";
-import { useAuth } from "@/contexts/AuthContext";
-import FullPageLoading from "@/components/features/FullPageLoading";
-import ROUTES from "@/constants/routes";
 
-// Mock data for exam details
-// const examData = {
-//   1: {
-//     id: 1,
-//     title: "Đề thi 1",
-//     duration: 90,
-//     year: 2000,
-//     questionCount: 1000,
-//     releaseDate: "05/6/2025",
-//     testDuration: 4,
-//     score: 80,
-//     status: "completed" as const,
-//     totalUsers: 474,
-//     usersPracticed: 161664,
-//     sections: [
-//       { name: "Nghe", questions: "... câu", score: "?/? điểm", icon: "🎧" },
-//       { name: "Nói", questions: "... câu", score: "?/? điểm", icon: "🗣️" },
-//       { name: "Đọc", questions: "... câu", score: "?/? điểm", icon: "📖" },
-//       { name: "Viết", questions: "... câu", score: "?/? điểm", icon: "✍️" },
-//     ],
-//   },
-//   2: {
-//     id: 2,
-//     title: "Đề thi 1",
-//     duration: 90,
-//     year: 2000,
-//     questionCount: 1000,
-//     releaseDate: "05/6/2025",
-//     testDuration: 4,
-//     score: null,
-//     status: "incomplete" as const,
-//     totalUsers: 474,
-//     usersPracticed: 161664,
-//     sections: [
-//       { name: "Nghe", questions: "... câu", score: null, icon: "🎧" },
-//       { name: "Nói", questions: "... câu", score: null, icon: "🗣️" },
-//       { name: "Đọc", questions: "... câu", score: null, icon: "📖" },
-//       { name: "Viết", questions: "... câu", score: null, icon: "✍️" },
-//     ],
-//   },
-//   3: {
-//     id: 3,
-//     title: "Đề thi 1",
-//     duration: 90,
-//     year: 2000,
-//     questionCount: 1000,
-//     releaseDate: "05/6/2025",
-//     testDuration: 4,
-//     score: null,
-//     status: "not_started" as const,
-//     totalUsers: 474,
-//     usersPracticed: 161664,
-//     sections: [
-//       { name: "Nghe", questions: "... câu", score: null, icon: "🎧" },
-//       { name: "Nói", questions: "... câu", score: null, icon: "🗣️" },
-//       { name: "Đọc", questions: "... câu", score: null, icon: "📖" },
-//       { name: "Viết", questions: "... câu", score: null, icon: "✍️" },
-//     ],
-//   },
-//   4: {
-//     id: 4,
-//     title: "Đề thi 1",
-//     duration: 90,
-//     year: 2000,
-//     questionCount: 1000,
-//     releaseDate: "05/6/2025",
-//     testDuration: 4,
-//     score: 85,
-//     status: "completed" as const,
-//     totalUsers: 474,
-//     usersPracticed: 161664,
-//     sections: [
-//       { name: "Nghe", questions: "... câu", score: "?/? điểm", icon: "🎧" },
-//       { name: "Nói", questions: "... câu", score: "?/? điểm", icon: "🗣️" },
-//       { name: "Đọc", questions: "... câu", score: "?/? điểm", icon: "📖" },
-//       { name: "Viết", questions: "... câu", score: "?/? điểm", icon: "✍️" },
-//     ],
-//   },
-//   5: {
-//     id: 5,
-//     title: "Đề thi 1",
-//     duration: 90,
-//     year: 2000,
-//     questionCount: 1000,
-//     releaseDate: "05/6/2025",
-//     testDuration: 4,
-//     score: null,
-//     status: "incomplete" as const,
-//     totalUsers: 474,
-//     usersPracticed: 161664,
-//     sections: [
-//       { name: "Nghe", questions: "... câu", score: null, icon: "🎧" },
-//       { name: "Nói", questions: "... câu", score: null, icon: "🗣️" },
-//       { name: "Đọc", questions: "... câu", score: null, icon: "📖" },
-//       { name: "Viết", questions: "... câu", score: null, icon: "✍️" },
-//     ],
-//   },
-//   6: {
-//     id: 6,
-//     title: "Đề thi 1",
-//     duration: 90,
-//     year: 2000,
-//     questionCount: 1000,
-//     releaseDate: "05/6/2025",
-//     testDuration: 4,
-//     score: null,
-//     status: "not_started" as const,
-//     totalUsers: 474,
-//     usersPracticed: 161664,
-//     sections: [
-//       { name: "Nghe", questions: "... câu", score: null, icon: "🎧" },
-//       { name: "Nói", questions: "... câu", score: null, icon: "🗣️" },
-//       { name: "Đọc", questions: "... câu", score: null, icon: "📖" },
-//       { name: "Viết", questions: "... câu", score: null, icon: "✍️" },
-//     ],
-//   },
-// };
+import ROUTES from "@/constants/routes";
+import API_ENDPOINTS from "@/constants/api";
+import FullPageLoading from "@/components/features/FullPageLoading";
+
+import { useAuth } from "@/contexts/AuthContext";
 
 type ExamType = {
   id: number;
@@ -146,7 +31,9 @@ type ExamType = {
   partNumbers?: number[]; // danh sách các part đã làm
   totalQuestionsAnswered?: number; // tổng số câu hỏi đã làm
   testDuration?: number; // thời lượng làm bài, ví dụ: 12 giờ?
+  estimatedDuration?: number;
   releaseDate: string; // dạng "dd/mm/yyyy" (nếu cần, có thể dùng Date)
+  startTime?: string;
 };
 
 type ExamProp = {
@@ -158,7 +45,14 @@ type ExamStatus = "completed" | string;
 function ExamDetailView({ examId }: ExamProp) {
   const { user, isLoading } = useAuth();
 
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [examData, setExamData] = useState<ExamType | null>(null);
+  const [allAttempts, setAllAttempts] = useState<ExamType[]>([]);
+  const [selectedAttemptId, setSelectedAttemptId] = useState<number | null>(
+    null
+  );
 
   const hasFetched = useRef(false);
 
@@ -170,12 +64,42 @@ function ExamDetailView({ examId }: ExamProp) {
             Đã làm
           </span>
         );
+      case "abandoned":
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 border border-red-200">
+            Đã hủy
+          </span>
+        );
       default:
         return (
           <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 border border-purple-200">
             Chưa làm
           </span>
         );
+    }
+  };
+
+  const handleStartExam = () => {
+    const isLoggedIn = !!user;
+    if (!isLoggedIn) {
+      toast.error("Bạn cần đăng nhập để bắt đầu làm bài thi");
+      router.push(ROUTES.AUTH.LOGIN);
+      return;
+    }
+    router.push(ROUTES.EXAM.CHOOSE_PARTS(examId));
+  };
+
+  const handleSelectAttempt = (attemptId: number) => {
+    const attempt = allAttempts.find((a) => a.attemptId === attemptId);
+    if (attempt) {
+      setExamData((prev) => ({ ...prev, ...attempt }));
+      setSelectedAttemptId(attemptId);
+
+      // Cập nhật URL với query param attempt_id
+      const params = new URLSearchParams(searchParams?.toString());
+      params.set("attempt_id", attemptId.toString());
+
+      router.replace(`${window.location.pathname}?${params.toString()}`);
     }
   };
 
@@ -190,6 +114,18 @@ function ExamDetailView({ examId }: ExamProp) {
 
       if (res.ok && result) {
         setExamData(result);
+        if (result.attempts) {
+          setAllAttempts(result.attempts);
+
+          const attemptIdFromURL = searchParams?.get("attempt_id");
+          const matchedAttempt = result.attempts.find(
+            (a: any) => a.attemptId?.toString() === attemptIdFromURL
+          );
+          if (matchedAttempt) {
+            setExamData((prev: any) => ({ ...result, ...matchedAttempt }));
+            setSelectedAttemptId(matchedAttempt.attemptId);
+          }
+        }
       }
     } catch (error) {
       console.error("Error fetching flashcard data:", error);
@@ -207,6 +143,9 @@ function ExamDetailView({ examId }: ExamProp) {
     return <FullPageLoading />;
   }
 
+  const commonBtnClass =
+    "px-6 py-3 rounded-lg transition-colors font-medium text-sm sm:text-base";
+
   // Get exam data (fallback to exam 1 if not found)
   //   const exam = examData[examId as keyof typeof examData] || examData[1];
 
@@ -223,7 +162,6 @@ function ExamDetailView({ examId }: ExamProp) {
             <span>Quay lại danh sách đề thi</span>
           </Link>
         </div>
-
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
@@ -247,19 +185,66 @@ function ExamDetailView({ examId }: ExamProp) {
 
           {/* Exam Stats */}
           <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-            <div className="flex items-center gap-2 text-gray-600 mb-4">
+            <div className="flex items-center gap-2 text-gray-600">
               <ClockIcon className="h-4 w-4" />
               <span className="text-sm">
                 {examData?.status === "completed"
                   ? "Thời gian đã làm:"
+                  : examData?.status === "abandoned"
+                  ? "Thời gian ước tính:"
                   : "Thời gian làm bài:"}{" "}
-                {examData?.testDuration || examData?.duration} phút |{" "}
-                {examData?.totalQuestionsAnswered ?? 200} câu hỏi
+                {examData?.testDuration ||
+                  examData?.estimatedDuration ||
+                  examData?.duration}{" "}
+                phút | {examData?.totalQuestionsAnswered ?? 200} câu hỏi
               </span>
             </div>
           </div>
-        </div>
 
+          {allAttempts.length > 1 && (
+            <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+              <h3 className="text-md font-semibold text-gray-900 mb-3">
+                Lịch sử làm bài
+              </h3>
+              <div className="space-y-2">
+                {allAttempts.map((att) => (
+                  <button
+                    key={att.attemptId}
+                    onClick={() => handleSelectAttempt(att.attemptId!)}
+                    className={`w-full flex justify-between items-center px-4 py-2 rounded-md border transition ${
+                      att.attemptId === selectedAttemptId
+                        ? "bg-blue-100 border-blue-300"
+                        : "bg-gray-50 border-gray-200 hover:bg-gray-100"
+                    }`}
+                  >
+                    <span className="text-sm text-gray-700">
+                      Lần thi lúc: {att.startTime}
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        att.status === "completed"
+                          ? "bg-green-100 text-green-700"
+                          : att.status === "in_progress"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-red-100 text-red-600"
+                      }`}
+                    >
+                      {att.status === "completed"
+                        ? "Hoàn thành"
+                        : att.status === "in_progress"
+                        ? "Đang làm"
+                        : "Đã hủy"}
+                    </span>
+                    <span className="text-sm font-medium text-blue-600">
+                      {att.score && `${att.score} / `}
+                      {att.maxScore} điểm
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
         {/* Exam Structure */}
         <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
@@ -292,27 +277,41 @@ function ExamDetailView({ examId }: ExamProp) {
             </div>
           </div>
         </div>
-
         {/* Action Buttons */}
-        <div className="flex gap-4 justify-center">
+        <div className="flex gap-4 justify-center flex-wrap">
           {examData?.status === "completed" ? (
-            <button className="px-6 py-3 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors font-medium border border-green-200">
+            <button
+              className={`${commonBtnClass} bg-green-100 text-green-700 hover:bg-green-200 border border-green-200`}
+              onClick={handleStartExam}
+            >
               Bắt đầu làm lại
             </button>
+          ) : examData?.status === "abandoned" ? (
+            <>
+              {examData?.attemptId && (
+                <Link
+                  href={ROUTES.EXAM_ATTEMPT.DO(examData.attemptId.toString())}
+                  className={`${commonBtnClass} bg-yellow-100 text-yellow-700 hover:bg-yellow-200 border border-yellow-300`}
+                >
+                  Tiếp tục làm
+                </Link>
+              )}
+              <button
+                onClick={handleStartExam}
+                className={`${commonBtnClass} bg-blue-600 text-white hover:bg-blue-700`}
+              >
+                Bắt đầu bài thi mới
+              </button>
+            </>
           ) : (
-            <Link
-              href={
-                examData.attemptId
-                  ? ROUTES.EXAM_ATTEMPT.DO(examData.attemptId.toString())
-                  : ROUTES.EXAM.CHOOSE_PARTS(examId)
-              }
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            <button
+              onClick={handleStartExam}
+              className={`${commonBtnClass} bg-blue-600 text-white hover:bg-blue-700`}
             >
               Bắt đầu làm
-            </Link>
+            </button>
           )}
         </div>
-
         {/* Additional Info */}
         <div className="mt-8 bg-white rounded-lg border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">

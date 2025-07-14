@@ -22,6 +22,7 @@ interface AudioFileCreationAttributes {
   file_path: string; // Bắt buộc (DataType.STRING mặc định not null)
   duration: number; // Bắt buộc
   transcript: string; // Bản gốc
+  status?: number;
   created_at?: Date; // Tùy chọn vì có thể tự động tạo
 }
 
@@ -44,6 +45,9 @@ export class AudioFile extends Model<AudioFile, AudioFileCreationAttributes> {
 
   @Column(DataType.TEXT)
   transcript!: string;
+
+  @Column(DataType.BOOLEAN)
+  status!: boolean;
 
   @Column(DataType.DATE)
   created_at!: Date;

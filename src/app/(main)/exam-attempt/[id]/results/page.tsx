@@ -1,8 +1,8 @@
 import ExamResults from "@/views/exam/ExamResult";
 
 function Page({ params }: { params: { id: string } }) {
-  const examId = params.id;
-  return <ExamResults examId={examId} />;
+  const examAttemptId = params.id;
+  return <ExamResults examAttemptId={examAttemptId} />;
 }
 
 export default Page;

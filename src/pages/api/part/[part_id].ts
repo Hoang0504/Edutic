@@ -64,7 +64,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const grouped = groupedQuestionGroups.map((group) => ({
     id: group.id,
-    content: group.content,
+    content:
+      part.part_number === 3 || part.part_number === 4 ? "" : group.content,
     image_url: group.image_url,
     questions: group.questions.map((q) => ({
       id: q.id,

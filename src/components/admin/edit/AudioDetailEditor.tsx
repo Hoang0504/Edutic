@@ -1,5 +1,5 @@
-'use client';
-import React, { useState, useEffect } from 'react';
+"use client";
+import React, { useState, useEffect } from "react";
 
 interface AudioItem {
   id: number;
@@ -13,7 +13,7 @@ interface AudioItem {
 interface Transcript {
   id: number;
   audioFileId: number;
-  level: 'easy' | 'medium' | 'hard';
+  level: "easy" | "medium" | "hard";
   blanks: { index: number; position: number; length: number }[];
   fullText: string;
   vietnameseTranslation?: string;
@@ -31,22 +31,36 @@ interface AudioDetailEditorProps {
   onRefresh: () => void;
 }
 
-const AudioDetailEditor = ({ audio, transcripts, onClose, onRefresh }: AudioDetailEditorProps) => {
-  const [activeTab, setActiveTab] = useState<'general' | 'easy' | 'medium' | 'hard' | 'translation'>('general');
+const AudioDetailEditor = ({
+  audio,
+  transcripts,
+  onClose,
+  onRefresh,
+}: AudioDetailEditorProps) => {
+  console.log(transcripts);
+
+  const [activeTab, setActiveTab] = useState<
+    "general" | "easy" | "medium" | "hard" | "translation"
+  >("general");
   const [audioFileName, setAudioFileName] = useState(audio.fileName);
-  const [audioUrl, setAudioUrl] = useState(audio.audioUrl || '');
+  const [audioUrl, setAudioUrl] = useState(audio.audioUrl || "");
   const [newAudioFile, setNewAudioFile] = useState<File | null>(null);
-  const [localTranscripts, setLocalTranscripts] = useState<Transcript[]>(transcripts);
+  const [localTranscripts, setLocalTranscripts] =
+    useState<Transcript[]>(transcripts);
   const [selectedWords, setSelectedWords] = useState<Set<number>>(new Set());
-  const [vietnameseTranslation, setVietnameseTranslation] = useState<string | undefined>(transcripts.find(t => t.level === 'easy')?.vietnameseTranslation);
+  const [vietnameseTranslation, setVietnameseTranslation] = useState<
+    string | undefined
+  >(transcripts.find((t) => t.level === "easy")?.vietnameseTranslation);
 
   useEffect(() => {
     setAudioFileName(audio.fileName);
-    setAudioUrl(audio.audioUrl || '');
+    setAudioUrl(audio.audioUrl || "");
     setLocalTranscripts(transcripts);
     // Lấy vietnameseTranslation từ transcripts hoặc API nếu cần
-    const initialTranslation = transcripts.find(t => t.level === 'easy')?.vietnameseTranslation;
-    setVietnameseTranslation(initialTranslation || '');
+    const initialTranslation = transcripts.find(
+      (t) => t.level === "easy"
+    )?.vietnameseTranslation;
+    setVietnameseTranslation(initialTranslation || "");
   }, [audio, transcripts]);
 
   const tokenizeBaseText = (text: string): WordToken[] => {
@@ -60,12 +74,16 @@ const AudioDetailEditor = ({ audio, transcripts, onClose, onRefresh }: AudioDeta
   };
 
   const toggleSelect = (index: number) => {
-    setSelectedWords(prev => {
+    setSelectedWords((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(index)) {
         newSet.delete(index);
       } else {
-        if (activeTab === 'easy' || activeTab === 'medium' || activeTab === 'hard') {
+        if (
+          activeTab === "easy" ||
+          activeTab === "medium" ||
+          activeTab === "hard"
+        ) {
           const maxWords = { easy: 4, medium: 8, hard: 12 }[activeTab];
           if (newSet.size < maxWords) {
             newSet.add(index);
@@ -85,22 +103,24 @@ const AudioDetailEditor = ({ audio, transcripts, onClose, onRefresh }: AudioDeta
     }
   };
 
-  const updateBlanks = async (level: 'easy' | 'medium' | 'hard') => {
-    const transcript = localTranscripts.find(t => t.level === level);
+  const updateBlanks = async (level: "easy" | "medium" | "hard") => {
+    const transcript = localTranscripts.find((t) => t.level === level);
     if (transcript && selectedWords.size > 0) {
       const words = tokenizeBaseText(transcript.fullText);
-      const newBlanks = Array.from(selectedWords).map(index => ({
+      const newBlanks = Array.from(selectedWords).map((index) => ({
         index,
         position: words[index].start,
         length: words[index].text.length,
       }));
       const updatedTranscript = { ...transcript, blanks: newBlanks };
-      setLocalTranscripts(localTranscripts.map(t => t.level === level ? updatedTranscript : t));
+      setLocalTranscripts(
+        localTranscripts.map((t) => (t.level === level ? updatedTranscript : t))
+      );
       setSelectedWords(new Set());
 
       await fetch(`/api/admin/listening_transcripts/${transcript.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ blanks: newBlanks }),
       });
     }
@@ -113,11 +133,12 @@ const AudioDetailEditor = ({ audio, transcripts, onClose, onRefresh }: AudioDeta
     }
 
     // Sử dụng PUT để cập nhật bản dịch trong bảng translations
-    await fetch(`/api/admin/translations/${audio.id}`, { // Sử dụng ID của audio làm content_id
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+    await fetch(`/api/admin/translations/${audio.id}`, {
+      // Sử dụng ID của audio làm content_id
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        content_type: 'transcript',
+        content_type: "audio_transcript",
         content_id: audio.id,
         vietnamese_text: vietnameseTranslation,
         updated_at: new Date().toISOString(),
@@ -140,12 +161,12 @@ const AudioDetailEditor = ({ audio, transcripts, onClose, onRefresh }: AudioDeta
   const saveAudioChanges = async () => {
     if (newAudioFile) {
       const formData = new FormData();
-      formData.append('file', newAudioFile);
-      formData.append('fileName', audioFileName);
+      formData.append("file", newAudioFile);
+      formData.append("fileName", audioFileName);
 
       try {
         const response = await fetch(`/api/admin/audio_files/${audio.id}`, {
-          method: 'PUT',
+          method: "PUT",
           body: formData,
         });
         if (response.ok) {
@@ -173,41 +194,59 @@ const AudioDetailEditor = ({ audio, transcripts, onClose, onRefresh }: AudioDeta
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="flex space-x-4 mb-4">
             <button
-              className={`px-4 py-2 rounded ${activeTab === 'general' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-              onClick={() => setActiveTab('general')}
+              className={`px-4 py-2 rounded ${
+                activeTab === "general"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200"
+              }`}
+              onClick={() => setActiveTab("general")}
             >
               Thông tin chung
             </button>
             <button
-              className={`px-4 py-2 rounded ${activeTab === 'easy' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-              onClick={() => setActiveTab('easy')}
+              className={`px-4 py-2 rounded ${
+                activeTab === "easy" ? "bg-blue-600 text-white" : "bg-gray-200"
+              }`}
+              onClick={() => setActiveTab("easy")}
             >
               Cấp độ EASY
             </button>
             <button
-              className={`px-4 py-2 rounded ${activeTab === 'medium' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-              onClick={() => setActiveTab('medium')}
+              className={`px-4 py-2 rounded ${
+                activeTab === "medium"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200"
+              }`}
+              onClick={() => setActiveTab("medium")}
             >
               Cấp độ MEDIUM
             </button>
             <button
-              className={`px-4 py-2 rounded ${activeTab === 'hard' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-              onClick={() => setActiveTab('hard')}
+              className={`px-4 py-2 rounded ${
+                activeTab === "hard" ? "bg-blue-600 text-white" : "bg-gray-200"
+              }`}
+              onClick={() => setActiveTab("hard")}
             >
               Cấp độ HARD
             </button>
             <button
-              className={`px-4 py-2 rounded ${activeTab === 'translation' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-              onClick={() => setActiveTab('translation')}
+              className={`px-4 py-2 rounded ${
+                activeTab === "translation"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200"
+              }`}
+              onClick={() => setActiveTab("translation")}
             >
               Bản dịch
             </button>
           </div>
 
-          {activeTab === 'general' && (
+          {activeTab === "general" && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">File Name</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  File Name
+                </label>
                 <div className="flex space-x-2">
                   <input
                     type="text"
@@ -224,7 +263,9 @@ const AudioDetailEditor = ({ audio, transcripts, onClose, onRefresh }: AudioDeta
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Audio Preview</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Audio Preview
+                </label>
                 <audio controls src={audioUrl} className="mt-1" />
               </div>
               <button
@@ -237,24 +278,36 @@ const AudioDetailEditor = ({ audio, transcripts, onClose, onRefresh }: AudioDeta
             </div>
           )}
 
-          {['easy', 'medium', 'hard'].includes(activeTab) && (
+          {["easy", "medium", "hard"].includes(activeTab) && (
             <div className="space-y-4">
-              <label className="block text-sm font-medium text-gray-700">Transcript</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Transcript
+              </label>
               <div className="border p-2">
-                {tokenizeBaseText(localTranscripts.find(t => t.level === activeTab)?.fullText || '').map((word, i) => (
+                {tokenizeBaseText(
+                  localTranscripts.find((t) => t.level === activeTab)
+                    ?.fullText || ""
+                ).map((word, i) => (
                   <span
                     key={i}
                     onClick={(e) => handleClick(e, i)}
-                    className={`cursor-pointer px-1 py-0.5 rounded ${isSelected(i) ? 'bg-blue-300' : ''}`}
+                    className={`cursor-pointer px-1 py-0.5 rounded ${
+                      isSelected(i) ? "bg-blue-300" : ""
+                    }`}
                   >
                     {word.text}
                   </span>
                 ))}
               </div>
-              <p>Selected: {selectedWords.size} / {activeTab === 'easy' ? 4 : activeTab === 'medium' ? 8 : 12}</p>
+              <p>
+                Selected: {selectedWords.size} /{" "}
+                {activeTab === "easy" ? 4 : activeTab === "medium" ? 8 : 12}
+              </p>
               <button
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                onClick={() => updateBlanks(activeTab as 'easy' | 'medium' | 'hard')}
+                onClick={() =>
+                  updateBlanks(activeTab as "easy" | "medium" | "hard")
+                }
                 disabled={selectedWords.size === 0}
               >
                 Save Blanks
@@ -262,11 +315,13 @@ const AudioDetailEditor = ({ audio, transcripts, onClose, onRefresh }: AudioDeta
             </div>
           )}
 
-          {activeTab === 'translation' && (
+          {activeTab === "translation" && (
             <div className="space-y-4">
-              <label className="block text-sm font-medium text-gray-700">Vietnamese Translation</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Vietnamese Translation
+              </label>
               <textarea
-                value={vietnameseTranslation || ''} // Đảm bảo không undefined
+                value={vietnameseTranslation || ""} // Đảm bảo không undefined
                 onChange={(e) => setVietnameseTranslation(e.target.value)}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600"
                 rows={4}

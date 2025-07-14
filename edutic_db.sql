@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: localhost:3306
--- Thời gian đã tạo: Th7 06, 2025 lúc 11:23 AM
+-- Thời gian đã tạo: Th7 11, 2025 lúc 12:36 PM
 -- Phiên bản máy phục vụ: 8.4.3
 -- Phiên bản PHP: 8.3.16
 
@@ -43,8 +43,13 @@ CREATE TABLE `ai_feedbacks` (
 --
 
 INSERT INTO `ai_feedbacks` (`id`, `content_type`, `content_id`, `feedback_text`, `suggestions`, `strengths`, `weaknesses`, `created_at`) VALUES
-(8, 'user_attempt_part', 3, 'Bạn đã làm được một nửa số câu hỏi trong phần này, đó là một khởi đầu tốt! Hãy tiếp tục luyện tập để cải thiện kết quả của mình nhé.', '\"Để cải thiện phần này, bạn nên thường xuyên luyện nghe các đoạn hội thoại ngắn và tập trung vào các chi tiết trong hình ảnh. Bạn cũng có thể thử ghi chú lại những từ khóa quan trọng khi nghe.\"', '\"Bạn có khả năng nhận biết được một số chi tiết trong hình ảnh và liên kết chúng với các từ khóa trong bài nghe.\"', '\"Bạn cần cải thiện khả năng nghe hiểu và tập trung vào các chi tiết nhỏ hơn trong hình ảnh để trả lời chính xác hơn.\"', '2025-07-06 18:17:34'),
-(9, 'user_attempt_part', 3, 'Bạn đã cố gắng hoàn thành phần thi Part 3 - Short Conversations. Mặc dù số câu đúng chưa cao nhưng đây là cơ hội để bạn nhìn nhận và cải thiện kỹ năng nghe tiếng Anh của mình. Hãy tiếp tục nỗ lực!', '\"1. Luyện nghe các đoạn hội thoại ngắn hàng ngày để làm quen với tốc độ và ngữ điệu. 2. Tập trung vào từ khóa (keywords) trong câu hỏi và đoạn hội thoại. 3. Ôn lại các từ vựng và cụm từ thường xuất hiện trong Part 3. 4. Làm nhiều đề thi thử để quen với dạng bài.\"', '\"Bạn đã trả lời đúng được 2 câu, điều này cho thấy bạn có khả năng nắm bắt một phần thông tin trong đoạn hội thoại.\"', '\"Bạn cần cải thiện khả năng nghe hiểu toàn bộ đoạn hội thoại, đặc biệt là các chi tiết cụ thể và ngữ cảnh. Số câu đúng thấp cho thấy bạn có thể gặp khó khăn với tốc độ nói hoặc từ vựng.\"', '2025-07-06 18:17:52');
+(12, 'user_attempt_part', 8, 'Bạn đã hoàn thành phần thi Part 4 - Short Talks với 3 câu trả lời đúng trên tổng số 12 câu. Đây là một khởi đầu, và với sự luyện tập đúng cách, bạn chắc chắn có thể cải thiện điểm số của mình!', '\"1. Luyện nghe các bài nói ngắn hàng ngày để làm quen với tốc độ và ngữ điệu. 2. Ghi chú lại các từ khóa quan trọng khi nghe. 3. Ôn tập từ vựng thường xuất hiện trong Part 4. 4. Làm quen với các dạng câu hỏi thường gặp như thông tin chi tiết, suy luận, hoặc mục đích của bài nói.\"', '\"Bạn đã trả lời đúng được một số câu, điều này cho thấy bạn có khả năng nắm bắt một phần thông tin trong bài nghe.\"', '\"Bạn cần cải thiện khả năng nghe hiểu toàn bộ bài nói, đặc biệt là các chi tiết cụ thể và cách suy luận thông tin từ ngữ cảnh.\"', '2025-07-09 10:46:18'),
+(17, 'user_attempt_part', 9, 'Bạn đã hoàn thành phần thi Part 4 - Short Talks với 3 câu trả lời đúng trên tổng số 12 câu. Đây là một khởi đầu, và với sự luyện tập đúng cách, bạn chắc chắn có thể cải thiện điểm số của mình!', '\"1. Luyện nghe các bài nói ngắn hàng ngày để làm quen với tốc độ và ngữ điệu. 2. Tập trung vào các từ khóa trong bài nghe để nắm bắt ý chính. 3. Làm quen với các dạng câu hỏi thường gặp trong Part 4 như thông tin chi tiết, suy luận, và mục đích của bài nói.\"', '\"Bạn đã trả lời đúng được một số câu hỏi, điều này cho thấy bạn có khả năng hiểu một phần nội dung bài nghe.\"', '\"Bạn cần cải thiện khả năng nghe hiểu toàn bộ bài nói, đặc biệt là các chi tiết cụ thể và thông tin quan trọng. Ngoài ra, việc quản lý thời gian và tập trung trong khi nghe cũng là điểm cần lưu ý.\"', '2025-07-09 22:34:37'),
+(18, 'user_attempt_part', 9, 'Bạn đã làm được 4/12 câu đúng trong phần này. Đây là một khởi đầu tốt, và với một chút nỗ lực, bạn có thể cải thiện điểm số của mình!', '\"1. Ôn lại các điểm ngữ pháp cơ bản như thì động từ, giới từ, và cấu trúc câu. 2. Luyện tập thêm các bài tập tương tự để làm quen với dạng đề. 3. Đọc kỹ câu hỏi và các lựa chọn trước khi trả lời.\"', '\"Bạn đã hiểu được một số câu hỏi và trả lời đúng, điều này cho thấy bạn có kiến thức cơ bản về ngữ pháp.\"', '\"Bạn cần cải thiện khả năng nhận biết và áp dụng các quy tắc ngữ pháp trong các câu phức tạp hơn.\"', '2025-07-09 22:34:54'),
+(19, 'user_attempt_part', 10, 'Bạn đã làm được 9/30 câu đúng trong phần Part 4 - Short Talks. Đây là một khởi đầu đáng khích lệ! Hãy tiếp tục cố gắng và luyện tập nhiều hơn để cải thiện điểm số của mình.', '\"1. Nghe nhiều bài nói ngắn bằng tiếng Anh hàng ngày để làm quen với tốc độ và ngữ điệu. 2. Tập trung vào các từ khóa trong bài nghe. 3. Luyện tập với các đề thi TOEIC mẫu để hiểu cấu trúc đề và cách ra câu hỏi.\"', '\"Bạn đã trả lời đúng được một số câu, chứng tỏ bạn có khả năng nắm bắt một phần thông tin trong bài nghe.\"', '\"Bạn cần cải thiện khả năng nghe hiểu toàn bộ bài nói, đặc biệt là các chi tiết nhỏ và thông tin cụ thể. Số câu trả lời đúng còn thấp so với tổng số câu hỏi.\"', '2025-07-10 08:42:54'),
+(20, 'user_attempt_part', 10, 'Bạn đã hoàn thành phần thi Part 7 - Reading Comprehension với 13 câu trả lời đúng trên tổng số 54 câu. Đây là một khởi đầu tốt, nhưng vẫn còn nhiều cơ hội để cải thiện. Hãy tiếp tục nỗ lực và luyện tập thêm để nâng cao kỹ năng đọc hiểu của mình!', '\"1. Đọc nhiều tài liệu tiếng Anh đa dạng (báo, tạp chí, bài luận) để làm quen với các chủ đề khác nhau. 2. Luyện tập kỹ năng skimming (đọc lướt) và scanning (tìm kiếm thông tin cụ thể) để tiết kiệm thời gian. 3. Học từ vựng mới mỗi ngày và ôn tập thường xuyên. 4. Làm nhiều bài tập Part 7 để hiểu rõ cấu trúc đề thi và cách ra câu hỏi.\"', '\"Bạn đã trả lời đúng được một số câu hỏi, chứng tỏ bạn có khả năng hiểu được một phần nội dung bài đọc. Điều này cho thấy bạn có nền tảng từ vựng và ngữ pháp nhất định.\"', '\"Số câu trả lời đúng còn thấp so với tổng số câu hỏi, điều này có thể do bạn chưa quen với tốc độ đọc hoặc gặp khó khăn trong việc hiểu ý chính của bài. Bạn cũng có thể cần cải thiện vốn từ vựng và khả năng suy luận từ ngữ cảnh.\"', '2025-07-10 08:43:14'),
+(21, 'user_attempt_part', 8, 'Bạn đã làm được 7/30 câu đúng trong phần Part 4 - Short Talks. Đây là một khởi đầu, và với sự luyện tập đều đặn, bạn chắc chắn sẽ cải thiện điểm số của mình!', '\"1. Nghe nhiều bài nói ngắn bằng tiếng Anh hàng ngày để làm quen với tốc độ và ngữ điệu. 2. Tập trung vào từ khóa (keywords) trong mỗi bài nghe. 3. Luyện tập kỹ năng ghi chú nhanh (note-taking) để nắm bắt thông tin quan trọng.\"', '\"Bạn đã trả lời đúng một số câu, chứng tỏ bạn có khả năng hiểu được một phần nội dung bài nghe.\"', '\"Bạn cần cải thiện khả năng nghe hiểu toàn bộ bài nói, đặc biệt là các chi tiết cụ thể và thông tin quan trọng.\"', '2025-07-10 21:53:39'),
+(22, 'user_attempt_part', 8, 'Bạn đã hoàn thành phần thi với một số câu trả lời đúng. Đừng nản lòng, mỗi câu hỏi là một cơ hội để học hỏi và cải thiện kỹ năng của mình!', '\"Để cải thiện kết quả ở Part 6, hãy tập trung vào việc đọc hiểu ngữ cảnh của đoạn văn. Luyện tập thường xuyên với các bài tập điền từ vào chỗ trống sẽ giúp bạn nhận biết từ vựng và ngữ pháp phù hợp hơn. Ngoài ra, hãy dành thời gian ôn lại các cấu trúc ngữ pháp cơ bản và mở rộng vốn từ vựng của bạn.\"', '\"Bạn đã trả lời đúng được một số câu hỏi, điều này cho thấy bạn có khả năng hiểu một phần nội dung và áp dụng kiến thức ngữ pháp cơ bản.\"', '\"Bạn cần cải thiện khả năng nhận biết ngữ cảnh và lựa chọn từ vựng phù hợp. Số câu trả lời đúng còn thấp so với tổng số câu hỏi, điều này có thể do hạn chế trong vốn từ vựng hoặc khả năng đọc hiểu.\"', '2025-07-10 21:54:03');
 
 -- --------------------------------------------------------
 
@@ -1661,6 +1666,7 @@ CREATE TABLE `audio_files` (
   `file_path` varchar(255) DEFAULT NULL,
   `duration` int DEFAULT NULL,
   `transcript` text,
+  `status` tinyint NOT NULL DEFAULT '0',
   `created_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -1668,16 +1674,15 @@ CREATE TABLE `audio_files` (
 -- Đang đổ dữ liệu cho bảng `audio_files`
 --
 
-INSERT INTO `audio_files` (`id`, `part_id`, `file_path`, `duration`, `transcript`, `created_at`) VALUES
-(1, 1, 'PART_1-TEST_1.mp3', NULL, '1. (A) She’s eating in a picnic area. (B) She’s waiting in line at a food truck. (C) She’s wiping off a bench. (D) She’s throwing away a plate.  2. (A) The man is brushing snow off the roof of a car. (B) The man is standing in the snow beside a car. (C) The man is shoveling snow from a walkway. (D) The man is running through the snow.  3. (A) Some workers are hanging art in a gallery. (B) Two of the people are having a conversation. (C) One of the men is rearranging cushions on a sofa. (D) One of the men is painting a picture.  4. (A) Vehicles are entering a parking garage. (B) Clothes hangers are scattered on the ground. (C) Empty racks are lined up next to a building. (D) Clothing is being displayed under a tent.  5. (A) Potted plants have been suspended from a ceiling. (B) Chairs have been stacked in front of an entryway. (C) A computer station has been set up on a desk. (D) A rug has been rolled up against a wall.  6. (A) One of the men is sweeping a patio. (B) One of the men is replacing some flooring. (C) A door has been taken off its frame. (D) A light fixture has been left on the ground.', '2025-06-18 14:38:18'),
-(22, 40, '/toeic_full_test_1_-_ets_2024_2025/part1/audio_part_1.mp3', 0, '', '2025-07-05 15:01:15'),
-(23, 41, '/toeic_full_test_1_-_ets_2024_2025/part2/audio_part_2.mp3', 0, '', '2025-07-05 15:01:15'),
-(24, 42, '/toeic_full_test_1_-_ets_2024_2025/part3/audio_part_3.mp3', 0, '', '2025-07-05 15:01:15'),
-(25, 43, '/toeic_full_test_1_-_ets_2024_2025/part4/audio_part_4.mp3', 0, '', '2025-07-05 15:01:15'),
-(26, 47, '/toeic_full_test_1_v2_-_ets_2024_2025/part1/audio_part_1.mp3', 0, '', '2025-07-05 15:12:37'),
-(27, 48, '/toeic_full_test_1_v2_-_ets_2024_2025/part2/audio_part_2.mp3', 0, '', '2025-07-05 15:12:37'),
-(28, 49, '/toeic_full_test_1_v2_-_ets_2024_2025/part3/audio_part_3.mp3', 0, '', '2025-07-05 15:12:37'),
-(29, 50, '/toeic_full_test_1_v2_-_ets_2024_2025/part4/audio_part_4.mp3', 0, '', '2025-07-05 15:12:37');
+INSERT INTO `audio_files` (`id`, `part_id`, `file_path`, `duration`, `transcript`, `status`, `created_at`) VALUES
+(22, 40, '/toeic_full_test_1_-_ets_2024_2025/part1/audio_part_1.mp3', 0, '1. A. She\'s eating in a picnic area.\nB. She\'s waiting in line at a food truck.\nC. She\'s wiping off a bench.\nD. She\'s throwing away a plate.\n2. A. The man is brushing snow off the roof of a car.\nB. The man is standing in the snow beside a car.\nC. The man is shoveling snow from a walkway.\nD. The man is running through the snow.\n3. A. Some workers are hanging art in a gallery.\nB. Two of the people are having a conversation.\nC. One of the men is rearranging cushions on a sofa.\nD. One of the men is painting a picture.\n4. A. Vehicles are entering a parking garage.\nB. Clothes hangers are scattered on the ground.\nC. Empty racks are lined up next to a building.\nD. Clothing is being displayed under a tent.\n5. A. Potted plants have been suspended from a ceiling.\nB. Chairs have been stacked in front of an entryway.\nC. A computer station has been set up on a desk.\nD. A rug has been rolled up against a wall.\n6. A. One of the men is sweeping a patio.\nB. One of the men is replacing some flooring.\nC. A door has been taken off its frame.\nD. A light fixture has been left on the ground.', 0, '2025-07-05 15:01:15'),
+(23, 41, '/toeic_full_test_1_-_ets_2024_2025/part2/audio_part_2.mp3', 0, '', 0, '2025-07-05 15:01:15'),
+(24, 42, '/toeic_full_test_1_-_ets_2024_2025/part3/audio_part_3.mp3', 0, '', 0, '2025-07-05 15:01:15'),
+(25, 43, '/toeic_full_test_1_-_ets_2024_2025/part4/audio_part_4.mp3', 0, '', 0, '2025-07-05 15:01:15'),
+(26, 47, '/toeic_full_test_1_v2_-_ets_2024_2025/part1/audio_part_1.mp3', 0, '', 0, '2025-07-05 15:12:37'),
+(27, 48, '/toeic_full_test_1_v2_-_ets_2024_2025/part2/audio_part_2.mp3', 0, '', 0, '2025-07-05 15:12:37'),
+(28, 49, '/toeic_full_test_1_v2_-_ets_2024_2025/part3/audio_part_3.mp3', 0, '', 0, '2025-07-05 15:12:37'),
+(29, 50, '/toeic_full_test_1_v2_-_ets_2024_2025/part4/audio_part_4.mp3', 0, '', 0, '2025-07-05 15:12:37');
 
 -- --------------------------------------------------------
 
@@ -1812,7 +1817,7 @@ CREATE TABLE `listening_transcripts` (
   `id` int NOT NULL,
   `audio_file_id` int NOT NULL,
   `level` enum('easy','medium','hard') DEFAULT 'easy',
-  `blanks` json NOT NULL,
+  `blanks` json DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -1821,8 +1826,9 @@ CREATE TABLE `listening_transcripts` (
 --
 
 INSERT INTO `listening_transcripts` (`id`, `audio_file_id`, `level`, `blanks`, `created_at`) VALUES
-(1, 1, 'easy', '[{\"index\": 0, \"length\": 6, \"position\": 11}, {\"index\": 1, \"length\": 8, \"position\": 116}]', '2025-06-18 14:47:28'),
-(2, 1, 'medium', '[{\"index\": 0, \"length\": 6, \"position\": 11}, {\"index\": 1, \"length\": 8, \"position\": 116}, {\"index\": 2, \"length\": 9, \"position\": 237}]', '2025-06-18 14:49:52');
+(3, 22, 'easy', '[{\"index\": 15, \"length\": 4, \"position\": 67}, {\"index\": 31, \"length\": 3, \"position\": 146}, {\"index\": 26, \"length\": 4, \"position\": 126}, {\"index\": 119, \"length\": 7, \"position\": 576}]', '2025-07-11 08:26:40'),
+(4, 22, 'medium', '[{\"index\": 7, \"length\": 5, \"position\": 31}, {\"index\": 28, \"length\": 6, \"position\": 133}, {\"index\": 35, \"length\": 4, \"position\": 166}, {\"index\": 66, \"length\": 7, \"position\": 302}, {\"index\": 93, \"length\": 3, \"position\": 439}, {\"index\": 118, \"length\": 7, \"position\": 568}, {\"index\": 150, \"length\": 4, \"position\": 746}, {\"index\": 129, \"length\": 5, \"position\": 632}]', '2025-07-11 08:26:40'),
+(5, 22, 'hard', '[{\"index\": 3, \"length\": 6, \"position\": 12}, {\"index\": 124, \"length\": 7, \"position\": 605}, {\"index\": 200, \"length\": 9, \"position\": 971}, {\"index\": 208, \"length\": 5, \"position\": 1015}, {\"index\": 221, \"length\": 7, \"position\": 1076}, {\"index\": 211, \"length\": 6, \"position\": 1029}, {\"index\": 146, \"length\": 6, \"position\": 719}, {\"index\": 106, \"length\": 8, \"position\": 499}, {\"index\": 22, \"length\": 6, \"position\": 101}, {\"index\": 32, \"length\": 3, \"position\": 150}, {\"index\": 10, \"length\": 7, \"position\": 46}, {\"index\": 75, \"length\": 7, \"position\": 351}]', '2025-07-11 08:27:23');
 
 -- --------------------------------------------------------
 
@@ -1847,20 +1853,20 @@ CREATE TABLE `parts` (
 --
 
 INSERT INTO `parts` (`id`, `part_number`, `title`, `description`, `instruction`, `difficulty_level`, `time_limit`, `created_at`, `updated_at`) VALUES
-(40, 1, 'Part 1 - Photographs', 'Photographs - 6 questions (1-6)', NULL, 'medium', 6, '2025-07-05 15:01:15', '2025-07-05 15:01:15'),
-(41, 2, 'Part 2 - Question-Response', 'Question-Response - 25 questions (7-31)', NULL, 'medium', 25, '2025-07-05 15:01:15', '2025-07-05 15:01:15'),
-(42, 3, 'Part 3 - Short Conversations', 'Short Conversations - 39 questions (32-70)', NULL, 'medium', 39, '2025-07-05 15:01:15', '2025-07-05 15:01:15'),
-(43, 4, 'Part 4 - Short Talks', 'Short Talks - 30 questions (71-100)', NULL, 'medium', 30, '2025-07-05 15:01:15', '2025-07-05 15:01:15'),
-(44, 5, 'Part 5 - Incomplete Sentences', 'Incomplete Sentences - 30 questions (101-130)', NULL, 'medium', 30, '2025-07-05 15:01:15', '2025-07-05 15:01:15'),
-(45, 6, 'Part 6 - Text Completion', 'Text Completion - 16 questions (131-146)', NULL, 'medium', 16, '2025-07-05 15:01:15', '2025-07-05 15:01:15'),
-(46, 7, 'Part 7 - Reading Comprehension', 'Reading Comprehension - 54 questions (147-200)', NULL, 'medium', 54, '2025-07-05 15:01:15', '2025-07-05 15:01:15'),
-(47, 1, 'Part 1 - Photographs', 'Photographs - 6 questions (1-6)', NULL, 'medium', 6, '2025-07-05 15:12:37', '2025-07-05 15:12:37'),
-(48, 2, 'Part 2 - Question-Response', 'Question-Response - 25 questions (7-31)', NULL, 'medium', 25, '2025-07-05 15:12:37', '2025-07-05 15:12:37'),
-(49, 3, 'Part 3 - Short Conversations', 'Short Conversations - 39 questions (32-70)', NULL, 'medium', 39, '2025-07-05 15:12:37', '2025-07-05 15:12:37'),
-(50, 4, 'Part 4 - Short Talks', 'Short Talks - 30 questions (71-100)', NULL, 'medium', 30, '2025-07-05 15:12:37', '2025-07-05 15:12:37'),
-(51, 5, 'Part 5 - Incomplete Sentences', 'Incomplete Sentences - 30 questions (101-130)', NULL, 'medium', 30, '2025-07-05 15:12:37', '2025-07-05 15:12:37'),
-(52, 6, 'Part 6 - Text Completion', 'Text Completion - 16 questions (131-146)', NULL, 'medium', 16, '2025-07-05 15:12:37', '2025-07-05 15:12:37'),
-(53, 7, 'Part 7 - Reading Comprehension', 'Reading Comprehension - 54 questions (147-200)', NULL, 'medium', 54, '2025-07-05 15:12:37', '2025-07-05 15:12:37');
+(40, 1, 'Part 1 - Photographs', 'Photographs - 6 questions (1-6)', NULL, 'medium', 3, '2025-07-05 15:01:15', '2025-07-05 15:01:15'),
+(41, 2, 'Part 2 - Question-Response', 'Question-Response - 25 questions (7-31)', NULL, 'medium', 8, '2025-07-05 15:01:15', '2025-07-05 15:01:15'),
+(42, 3, 'Part 3 - Short Conversations', 'Short Conversations - 39 questions (32-70)', NULL, 'medium', 13, '2025-07-05 15:01:15', '2025-07-05 15:01:15'),
+(43, 4, 'Part 4 - Short Talks', 'Short Talks - 30 questions (71-100)', NULL, 'medium', 14, '2025-07-05 15:01:15', '2025-07-05 15:01:15'),
+(44, 5, 'Part 5 - Incomplete Sentences', 'Incomplete Sentences - 30 questions (101-130)', NULL, 'medium', 10, '2025-07-05 15:01:15', '2025-07-05 15:01:15'),
+(45, 6, 'Part 6 - Text Completion', 'Text Completion - 16 questions (131-146)', NULL, 'medium', 8, '2025-07-05 15:01:15', '2025-07-05 15:01:15'),
+(46, 7, 'Part 7 - Reading Comprehension', 'Reading Comprehension - 54 questions (147-200)', NULL, 'medium', 57, '2025-07-05 15:01:15', '2025-07-05 15:01:15'),
+(47, 1, 'Part 1 - Photographs', 'Photographs - 6 questions (1-6)', NULL, 'medium', 3, '2025-07-05 15:12:37', '2025-07-05 15:12:37'),
+(48, 2, 'Part 2 - Question-Response', 'Question-Response - 25 questions (7-31)', NULL, 'medium', 8, '2025-07-05 15:12:37', '2025-07-05 15:12:37'),
+(49, 3, 'Part 3 - Short Conversations', 'Short Conversations - 39 questions (32-70)', NULL, 'medium', 13, '2025-07-05 15:12:37', '2025-07-05 15:12:37'),
+(50, 4, 'Part 4 - Short Talks', 'Short Talks - 30 questions (71-100)', NULL, 'medium', 14, '2025-07-05 15:12:37', '2025-07-05 15:12:37'),
+(51, 5, 'Part 5 - Incomplete Sentences', 'Incomplete Sentences - 30 questions (101-130)', NULL, 'medium', 10, '2025-07-05 15:12:37', '2025-07-05 15:12:37'),
+(52, 6, 'Part 6 - Text Completion', 'Text Completion - 16 questions (131-146)', NULL, 'medium', 8, '2025-07-05 15:12:37', '2025-07-05 15:12:37'),
+(53, 7, 'Part 7 - Reading Comprehension', 'Reading Comprehension - 54 questions (147-200)', NULL, 'medium', 57, '2025-07-05 15:12:37', '2025-07-05 15:12:37');
 
 -- --------------------------------------------------------
 
@@ -4459,7 +4465,8 @@ INSERT INTO `translations` (`id`, `content_type`, `content_id`, `vietnamese_text
 (4884, 'answer', 3867, 'D. Cập nhật số tài khoản.', '2025-07-05 15:12:39', '2025-07-05 15:12:39'),
 (4885, 'answer', 3868, 'A. Thanh toán hóa đơn.', '2025-07-05 15:12:39', '2025-07-05 15:12:39'),
 (4886, 'answer', 3869, 'B. Giải quyết vấn đề.', '2025-07-05 15:12:39', '2025-07-05 15:12:39'),
-(4887, 'answer', 3870, 'C. Xác nhận đơn hàng.', '2025-07-05 15:12:39', '2025-07-05 15:12:39');
+(4887, 'answer', 3870, 'C. Xác nhận đơn hàng.', '2025-07-05 15:12:39', '2025-07-05 15:12:39'),
+(4888, 'audio_transcript', 22, '1. A. Cô ấy đang ăn ở khu vực picnic.\nB. Cô ấy đang xếp hàng ở xe bán đồ ăn.\nC. Cô ấy đang lau ghế dài.\nD. Cô ấy đang vứt bỏ một cái đĩa.\n2. A. Người đàn ông đang phủi tuyết khỏi nóc xe.\nB. Người đàn ông đang đứng cạnh xe trên tuyết.\nC. Người đàn ông đang xúc tuyết trên lối đi.\nD. Người đàn ông đang chạy qua tuyết.\n3. A. Một số nhân viên đang treo tranh trong phòng trưng bày.\nB. Hai người đang trò chuyện với nhau.\nC. Một người đàn ông đang sắp xếp gối trên ghế sofa.\nD. Một người đàn ông đang vẽ tranh.\n4. A. Xe đang đi vào bãi đậu xe.\nB. Móc quần áo nằm rải rác trên mặt đất.\nC. Giá đỡ trống được xếp dọc theo tòa nhà.\nD. Quần áo đang được trưng bày dưới một chiếc lều.\n5. A. Cây chậu được treo từ trần nhà.\nB. Ghế được xếp chồng trước lối vào.\nC. Một trạm máy tính được lắp đặt trên bàn.\nD. Một tấm thảm được cuộn lại đặt cạnh tường.\n6. A. Một người đàn ông đang quét sân.\nB. Một người đàn ông đang thay sàn nhà.\nC. Một cánh cửa đã bị tháo khỏi khung.\nD. Đèn chiếu sáng đã được đặt trên sàn.', '2025-07-11 08:29:48', '2025-07-11 15:32:03');
 
 -- --------------------------------------------------------
 
@@ -4488,10 +4495,10 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `email`, `password_hash`, `name`, `avatar`, `is_email_verified`, `auth_provider`, `auth_provider_id`, `role`, `created_at`, `updated_at`, `last_login`, `uuid`) VALUES
-(2, 'ngochoanghuy0504@gmail.com', '$2b$10$ozcMaOTHw8E2LbbC8oeOCuwzHEHWhw4OURSFKB2kWBviJjLZvNM4a', 'hoang', NULL, 1, 'google', NULL, 'student', '2025-06-16 22:37:36', '2025-07-03 16:43:39', '2025-07-03 16:43:39', 'c282a6be-20c2-4ec1-a90c-0f4b28538879'),
-(5, 'huyhoangtran281@gmail.com', '$2b$10$ozcMaOTHw8E2LbbC8oeOCuwzHEHWhw4OURSFKB2kWBviJjLZvNM4a', 'Hoàng Trần', NULL, 1, 'google', '105163267029214394861', 'admin', '2025-06-28 14:26:13', '2025-07-03 07:31:59', '2025-07-03 07:31:59', '5462d806-1813-4d90-8304-1df4f7bff210'),
-(6, 'truonghuy@gmail.com', '$2b$10$nZ0zoh0tHJ1Tfi3tOyND7eW0XpBuq3SmU9saDJolQSUFTH8QJKm56', NULL, NULL, 1, 'email', NULL, 'student', '2025-07-02 10:34:23', '2025-07-02 10:34:23', NULL, '65b977fd-05a9-4085-b869-08b7d54b1e5c'),
-(7, 'phong@gmail.com', '$2b$10$ugX2PtxQJ5m2A7EqDAT3f.obb7oWpM7EFy3PtUmJrSIIsUH5sKFAO', NULL, NULL, 1, 'email', NULL, 'student', '2025-07-02 10:36:50', '2025-07-02 10:36:50', NULL, '0e1d0cc6-3bb1-4279-b503-c9845a00d9a5');
+(2, 'ngochoanghuy0504@gmail.com', '$2b$10$ozcMaOTHw8E2LbbC8oeOCuwzHEHWhw4OURSFKB2kWBviJjLZvNM4a', 'hoang', NULL, 1, 'google', NULL, 'student', '2025-06-16 22:37:36', '2025-07-09 22:16:01', '2025-07-09 22:16:01', 'c282a6be-20c2-4ec1-a90c-0f4b28538879'),
+(5, 'admin@gmail.com', '$2b$10$VY8xR0RBFsrr8MsHT7mIde0W/4ajjTvGCPJmdqr6nHI7wmLpceAZq', 'Hoàng Trần', NULL, 1, 'google', '105163267029214394861', 'admin', '2025-06-28 14:26:13', '2025-07-11 08:37:18', '2025-07-11 08:37:18', '5462d806-1813-4d90-8304-1df4f7bff210'),
+(6, 'truonghuy@gmail.com', '$2b$10$nZ0zoh0tHJ1Tfi3tOyND7eW0XpBuq3SmU9saDJolQSUFTH8QJKm56', NULL, '/uploads/images/1752220531008-gen-n-logo-2.jpg', 1, 'email', NULL, 'student', '2025-07-02 10:34:23', '2025-07-02 10:34:23', NULL, '65b977fd-05a9-4085-b869-08b7d54b1e5c'),
+(7, 'phong@gmail.com', '$2b$10$ugX2PtxQJ5m2A7EqDAT3f.obb7oWpM7EFy3PtUmJrSIIsUH5sKFAO', NULL, '/uploads/images/1752220519021-EDUTIC_LOGO.png', 1, 'email', NULL, 'student', '2025-07-02 10:36:50', '2025-07-02 10:36:50', NULL, '0e1d0cc6-3bb1-4279-b503-c9845a00d9a5');
 
 -- --------------------------------------------------------
 
@@ -4514,24 +4521,114 @@ CREATE TABLE `user_answers` (
 --
 
 INSERT INTO `user_answers` (`id`, `user_exam_attempt_id`, `question_id`, `answer_id`, `user_text_answer`, `is_correct`, `created_at`) VALUES
-(565, 3, 812, 3099, NULL, 0, '2025-07-06 18:17:20'),
-(566, 3, 813, 3103, NULL, 0, '2025-07-06 18:17:20'),
-(567, 3, 814, 3106, NULL, 1, '2025-07-06 18:17:20'),
-(568, 3, 815, 3110, NULL, 0, '2025-07-06 18:17:20'),
-(569, 3, 816, 3115, NULL, 1, '2025-07-06 18:17:20'),
-(570, 3, 817, 3119, NULL, 1, '2025-07-06 18:17:20'),
-(571, 3, 843, 3198, NULL, 0, '2025-07-06 18:17:20'),
-(572, 3, 844, 3203, NULL, 0, '2025-07-06 18:17:20'),
-(573, 3, 845, 3206, NULL, 0, '2025-07-06 18:17:20'),
-(574, 3, 846, 3208, NULL, 1, '2025-07-06 18:17:21'),
-(575, 3, 847, 3213, NULL, 0, '2025-07-06 18:17:21'),
-(576, 3, 848, 3216, NULL, 0, '2025-07-06 18:17:21'),
-(577, 3, 849, 3221, NULL, 0, '2025-07-06 18:17:21'),
-(578, 3, 850, 3227, NULL, 0, '2025-07-06 18:17:21'),
-(579, 3, 851, 3230, NULL, 0, '2025-07-06 18:17:21'),
-(580, 3, 852, 3233, NULL, 0, '2025-07-06 18:17:21'),
-(581, 3, 853, 3239, NULL, 1, '2025-07-06 18:17:21'),
-(582, 3, 854, 3242, NULL, 0, '2025-07-06 18:17:21');
+(650, 9, 682, 2578, NULL, 0, '2025-07-09 22:34:15'),
+(651, 9, 683, 2584, NULL, 0, '2025-07-09 22:34:15'),
+(652, 9, 684, 2588, NULL, 1, '2025-07-09 22:34:15'),
+(653, 9, 685, 2590, NULL, 0, '2025-07-09 22:34:15'),
+(654, 9, 686, 2596, NULL, 0, '2025-07-09 22:34:15'),
+(655, 9, 687, 2601, NULL, 0, '2025-07-09 22:34:15'),
+(656, 9, 688, 2604, NULL, 0, '2025-07-09 22:34:15'),
+(657, 9, 689, 2609, NULL, 0, '2025-07-09 22:34:15'),
+(658, 9, 690, 2612, NULL, 1, '2025-07-09 22:34:15'),
+(659, 9, 691, 2616, NULL, 0, '2025-07-09 22:34:15'),
+(660, 9, 692, 2619, NULL, 1, '2025-07-09 22:34:15'),
+(661, 9, 693, 2623, NULL, 0, '2025-07-09 22:34:15'),
+(662, 9, 712, 2698, NULL, 0, '2025-07-09 22:34:15'),
+(663, 9, 713, 2704, NULL, 0, '2025-07-09 22:34:15'),
+(664, 9, 714, 2708, NULL, 1, '2025-07-09 22:34:15'),
+(665, 9, 715, 2711, NULL, 1, '2025-07-09 22:34:15'),
+(666, 9, 716, 2715, NULL, 1, '2025-07-09 22:34:15'),
+(667, 9, 717, 2721, NULL, 1, '2025-07-09 22:34:15'),
+(668, 9, 718, 2723, NULL, 0, '2025-07-09 22:34:15'),
+(669, 9, 719, 2727, NULL, 0, '2025-07-09 22:34:15'),
+(670, 9, 720, 2733, NULL, 0, '2025-07-09 22:34:15'),
+(671, 9, 721, 2736, NULL, 0, '2025-07-09 22:34:15'),
+(672, 9, 722, 2739, NULL, 0, '2025-07-09 22:34:15'),
+(673, 9, 723, 2744, NULL, 0, '2025-07-09 22:34:15'),
+(674, 10, 682, 2579, NULL, 0, '2025-07-10 08:42:39'),
+(675, 10, 683, 2583, NULL, 0, '2025-07-10 08:42:39'),
+(676, 10, 684, 2588, NULL, 1, '2025-07-10 08:42:39'),
+(677, 10, 685, 2591, NULL, 0, '2025-07-10 08:42:39'),
+(678, 10, 686, 2596, NULL, 0, '2025-07-10 08:42:39'),
+(679, 10, 687, 2600, NULL, 1, '2025-07-10 08:42:39'),
+(680, 10, 688, 2602, NULL, 0, '2025-07-10 08:42:39'),
+(681, 10, 689, 2608, NULL, 0, '2025-07-10 08:42:39'),
+(682, 10, 690, 2613, NULL, 0, '2025-07-10 08:42:39'),
+(683, 10, 691, 2615, NULL, 0, '2025-07-10 08:42:39'),
+(684, 10, 692, 2619, NULL, 1, '2025-07-10 08:42:39'),
+(685, 10, 693, 2625, NULL, 0, '2025-07-10 08:42:39'),
+(686, 10, 694, 2628, NULL, 0, '2025-07-10 08:42:39'),
+(687, 10, 695, 2630, NULL, 0, '2025-07-10 08:42:39'),
+(688, 10, 696, 2636, NULL, 1, '2025-07-10 08:42:39'),
+(689, 10, 697, 2638, NULL, 0, '2025-07-10 08:42:39'),
+(690, 10, 698, 2642, NULL, 1, '2025-07-10 08:42:39'),
+(691, 10, 699, 2649, NULL, 0, '2025-07-10 08:42:39'),
+(692, 10, 700, 2652, NULL, 0, '2025-07-10 08:42:39'),
+(693, 10, 701, 2656, NULL, 0, '2025-07-10 08:42:39'),
+(694, 10, 702, 2661, NULL, 0, '2025-07-10 08:42:39'),
+(695, 10, 703, 2663, NULL, 0, '2025-07-10 08:42:39'),
+(696, 10, 704, 2667, NULL, 1, '2025-07-10 08:42:39'),
+(697, 10, 705, 2673, NULL, 1, '2025-07-10 08:42:39'),
+(698, 10, 706, 2676, NULL, 0, '2025-07-10 08:42:39'),
+(699, 10, 707, 2681, NULL, 0, '2025-07-10 08:42:39'),
+(700, 10, 708, 2685, NULL, 1, '2025-07-10 08:42:39'),
+(701, 10, 709, 2687, NULL, 0, '2025-07-10 08:42:39'),
+(702, 10, 710, 2690, NULL, 1, '2025-07-10 08:42:39'),
+(703, 10, 711, 2696, NULL, 0, '2025-07-10 08:42:39'),
+(704, 10, 758, 2882, NULL, 0, '2025-07-10 08:42:39'),
+(705, 10, 759, 2887, NULL, 0, '2025-07-10 08:42:39'),
+(706, 10, 760, 2890, NULL, 0, '2025-07-10 08:42:39'),
+(707, 10, 761, 2894, NULL, 0, '2025-07-10 08:42:39'),
+(708, 10, 762, 2898, NULL, 0, '2025-07-10 08:42:39'),
+(709, 10, 763, 2903, NULL, 0, '2025-07-10 08:42:39'),
+(710, 10, 764, 2907, NULL, 0, '2025-07-10 08:42:39'),
+(711, 10, 765, 2910, NULL, 0, '2025-07-10 08:42:39'),
+(712, 10, 766, 2914, NULL, 0, '2025-07-10 08:42:39'),
+(713, 10, 767, 2918, NULL, 0, '2025-07-10 08:42:39'),
+(714, 10, 768, 2922, NULL, 0, '2025-07-10 08:42:39'),
+(715, 10, 769, 2926, NULL, 0, '2025-07-10 08:42:39'),
+(716, 10, 770, 2929, NULL, 1, '2025-07-10 08:42:39'),
+(717, 10, 771, 2934, NULL, 0, '2025-07-10 08:42:39'),
+(718, 10, 772, 2940, NULL, 0, '2025-07-10 08:42:39'),
+(719, 10, 773, 2944, NULL, 0, '2025-07-10 08:42:39'),
+(720, 10, 774, 2946, NULL, 0, '2025-07-10 08:42:39'),
+(721, 10, 775, 2951, NULL, 0, '2025-07-10 08:42:39'),
+(722, 10, 776, 2954, NULL, 0, '2025-07-10 08:42:39'),
+(723, 10, 777, 2958, NULL, 0, '2025-07-10 08:42:39'),
+(724, 10, 778, 2961, NULL, 1, '2025-07-10 08:42:39'),
+(725, 10, 779, 2967, NULL, 0, '2025-07-10 08:42:39'),
+(726, 10, 780, 2971, NULL, 0, '2025-07-10 08:42:39'),
+(727, 10, 781, 2975, NULL, 0, '2025-07-10 08:42:39'),
+(728, 10, 782, 2978, NULL, 0, '2025-07-10 08:42:39'),
+(729, 10, 783, 2983, NULL, 0, '2025-07-10 08:42:39'),
+(730, 10, 784, 2987, NULL, 0, '2025-07-10 08:42:39'),
+(731, 10, 785, 2991, NULL, 0, '2025-07-10 08:42:39'),
+(732, 10, 786, 2993, NULL, 1, '2025-07-10 08:42:39'),
+(733, 10, 787, 3000, NULL, 0, '2025-07-10 08:42:39'),
+(734, 10, 788, 3001, NULL, 1, '2025-07-10 08:42:39'),
+(735, 10, 789, 3008, NULL, 0, '2025-07-10 08:42:39'),
+(736, 10, 790, 3011, NULL, 0, '2025-07-10 08:42:39'),
+(737, 10, 791, 3013, NULL, 1, '2025-07-10 08:42:39'),
+(738, 10, 792, 3020, NULL, 0, '2025-07-10 08:42:39'),
+(739, 10, 793, 3024, NULL, 0, '2025-07-10 08:42:39'),
+(740, 10, 794, 3025, NULL, 1, '2025-07-10 08:42:39'),
+(741, 10, 795, 3032, NULL, 0, '2025-07-10 08:42:39'),
+(742, 10, 796, 3035, NULL, 0, '2025-07-10 08:42:39'),
+(743, 10, 797, 3037, NULL, 1, '2025-07-10 08:42:39'),
+(744, 10, 798, 3044, NULL, 0, '2025-07-10 08:42:39'),
+(745, 10, 799, 3046, NULL, 0, '2025-07-10 08:42:39'),
+(746, 10, 800, 3050, NULL, 0, '2025-07-10 08:42:39'),
+(747, 10, 801, 3053, NULL, 1, '2025-07-10 08:42:39'),
+(748, 10, 802, 3059, NULL, 0, '2025-07-10 08:42:39'),
+(749, 10, 803, 3061, NULL, 1, '2025-07-10 08:42:39'),
+(750, 10, 804, 3066, NULL, 0, '2025-07-10 08:42:39'),
+(751, 10, 805, 3070, NULL, 0, '2025-07-10 08:42:39'),
+(752, 10, 806, 3073, NULL, 1, '2025-07-10 08:42:39'),
+(753, 10, 807, 3077, NULL, 1, '2025-07-10 08:42:39'),
+(754, 10, 808, 3084, NULL, 0, '2025-07-10 08:42:39'),
+(755, 10, 809, 3085, NULL, 1, '2025-07-10 08:42:39'),
+(756, 10, 810, 3091, NULL, 0, '2025-07-10 08:42:39'),
+(757, 10, 811, 3093, NULL, 1, '2025-07-10 08:42:39');
 
 -- --------------------------------------------------------
 
@@ -4554,13 +4651,12 @@ CREATE TABLE `user_attempt_parts` (
 --
 
 INSERT INTO `user_attempt_parts` (`id`, `user_exam_attempt_id`, `part_id`, `order_index`, `ai_feedback_id`, `score`, `created_at`) VALUES
-(4, 3, 49, 1, 9, 10, '2025-07-06 07:09:16'),
-(5, 3, 47, 2, 8, 15, '2025-07-06 07:09:16'),
-(6, 3, 48, 3, NULL, 0, '2025-07-06 07:09:16'),
-(7, 3, 50, 4, NULL, 0, '2025-07-06 07:09:16'),
-(8, 3, 51, 5, NULL, 0, '2025-07-06 07:09:16'),
-(9, 3, 52, 6, NULL, 0, '2025-07-06 07:09:16'),
-(10, 3, 53, 7, NULL, 0, '2025-07-06 07:09:16');
+(19, 8, 43, 1, 21, 35, '2025-07-09 01:36:48'),
+(20, 8, 45, 2, 22, 15, '2025-07-09 01:36:48'),
+(21, 9, 43, 1, 17, 15, '2025-07-09 15:32:56'),
+(22, 9, 44, 2, 18, 20, '2025-07-09 15:32:56'),
+(23, 10, 43, 1, 19, 45, '2025-07-10 01:37:11'),
+(24, 10, 46, 2, 20, 65, '2025-07-10 01:37:11');
 
 -- --------------------------------------------------------
 
@@ -4572,6 +4668,7 @@ CREATE TABLE `user_exam_attempts` (
   `id` int NOT NULL,
   `user_id` int NOT NULL,
   `exam_id` int NOT NULL,
+  `estimated_time` int NOT NULL,
   `start_time` datetime DEFAULT NULL,
   `end_time` datetime DEFAULT NULL,
   `score` int DEFAULT NULL,
@@ -4583,8 +4680,10 @@ CREATE TABLE `user_exam_attempts` (
 -- Đang đổ dữ liệu cho bảng `user_exam_attempts`
 --
 
-INSERT INTO `user_exam_attempts` (`id`, `user_id`, `exam_id`, `start_time`, `end_time`, `score`, `status`, `created_at`) VALUES
-(3, 2, 8, '2025-07-06 18:11:13', '2025-07-06 18:17:20', 25, 'completed', '2025-07-06 14:09:16');
+INSERT INTO `user_exam_attempts` (`id`, `user_id`, `exam_id`, `estimated_time`, `start_time`, `end_time`, `score`, `status`, `created_at`) VALUES
+(8, 2, 7, 19, '2025-07-10 21:50:06', '2025-07-10 21:53:22', 50, 'abandoned', '2025-07-09 08:36:48'),
+(9, 2, 7, 24, '2025-07-09 22:32:57', '2025-07-09 22:34:15', 35, 'completed', '2025-07-09 22:32:56'),
+(10, 2, 7, 71, '2025-07-10 08:38:15', '2025-07-10 08:42:39', 110, 'completed', '2025-07-10 08:37:11');
 
 -- --------------------------------------------------------
 
@@ -4695,29 +4794,26 @@ CREATE TABLE `vocabularies` (
 --
 
 INSERT INTO `vocabularies` (`id`, `word`, `image_url`, `pronunciation`, `speech_audio_url`, `meaning`, `example`, `context`, `status`, `created_at`, `updated_at`) VALUES
-(4, 'efficient', NULL, NULL, NULL, 'hiệu quả', 'She designed an efficient workflow...', 'business', 'pending', '2025-06-20 13:51:25', '2025-06-20 13:51:25'),
-(5, 'She’s eating', NULL, NULL, NULL, 'Cô ấy đang ăn', 'She’s eating in a picnic area.', 'casual', 'pending', '2025-06-21 18:55:02', '2025-06-21 18:55:02'),
-(6, 'again', 'again.jpg', '/əˈɡen/', 'again.mp3', 'Once more; another time.', 'Can you say that again?', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(7, 'clean', 'clean.jpg', '/kliːn/', 'clean.mp3', 'Free from dirt or mess.', 'She likes to keep her room clean.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(8, 'close', 'close.png', '/kloʊz/', 'close.mp3', 'To shut something.', 'Please close the door when you leave.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(9, 'cold', 'cold.jpg', '/koʊld/', 'cold.mp3', 'Having a low temperature.', 'It’s very cold outside today.', 'health', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(10, 'come', 'come.jpg', '/kʌm/', 'come.mp3', 'To move toward someone or something.', 'Can you come here for a minute?', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(11, 'doctor', 'doctor.png', '/ˈdɒktər/', 'doctor.mp3', 'A person who treats sick people.', 'The doctor gave me medicine.', 'career', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(12, 'dream', 'dream.jpg', '/driːm/', 'dream.mp3', 'Thoughts during sleep or a goal.', 'I had a strange dream last night.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(13, 'give', 'give.jpg', '/ɡɪv/', 'give.mp3', 'To offer something to someone.', 'She will give you a gift.', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(14, 'make', 'make.jpg', '/meɪk/', 'make.mp3', 'To create or build something.', 'Let’s make a cake together.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(15, 'peace', 'peace.jpg', '/piːs/', 'peace.mp3', 'A state of calm and no war.', 'The world needs more peace.', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(16, 'popular', 'popular.jpg', '/ˈpɒpjələr/', 'popular.mp3', 'Liked by many people.', 'He is very popular at school.', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(17, 'right', 'right.jpg', '/raɪt/', 'right.mp3', 'Correct or a direction.', 'You were right about the answer.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(18, 'small', 'small.jpg', '/smɔːl/', 'small.mp3', 'Not large in size.', 'That’s a small dog.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(19, 'so', 'so.jpg', '/soʊ/', 'so.mp3', 'To a great extent.', 'I am so happy today.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(20, 'some', 'some.jpg', '/sʌm/', 'some.mp3', 'An unspecified amount.', 'I have some cookies to share.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(21, 'stone', 'stone.jpg', '/stoʊn/', 'stone.mp3', 'A hard, solid material.', 'He threw a stone into the lake.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(22, 'such', 'such.png', '/sʌtʃ/', 'such.mp3', 'Of a kind or degree.', 'It was such a nice day.', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(23, 'there', 'there.jpg', '/ðer/', 'there.mp3', 'In that place.', 'The book is over there.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(24, 'think', 'think.jpg', '/θɪŋk/', 'think.mp3', 'To use your mind to consider.', 'I think it will rain today.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(25, 'wait', 'wait.jpg', '/weɪt/', 'wait.mp3', 'To stay until something happens.', 'Please wait for your turn.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
-(26, 'The man', NULL, NULL, NULL, 'Người đàn ông', 'The man is standing in the snow beside a car.', 'business', 'pending', '2025-06-21 23:19:08', '2025-06-21 23:19:08');
+(6, 'again', '/uploads/images/again.jpg', '/əˈɡen/', '/uploads/audio/again.mp3', 'Once more; another time.', 'Can you say that again?', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(7, 'clean', '/uploads/images/clean.jpg', '/kliːn/', '/uploads/audio/clean.mp3', 'Free from dirt or mess.', 'She likes to keep her room clean.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(8, 'close', '/uploads/images/close.png', '/kloʊz/', '/uploads/audio/close.mp3', 'To shut something.', 'Please close the door when you leave.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(9, 'cold', '/uploads/images/cold.jpg', '/koʊld/', '/uploads/audio/cold.mp3', 'Having a low temperature.', 'It’s very cold outside today.', 'health', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(10, 'come', '/uploads/images/come.jpg', '/kʌm/', '/uploads/audio/come.mp3', 'To move toward someone or something.', 'Can you come here for a minute?', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(11, 'doctor', '/uploads/images/doctor.png', '/ˈdɒktər/', '/uploads/audio/doctor.mp3', 'A person who treats sick people.', 'The doctor gave me medicine.', 'career', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(12, 'dream', '/uploads/images/dream.jpg', '/driːm/', '/uploads/audio/dream.mp3', 'Thoughts during sleep or a goal.', 'I had a strange dream last night.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(13, 'give', '/uploads/images/give.jpg', '/ɡɪv/', '/uploads/audio/give.mp3', 'To offer something to someone.', 'She will give you a gift.', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(14, 'make', '/uploads/images/make.jpg', '/meɪk/', '/uploads/audio/make.mp3', 'To create or build something.', 'Let’s make a cake together.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(15, 'peace', '/uploads/images/peace.jpg', '/piːs/', '/uploads/audio/peace.mp3', 'A state of calm and no war.', 'The world needs more peace.', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(16, 'popular', '/uploads/images/popular.jpg', '/ˈpɒpjələr/', '/uploads/audio/popular.mp3', 'Liked by many people.', 'He is very popular at school.', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(17, 'right', '/uploads/images/right.jpg', '/raɪt/', '/uploads/audio/right.mp3', '', 'You were right about the answer.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(18, 'small', '/uploads/images/small.jpg', '/smɔːl/', '/uploads/audio/small.mp3', 'Not large in size.', 'That’s a small dog.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(19, 'so', '/uploads/images/so.jpg', '/soʊ/', '/uploads/audio/so.mp3', 'To a great extent.', 'I am so happy today.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(20, 'some', '/uploads/images/some.jpg', '/sʌm/', '/uploads/audio/some.mp3', 'An unspecified amount.', 'I have some cookies to share.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(21, 'stone', '/uploads/images/stone.jpg', '/stoʊn/', '/uploads/audio/stone.mp3', 'A hard, solid material.', 'He threw a stone into the lake.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(22, 'such', '/uploads/images/such.png', '/sʌtʃ/', '/uploads/audio/such.mp3', 'Of a kind or degree.', 'It was such a nice day.', 'daily communication', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(23, 'there', '/uploads/images/there.jpg', '/ðer/', '/uploads/audio/there.mp3', 'In that place.', 'The book is over there.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(24, 'think', '/uploads/images/think.jpg', '/θɪŋk/', '/uploads/audio/think.mp3', 'To use your mind to consider.', 'I think it will rain today.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41'),
+(25, 'wait', '/uploads/images/wait.jpg', '/weɪt/', '/uploads/audio/wait.mp3', 'To stay until something happens.', 'Please wait for your turn.', 'casual', 'approved', '2025-06-21 19:53:41', '2025-06-21 19:53:41');
 
 --
 -- Chỉ mục cho các bảng đã đổ
@@ -4929,7 +5025,7 @@ ALTER TABLE `vocabularies`
 -- AUTO_INCREMENT cho bảng `ai_feedbacks`
 --
 ALTER TABLE `ai_feedbacks`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT cho bảng `ai_generated_contents`
@@ -4989,7 +5085,7 @@ ALTER TABLE `leader_boards`
 -- AUTO_INCREMENT cho bảng `listening_transcripts`
 --
 ALTER TABLE `listening_transcripts`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT cho bảng `parts`
@@ -5031,7 +5127,7 @@ ALTER TABLE `study_sessions`
 -- AUTO_INCREMENT cho bảng `translations`
 --
 ALTER TABLE `translations`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4888;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4889;
 
 --
 -- AUTO_INCREMENT cho bảng `users`
@@ -5043,19 +5139,19 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT cho bảng `user_answers`
 --
 ALTER TABLE `user_answers`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=583;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=804;
 
 --
 -- AUTO_INCREMENT cho bảng `user_attempt_parts`
 --
 ALTER TABLE `user_attempt_parts`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT cho bảng `user_exam_attempts`
 --
 ALTER TABLE `user_exam_attempts`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT cho bảng `user_profiles`
@@ -5079,7 +5175,7 @@ ALTER TABLE `user_settings`
 -- AUTO_INCREMENT cho bảng `vocabularies`
 --
 ALTER TABLE `vocabularies`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- Ràng buộc đối với các bảng kết xuất

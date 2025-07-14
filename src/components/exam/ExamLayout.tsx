@@ -75,6 +75,10 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isTimerPaused, setIsTimerPaused] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [violationCount, setViolationCount] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showWarningModal, setShowWarningModal] = useState(false);
 
   const router = useRouter();
 
@@ -91,10 +95,6 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
       handleCancel();
     },
   });
-
-  useEffect(() => {
-    if (examAttemptId) loadData(examAttemptId);
-  }, [examAttemptId]);
 
   // Get time for each skill (in minutes)
   const getSkillTime = (skill: string) => {
@@ -171,7 +171,9 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
         return;
       }
 
-      router.push(`${ROUTES.EXAM.OVERVIEW}/${data?.exam_id}`);
+      router.push(
+        ROUTES.EXAM.OVERVIEW_HISTORY(data!.exam_id!.toString(), examAttemptId)
+      );
     } catch (error) {
       console.error("Failed to fetch exam info:", error);
       setSubmitError(
@@ -235,6 +237,60 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
       .toString()
       .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement
+        .requestFullscreen()
+        .catch((err) =>
+          console.error("Error attempting to enable full-screen mode:", err)
+        );
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
+  useEffect(() => {
+    const handleChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener("fullscreenchange", handleChange);
+    return () => document.removeEventListener("fullscreenchange", handleChange);
+  }, []);
+
+  // useEffect(() => {
+  //   const handleBlur = () => {
+  //     setViolationCount((prev) => prev + 1);
+  //     setShowWarningModal(true);
+  //   };
+
+  //   const handleVisibilityChange = () => {
+  //     if (document.hidden) {
+  //       setViolationCount((prev) => prev + 1);
+  //       setShowWarningModal(true);
+  //     }
+  //   };
+
+  //   window.addEventListener("blur", handleBlur);
+  //   document.addEventListener("visibilitychange", handleVisibilityChange);
+
+  //   return () => {
+  //     window.removeEventListener("blur", handleBlur);
+  //     document.removeEventListener("visibilitychange", handleVisibilityChange);
+  //   };
+  // }, []);
+
+  useEffect(() => {
+    if (examAttemptId) loadData(examAttemptId);
+  }, [examAttemptId]);
+
+  useEffect(() => {
+    if (violationCount >= 3) {
+      // Vi phạm 3 lần sẽ bị huỷ bài
+      handleCancel(); // Hàm này bạn đã có để hủy bài
+    }
+  }, [violationCount]);
 
   const handleSkillChange = (
     skill: "listening" | "reading" | "writing" | "speaking"
@@ -384,6 +440,7 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
       return;
     }
 
+    setTimeLeft(null);
     submitExam();
   };
 
@@ -400,6 +457,21 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-xl font-semibold text-gray-800">{examTitle}</h1>
+            <p className="text-sm text-red-600 ms-2">
+              Cảnh báo: Bạn đã vi phạm {violationCount} lần (tối đa 3 lần)
+            </p>
+            <button
+              onClick={toggleFullscreen}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                isFullscreen
+                  ? "bg-red-500 hover:bg-red-600 text-white"
+                  : "bg-blue-600 hover:bg-blue-700 text-white"
+              }`}
+            >
+              {isFullscreen
+                ? "Thoát toàn màn hình"
+                : "Vào chế độ toàn màn hình"}
+            </button>
 
             {/* Proctoring status indicator */}
             {proctoringSystem.proctoringEnabled && (
@@ -443,12 +515,12 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
               </div>
             )}
 
-            <Link
-              href={ROUTES.BASE_URL}
+            <button
+              onClick={() => setShowCancelModal(true)}
               className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
             >
               Thoát
-            </Link>
+            </button>
           </div>
         </div>
       </div>
@@ -597,12 +669,67 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
               </div>
             </div>
           )}
+
+          {showCancelModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
+                <h2 className="text-lg font-semibold mb-4 text-red-600">
+                  Xác nhận thoát bài thi
+                </h2>
+                <p className="text-gray-700 mb-4">
+                  Bạn có chắc chắn muốn thoát? Bài thi của bạn sẽ bị huỷ và
+                  không thể tiếp tục.
+                </p>
+                <div className="flex justify-end space-x-3">
+                  <button
+                    className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg text-sm"
+                    onClick={() => setShowCancelModal(false)}
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm"
+                    onClick={() => {
+                      setShowCancelModal(false);
+                      handleCancel();
+                    }}
+                  >
+                    Xác nhận thoát
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showWarningModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+              <div className="bg-white p-6 rounded-lg shadow-xl text-center max-w-md">
+                <h2 className="text-lg font-semibold mb-2 text-red-600">
+                  Cảnh báo vi phạm!
+                </h2>
+                <p className="text-sm text-gray-700 mb-4">
+                  Bạn vừa rời khỏi màn hình làm bài. Vui lòng tập trung, nếu vi
+                  phạm 3 lần bài thi sẽ bị huỷ.
+                </p>
+                <button
+                  onClick={() => setShowWarningModal(false)}
+                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                >
+                  Tôi hiểu rồi
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Proctoring Camera */}
           <ExamProctoring
             isEnabled={proctoringSystem.proctoringEnabled}
             onViolation={proctoringSystem.handleViolation}
             onPauseTimer={(pause) => setIsTimerPaused(pause)}
+            isTimerPaused={proctoringSystem.isTimerPaused}
             currentSkill="reading"
+            noiseThreshold={15} // Ngưỡng tạp âm thấp hơn cho môi trường yên tĩnh
+            voiceThreshold={25} // Ngưỡng phát hiện tiếng nói
           />
           {/* {activeSkill} */}
 

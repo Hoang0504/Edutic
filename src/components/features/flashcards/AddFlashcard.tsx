@@ -124,7 +124,7 @@ export default function AddFlashcard({ text }: { text: string }) {
   return (
     <div
       ref={containerRef}
-      className="p-4 bg-gray-50 rounded border text-gray-800 whitespace-pre-wrap cursor-text transitive"
+      className="p-4 rounded border text-gray-800 whitespace-pre-wrap cursor-text transitive"
     >
       <p>{text.replace(/\n/g, "\n")}</p>
       {selectedWord && position && (

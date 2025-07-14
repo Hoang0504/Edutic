@@ -36,7 +36,8 @@ const API_ENDPOINTS = {
 
   EXAM_ATTEMPTS: {
     INFO: (id: string) => `${BASE_URL}/exam-attempts/${id}/info`,
-    DETAILS: (id: string) => `${BASE_URL}/exam-attempts/${id}/details`,
+    DETAILS: (id: string, userId: string) =>
+      `${BASE_URL}/exam-attempts/${id}/details?user_id=${userId}`,
     PART: (id: string, partNumber: string) =>
       `${BASE_URL}/exam-attempts/${id}/parts/${partNumber}/overview`,
     QUESTION_DETAILS: (id: string, questionId: string) =>
@@ -56,7 +57,10 @@ const API_ENDPOINTS = {
     INFO: `${BASE_URL}/exam/info`,
   },
 
-  EXAMS: `${BASE_URL}/exams`,
+  EXAMS: {
+    BASE: `${BASE_URL}/exams`,
+    LATEST: `${BASE_URL}/exams?latest=true`,
+  },
 
   // Add other endpoints
   AUTH: {

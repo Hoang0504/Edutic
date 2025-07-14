@@ -46,7 +46,10 @@ function SmartListening({ audio_id }: { audio_id: string }) {
   };
 
   const fetchData = async (audio_id: string) => {
-    setRouteLoading(pathname ?? `/luyen-nghe-thong-minh/${audio_id}`, true);
+    setRouteLoading(
+      pathname ?? `/practice-listening-transript/${audio_id}`,
+      true
+    );
     try {
       const res = await fetch(`/api/listening-transcripts/${audio_id}`);
       const result = await res.json();
@@ -63,7 +66,10 @@ function SmartListening({ audio_id }: { audio_id: string }) {
       setNotFound(true);
       setData(null);
     } finally {
-      setRouteLoading(pathname ?? `/luyen-nghe-thong-minh/${audio_id}`, false);
+      setRouteLoading(
+        pathname ?? `/practice-listening-transript/${audio_id}`,
+        false
+      );
     }
   };
 
@@ -73,7 +79,7 @@ function SmartListening({ audio_id }: { audio_id: string }) {
     }
   }, [audio_id]);
 
-  if (routeLoading[pathname ?? `/luyen-nghe-thong-minh/${audio_id}`]) {
+  if (routeLoading[pathname ?? `/practice-listening-transript/${audio_id}`]) {
     return <FullPageLoading />;
   }
 
@@ -93,7 +99,7 @@ function SmartListening({ audio_id }: { audio_id: string }) {
 
       <audio
         ref={audioRef}
-        src={`/exam_audio/${data?.audio_path}`}
+        src={`${data?.audio_path}`}
         controls
         className="w-full rounded"
       />

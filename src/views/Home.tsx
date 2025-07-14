@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useState } from "react";
 import {
   AcademicCapIcon,
   ClockIcon,
@@ -9,58 +10,22 @@ import {
   ChartBarIcon,
 } from "@heroicons/react/24/outline";
 
-import API_ENDPOINTS from "@/constants/api";
-import FlashcardOverview from "@/components/features/flashcards/FlashcardOverview";
-
-import { useTranslation } from "@/contexts/I18nContext";
-import Link from "next/link";
 import ROUTES from "@/constants/routes";
 import FullPageLoading from "@/components/features/FullPageLoading";
+import FlashcardOverview from "@/components/features/flashcards/FlashcardOverview";
+
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "@/contexts/I18nContext";
+import { useLatestTests, useRecentAttempts } from "@/hooks/useHomeData";
 
 function HomePage() {
-  const { token } = useAuth();
+  const { user, token, isLoading } = useAuth();
 
-  const [latestTests, setLatestTests] = useState<any[]>([]);
-  const [recentTests, setRecentTests] = useState<any[]>([]);
+  const { data: latestTests = [], isLoading: loadingLatest } = useLatestTests();
+  const { data: recentTests = [], isLoading: loadingRecent } =
+    useRecentAttempts(token ?? undefined);
 
   const { t } = useTranslation();
-
-  useEffect(() => {
-    const fetchLatestTests = async () => {
-      try {
-        const res = await fetch(`${API_ENDPOINTS.EXAMS}?latest=true`);
-        const data = await res.json();
-        setLatestTests(data); // lấy tối đa 6 bài
-      } catch (err) {
-        console.error("Lỗi khi lấy danh sách đề thi mới nhất:", err);
-      }
-    };
-
-    fetchLatestTests();
-  }, []);
-
-  useEffect(() => {
-    const fetchRecentAttempts = async () => {
-      try {
-        const res = await fetch(API_ENDPOINTS.EXAM_ATTEMPTS.RECENT, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await res.json();
-
-        // console.log(data);
-
-        setRecentTests(data);
-      } catch (err) {
-        console.error("Lỗi khi lấy kết quả thi gần nhất:", err);
-      }
-    };
-    if (token) {
-      fetchRecentAttempts();
-    }
-  }, [token]);
 
   const [targetScores, setTargetScores] = useState({
     listening: 400,
@@ -69,21 +34,6 @@ function HomePage() {
     writing: 150,
   });
   const [isEditingTarget, setIsEditingTarget] = useState(false);
-
-  // const recentTests = [
-  //   { id: 1, title: "Bài 1", status: "Xem chi tiết" },
-  //   { id: 2, title: "Bài 1", status: "Xem chi tiết" },
-  //   { id: 3, title: "Bài 1", status: "Xem chi tiết" },
-  // ];
-
-  // const latestTests = [
-  //   { id: 1, title: "TOEIC Full Test 1 - ETS 2024", status: "Xem chi tiết" },
-  //   { id: 2, title: "TOEIC Full Test 2 - ETS 2024", status: "Xem chi tiết" },
-  //   { id: 3, title: "TOEIC Full Test 1 - ETS 2025", status: "Xem chi tiết" },
-  //   { id: 4, title: "TOEIC Full Test 8 - ETS 2023", status: "Xem chi tiết" },
-  //   { id: 5, title: "TOEIC Full Test 1 - ETS 2024", status: "Xem chi tiết" },
-  //   { id: 6, title: "TOEIC Full Test 1 - ETS 2024", status: "Xem chi tiết" },
-  // ];
 
   // Mock data for online members
   const onlineMembers = [
@@ -146,181 +96,198 @@ function HomePage() {
     }));
   };
 
+  if (isLoading) return <FullPageLoading />;
+
   return (
     <div className="px-2 sm:px-4 md:px-6 lg:px-8">
       {/* Greeting Section */}
-      <div className="mb-4 sm:mb-6">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
-          {t("home.greeting", "Xin chào, {{name}}!", { name: "Tên" })}
-        </h1>
-        <p className="text-gray-600 text-sm sm:text-base">
-          {t(
-            "home.welcomeBack",
-            "Chào mừng bạn trở lại với Edutic. Hãy bắt đầu hành trình học tập hôm nay!"
-          )}
-        </p>
-      </div>
+      {user ? (
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
+            {t("home.greeting", "Xin chào, {{name}}!", { name: user.name })}
+          </h1>
+          <p className="text-gray-600 text-sm sm:text-base">
+            {t(
+              "home.welcomeBack",
+              "Chào mừng bạn trở lại với Edutic. Hãy bắt đầu hành trình học tập hôm nay!"
+            )}
+          </p>
+        </div>
+      ) : (
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
+            {t("home.defaultGreeting")}
+          </h1>
+          <p className="text-gray-600 text-sm sm:text-base">
+            {t("home.defaultMessage")}
+          </p>
+        </div>
+      )}
 
       {/* Main Layout - Adjusted columns */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-2 sm:gap-4">
         {/* Left Column - Main Content */}
         <div className="md:col-span-9 order-2 lg:order-1">
           {/* Statistics Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <ClockIcon className="w-6 h-6 text-blue-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    {t("home.nearestExam", "Kỳ thi gần nhất")}
-                  </p>
-                  <p className="text-xl font-bold text-gray-900">5 ngày</p>
+          {user && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <ClockIcon className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("home.nearestExam", "Kỳ thi gần nhất")}
+                    </p>
+                    <p className="text-xl font-bold text-gray-900">5 ngày</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <AcademicCapIcon className="w-6 h-6 text-green-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    {t("home.examDate", "Ngày dự thi")}
-                  </p>
-                  <p className="text-xl font-bold text-gray-900">15/12/2024</p>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <AcademicCapIcon className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("home.examDate", "Ngày dự thi")}
+                    </p>
+                    <p className="text-xl font-bold text-gray-900">
+                      15/12/2024
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-yellow-100 rounded-lg">
-                  <TrophyIcon className="w-6 h-6 text-yellow-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    {t("home.targetScore", "Target Score")}
-                  </p>
-                  {isEditingTarget ? (
-                    <div className="space-y-2">
-                      <div className="grid grid-cols-2 gap-1">
-                        <div>
-                          <label className="text-xs text-gray-500">
-                            {t("home.skill.listening", "Nghe")}
-                          </label>
-                          <input
-                            type="number"
-                            value={targetScores.listening}
-                            onChange={(e) =>
-                              updateTargetScore(
-                                "listening",
-                                Number(e.target.value)
-                              )
-                            }
-                            className="w-full px-1 py-1 border border-gray-300 rounded text-center text-xs"
-                            min="0"
-                            max="495"
-                          />
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-yellow-100 rounded-lg">
+                    <TrophyIcon className="w-6 h-6 text-yellow-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("home.targetScore", "Target Score")}
+                    </p>
+                    {isEditingTarget ? (
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-1">
+                          <div>
+                            <label className="text-xs text-gray-500">
+                              {t("home.skill.listening", "Nghe")}
+                            </label>
+                            <input
+                              type="number"
+                              value={targetScores.listening}
+                              onChange={(e) =>
+                                updateTargetScore(
+                                  "listening",
+                                  Number(e.target.value)
+                                )
+                              }
+                              className="w-full px-1 py-1 border border-gray-300 rounded text-center text-xs"
+                              min="0"
+                              max="495"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-gray-500">
+                              {t("home.skill.speaking", "Nói")}
+                            </label>
+                            <input
+                              type="number"
+                              value={targetScores.speaking}
+                              onChange={(e) =>
+                                updateTargetScore(
+                                  "speaking",
+                                  Number(e.target.value)
+                                )
+                              }
+                              className="w-full px-1 py-1 border border-gray-300 rounded text-center text-xs"
+                              min="0"
+                              max="200"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-gray-500">
+                              {t("home.skill.reading", "Đọc")}
+                            </label>
+                            <input
+                              type="number"
+                              value={targetScores.reading}
+                              onChange={(e) =>
+                                updateTargetScore(
+                                  "reading",
+                                  Number(e.target.value)
+                                )
+                              }
+                              className="w-full px-1 py-1 border border-gray-300 rounded text-center text-xs"
+                              min="0"
+                              max="495"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-gray-500">
+                              {t("home.skill.writing", "Viết")}
+                            </label>
+                            <input
+                              type="number"
+                              value={targetScores.writing}
+                              onChange={(e) =>
+                                updateTargetScore(
+                                  "writing",
+                                  Number(e.target.value)
+                                )
+                              }
+                              className="w-full px-1 py-1 border border-gray-300 rounded text-center text-xs"
+                              min="0"
+                              max="200"
+                            />
+                          </div>
                         </div>
-                        <div>
-                          <label className="text-xs text-gray-500">
-                            {t("home.skill.speaking", "Nói")}
-                          </label>
-                          <input
-                            type="number"
-                            value={targetScores.speaking}
-                            onChange={(e) =>
-                              updateTargetScore(
-                                "speaking",
-                                Number(e.target.value)
-                              )
-                            }
-                            className="w-full px-1 py-1 border border-gray-300 rounded text-center text-xs"
-                            min="0"
-                            max="200"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs text-gray-500">
-                            {t("home.skill.reading", "Đọc")}
-                          </label>
-                          <input
-                            type="number"
-                            value={targetScores.reading}
-                            onChange={(e) =>
-                              updateTargetScore(
-                                "reading",
-                                Number(e.target.value)
-                              )
-                            }
-                            className="w-full px-1 py-1 border border-gray-300 rounded text-center text-xs"
-                            min="0"
-                            max="495"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs text-gray-500">
-                            {t("home.skill.writing", "Viết")}
-                          </label>
-                          <input
-                            type="number"
-                            value={targetScores.writing}
-                            onChange={(e) =>
-                              updateTargetScore(
-                                "writing",
-                                Number(e.target.value)
-                              )
-                            }
-                            className="w-full px-1 py-1 border border-gray-300 rounded text-center text-xs"
-                            min="0"
-                            max="200"
-                          />
-                        </div>
+                        <button
+                          onClick={() => setIsEditingTarget(false)}
+                          className="text-xs text-green-600 hover:text-green-800"
+                        >
+                          ✓ {t("home.save", "Lưu")}
+                        </button>
                       </div>
-                      <button
-                        onClick={() => setIsEditingTarget(false)}
-                        className="text-xs text-green-600 hover:text-green-800"
-                      >
-                        ✓ {t("home.save", "Lưu")}
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span>
-                          {t("home.skill.listening", "Nghe")}:{" "}
-                          {targetScores.listening}
-                        </span>
-                        <span>
-                          {t("home.skill.speaking", "Nói")}:{" "}
-                          {targetScores.speaking}
-                        </span>
+                    ) : (
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-xs">
+                          <span>
+                            {t("home.skill.listening", "Nghe")}:{" "}
+                            {targetScores.listening}
+                          </span>
+                          <span>
+                            {t("home.skill.speaking", "Nói")}:{" "}
+                            {targetScores.speaking}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span>
+                            {t("home.skill.reading", "Đọc")}:{" "}
+                            {targetScores.reading}
+                          </span>
+                          <span>
+                            {t("home.skill.writing", "Viết")}:{" "}
+                            {targetScores.writing}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => setIsEditingTarget(true)}
+                          className="text-xs text-blue-600 hover:text-blue-800"
+                        >
+                          ✏️ {t("home.edit", "Chỉnh sửa")}
+                        </button>
                       </div>
-                      <div className="flex justify-between text-xs">
-                        <span>
-                          {t("home.skill.reading", "Đọc")}:{" "}
-                          {targetScores.reading}
-                        </span>
-                        <span>
-                          {t("home.skill.writing", "Viết")}:{" "}
-                          {targetScores.writing}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => setIsEditingTarget(true)}
-                        className="text-xs text-blue-600 hover:text-blue-800"
-                      >
-                        ✏️ {t("home.edit", "Chỉnh sửa")}
-                      </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Recent Results & Latest Tests */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-4 mb-4 sm:mb-6">
@@ -329,26 +296,46 @@ function HomePage() {
                 {t("home.recentResults", "Kết quả thi gần nhất")}
               </h2>
               <div className="space-y-3">
-                {recentTests.length === 0 ? (
+                {loadingRecent ? (
                   <FullPageLoading />
+                ) : recentTests.length === 0 ? (
+                  <p className="text-gray-500 text-sm text-center">
+                    Không có bài thi nào gần đây.
+                  </p>
                 ) : (
-                  recentTests.map((test) => (
-                    <div
+                  recentTests.map((test: any) => (
+                    <Link
                       key={test.id}
+                      href={ROUTES.EXAM.OVERVIEW_HISTORY(test.exam_id, test.id)}
                       className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                     >
                       <div>
                         <p className="font-medium text-gray-900">
                           {test.title}
                         </p>
-                        <p className="text-sm text-gray-600">
-                          {test.daysAgo} ngày trước
-                        </p>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <span>{test.daysAgo} ngày trước</span>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                              test.status === "completed"
+                                ? "bg-green-100 text-green-700"
+                                : test.status === "in_progress"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-red-100 text-red-600"
+                            }`}
+                          >
+                            {test.status === "completed"
+                              ? "Hoàn thành"
+                              : test.status === "in_progress"
+                              ? "Đang làm"
+                              : "Đã hủy"}
+                          </span>
+                        </div>
                       </div>
                       <div className="text-lg font-bold text-blue-600">
                         {test.score}
                       </div>
-                    </div>
+                    </Link>
                   ))
                 )}
               </div>
@@ -358,13 +345,17 @@ function HomePage() {
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
                 {t("home.latestTests", "Đề thi mới nhất")}
               </h2>
-              {latestTests.length === 0 ? (
+              {loadingLatest ? (
                 <FullPageLoading />
+              ) : latestTests.length === 0 ? (
+                <p className="text-gray-500 text-sm text-center">
+                  Không có bài thi.
+                </p>
               ) : (
                 <div className="grid grid-cols-2 gap-3">
-                  {latestTests.map((test) => (
+                  {latestTests.map((test: any) => (
                     <Link
-                      href={`${ROUTES.EXAM.OVERVIEW}/${test.id}`}
+                      href={ROUTES.EXAM.OVERVIEW(test.id)}
                       key={test.id}
                       className="p-3 bg-gray-50 rounded-lg text-center"
                     >

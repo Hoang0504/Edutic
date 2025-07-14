@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+
 import { Answer } from "@/models/Answer";
 
 export const capitalizeWords = (str: string) =>
@@ -11,3 +13,7 @@ export const getAnswerOption = (
   const ans = answers.find((a) => a.id === answerId);
   return ans ? ans.content.slice(0, 1) : null;
 };
+
+export function formatDateTime(date: Date | string | number): string {
+  return dayjs(date).format("DD/MM/YYYY HH:mm:ss");
+}

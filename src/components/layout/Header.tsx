@@ -26,12 +26,14 @@ import {
   ForwardIcon,
 } from "@heroicons/react/24/outline";
 
-import { useAuth } from "@/contexts/AuthContext";
-import { usePomodoro } from "@/contexts/PomodoroContext";
+import MarqueeText from "../ui/MarqueeText";
 import ConfirmModal from "../ui/ConfirmModal";
+import ROUTES from "@/constants/routes";
+
+import { useAuth } from "@/contexts/AuthContext";
 import { useMusic } from "@/contexts/MusicContext";
 import { useTranslation } from "@/contexts/I18nContext";
-import MarqueeText from "../ui/MarqueeText";
+import { usePomodoro } from "@/contexts/PomodoroContext";
 
 export default function Header() {
   const { user, isLoggedIn, logout } = useAuth();
@@ -266,7 +268,7 @@ export default function Header() {
           <div className="hidden sm:flex items-center space-x-8">
             {isLoggedIn && (
               <Link
-                href="/flashcards"
+                href={ROUTES.FLASHCARDS.USER_CONTEXT_LIST(user!.id.toString())}
                 className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
               >
                 {t("header.flashcards", "Flashcard của tôi")}
@@ -274,13 +276,19 @@ export default function Header() {
             )}
 
             <Link
-              href="/exams"
+              href={ROUTES.EXAMS}
               className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
             >
               {t("header.exams", "Đề thi online")}
             </Link>
             <Link
-              href="/blog"
+              href={ROUTES.PRACTICE_SMART_LISTENING.AUDIO("22")}
+              className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+            >
+              {t("header.practiceSmartListening")}
+            </Link>
+            <Link
+              href={ROUTES.BLOGS}
               className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
             >
               {t("header.blog", "Kiến thức TOEIC")}

@@ -194,6 +194,8 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
   }, [mode]);
 
   useEffect(() => {
+    // console.log(data);
+
     if (totalTime) {
       setStartTime(new Date());
       setTimeLeft(totalTime * 60); // convert to seconds
@@ -259,27 +261,27 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
     return () => document.removeEventListener("fullscreenchange", handleChange);
   }, []);
 
-  useEffect(() => {
-    const handleBlur = () => {
-      setViolationCount((prev) => prev + 1);
-      setShowWarningModal(true);
-    };
+  // useEffect(() => {
+  //   const handleBlur = () => {
+  //     setViolationCount((prev) => prev + 1);
+  //     setShowWarningModal(true);
+  //   };
 
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        setViolationCount((prev) => prev + 1);
-        setShowWarningModal(true);
-      }
-    };
+  //   const handleVisibilityChange = () => {
+  //     if (document.hidden) {
+  //       setViolationCount((prev) => prev + 1);
+  //       setShowWarningModal(true);
+  //     }
+  //   };
 
-    window.addEventListener("blur", handleBlur);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+  //   window.addEventListener("blur", handleBlur);
+  //   document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    return () => {
-      window.removeEventListener("blur", handleBlur);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener("blur", handleBlur);
+  //     document.removeEventListener("visibilitychange", handleVisibilityChange);
+  //   };
+  // }, []);
 
   useEffect(() => {
     if (examAttemptId) loadData(examAttemptId);
@@ -562,7 +564,7 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
             {(activeSkill === "listening" || activeSkill === "reading") && (
               <LRExam activeSkill={activeSkill} />
             )}
-            {activeSkill === "writing" && (
+            {data?.type === "writing" && (
               <WritingExam
                 parts={[]} // Will be populated from props or API later
                 onAnswerSubmit={handleAnswerSubmit}
@@ -572,7 +574,7 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
                 onStartPart={startPartTimer}
               />
             )}
-            {activeSkill === "speaking" && (
+            {data?.type === "speaking" && (
               <SpeakingExam
                 parts={[]} // Will be populated from props or API later
                 onAnswerSubmit={handleAnswerSubmit}
@@ -722,32 +724,32 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
           )}
 
           {/* Proctoring Camera */}
-          <ExamProctoring
+          {/* <ExamProctoring
             isEnabled={proctoringSystem.proctoringEnabled}
             onViolation={proctoringSystem.handleViolation}
             onPauseTimer={(pause) => setIsTimerPaused(pause)}
             currentSkill="reading"
             noiseThreshold={15} // Ngưỡng tạp âm thấp hơn cho môi trường yên tĩnh
             voiceThreshold={25} // Ngưỡng phát hiện tiếng nói
-          />
+          /> */}
           {/* {activeSkill} */}
 
           {/* Permission Dialog */}
-          <ExamPermissionDialog
+          {/* <ExamPermissionDialog
             isOpen={proctoringSystem.showPermissionDialog}
             onPermissionGranted={proctoringSystem.handlePermissionGranted}
             onSkipProctoring={proctoringSystem.handleSkipProctoring}
             onCancel={proctoringSystem.handlePermissionCancel}
-          />
+          /> */}
 
           {/* Violation Alert */}
-          <ExamViolationAlert
+          {/* <ExamViolationAlert
             isVisible={proctoringSystem.showViolationAlert}
             violationType={proctoringSystem.currentViolation?.type || "face"}
             message={proctoringSystem.currentViolation?.message || ""}
             onContinue={proctoringSystem.handleContinueAfterViolation}
             onCancel={proctoringSystem.handleCancelFromViolation}
-          />
+          /> */}
         </div>
       </div>
     </div>

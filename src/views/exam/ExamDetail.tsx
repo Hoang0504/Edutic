@@ -25,15 +25,19 @@ type ExamType = {
   duration: number; // in minutes
   year: number;
   score?: number;
-  attemptId?: number;
   maxScore?: number; // điểm tối đa của đề thi
-  status?: "completed" | "in_progress" | "abandoned";
-  partNumbers?: number[]; // danh sách các part đã làm
-  totalQuestionsAnswered?: number; // tổng số câu hỏi đã làm
-  testDuration?: number; // thời lượng làm bài, ví dụ: 12 giờ?
-  estimatedDuration?: number;
+  totalQuestions?: number; // tổng số câu hỏi đã làm
   releaseDate: string; // dạng "dd/mm/yyyy" (nếu cần, có thể dùng Date)
-  startTime?: string;
+
+  attemptId?: number;
+  attemptScore?: number;
+  attemptMaxScore?: number; // điểm tối đa của đề thi
+  attemptStatus?: "completed" | "in_progress" | "abandoned";
+  attemptPartNumbers?: number[]; // danh sách các part đã làm
+  attemptTotalQuestions?: number; // tổng số câu hỏi đã làm
+  attemptTestDuration?: number; // thời lượng làm bài, ví dụ: 12 giờ?
+  attemptEstimatedDuration?: number;
+  attemptStartTime?: string;
 };
 
 type ExamProp = {
@@ -43,7 +47,7 @@ type ExamProp = {
 type ExamStatus = "completed" | string;
 
 function ExamDetailView({ examId }: ExamProp) {
-  const { user, isLoading } = useAuth();
+  const { user, token, isLoading } = useAuth();
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -105,11 +109,12 @@ function ExamDetailView({ examId }: ExamProp) {
 
   const fetchData = async () => {
     try {
-      const res = await fetch(
-        `${API_ENDPOINTS.EXAM.INFO}?exam_id=${examId}${
-          user?.id ? `&user_id=${user.id}` : ""
-        }`
-      );
+      const res = await fetch(API_ENDPOINTS.EXAM.INFO(examId), {
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
       const result = await res.json();
 
       if (res.ok && result) {
@@ -169,7 +174,7 @@ function ExamDetailView({ examId }: ExamProp) {
               {examData?.title}
             </h1>
             <div className="flex items-center gap-3">
-              {examData?.status === "completed" && (
+              {examData?.attemptStatus === "completed" && (
                 <Link
                   href={ROUTES.EXAM_ATTEMPT.RESULT(
                     examData?.attemptId?.toString()!
@@ -179,7 +184,7 @@ function ExamDetailView({ examId }: ExamProp) {
                   Xem đáp án
                 </Link>
               )}
-              {getStatusBadge(examData?.status ?? "")}
+              {getStatusBadge(examData?.attemptStatus ?? "")}
             </div>
           </div>
 
@@ -188,15 +193,17 @@ function ExamDetailView({ examId }: ExamProp) {
             <div className="flex items-center gap-2 text-gray-600">
               <ClockIcon className="h-4 w-4" />
               <span className="text-sm">
-                {examData?.status === "completed"
+                {examData?.attemptStatus === "completed"
                   ? "Thời gian đã làm:"
-                  : examData?.status === "abandoned"
+                  : examData?.attemptStatus === "abandoned"
                   ? "Thời gian ước tính:"
                   : "Thời gian làm bài:"}{" "}
-                {examData?.testDuration ||
-                  examData?.estimatedDuration ||
+                {examData?.attemptTestDuration ||
+                  examData?.attemptEstimatedDuration ||
                   examData?.duration}{" "}
-                phút | {examData?.totalQuestionsAnswered ?? 200} câu hỏi
+                phút |{" "}
+                {examData?.attemptTotalQuestions ?? examData?.totalQuestions}{" "}
+                câu hỏi
               </span>
             </div>
           </div>
@@ -218,20 +225,20 @@ function ExamDetailView({ examId }: ExamProp) {
                     }`}
                   >
                     <span className="text-sm text-gray-700">
-                      Lần thi lúc: {att.startTime}
+                      Lần thi lúc: {att.attemptStartTime}
                     </span>
                     <span
                       className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                        att.status === "completed"
+                        att.attemptStatus === "completed"
                           ? "bg-green-100 text-green-700"
-                          : att.status === "in_progress"
+                          : att.attemptStatus === "in_progress"
                           ? "bg-yellow-100 text-yellow-700"
                           : "bg-red-100 text-red-600"
                       }`}
                     >
-                      {att.status === "completed"
+                      {att.attemptStatus === "completed"
                         ? "Hoàn thành"
-                        : att.status === "in_progress"
+                        : att.attemptStatus === "in_progress"
                         ? "Đang làm"
                         : "Đã hủy"}
                     </span>
@@ -259,12 +266,14 @@ function ExamDetailView({ examId }: ExamProp) {
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-900">
-                    {examData.partNumbers
-                      ? examData.partNumbers
+                    {examData.attemptPartNumbers
+                      ? examData.attemptPartNumbers
                           ?.map((p) => `Part ${p}`)
                           .join(" - ")
                       : "Đầy đủ"}{" "}
-                    : {examData.totalQuestionsAnswered || 200} questions
+                    :{" "}
+                    {examData.attemptTotalQuestions || examData.totalQuestions}{" "}
+                    questions
                   </h3>
                 </div>
               </div>
@@ -279,14 +288,14 @@ function ExamDetailView({ examId }: ExamProp) {
         </div>
         {/* Action Buttons */}
         <div className="flex gap-4 justify-center flex-wrap">
-          {examData?.status === "completed" ? (
+          {examData?.attemptStatus === "completed" ? (
             <button
               className={`${commonBtnClass} bg-green-100 text-green-700 hover:bg-green-200 border border-green-200`}
               onClick={handleStartExam}
             >
               Bắt đầu làm lại
             </button>
-          ) : examData?.status === "abandoned" ? (
+          ) : examData?.attemptStatus === "abandoned" ? (
             <>
               {examData?.attemptId && (
                 <Link

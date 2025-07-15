@@ -54,7 +54,7 @@ const API_ENDPOINTS = {
   EXAM: {
     START: (id: string) => `${BASE_URL}/exam/${id}/start`,
     PARTS: (id: string) => `${BASE_URL}/exam/${id}/parts`,
-    INFO: `${BASE_URL}/exam/info`,
+    INFO: (id: string) => `${BASE_URL}/exam/${id}/info`,
   },
 
   EXAMS: {

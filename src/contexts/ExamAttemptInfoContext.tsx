@@ -25,6 +25,7 @@ type Part = {
 type ExamAttemptInfo = {
   exam_id: number;
   title: string;
+  type: string;
   mode: string;
   totalQuestionCount: number;
   estimated_time: number;

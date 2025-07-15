@@ -7,6 +7,7 @@ interface ExamProctoringProps {
   isEnabled: boolean;
   onViolation: (type: "face" | "audio", message: string) => void;
   onPauseTimer: (pause: boolean) => void;
+  isTimerPaused: boolean;
   currentSkill: "listening" | "reading" | "writing" | "speaking";
   className?: string;
   noiseThreshold?: number; // Ngưỡng tạp âm cho phép
@@ -23,6 +24,7 @@ const ExamProctoring: React.FC<ExamProctoringProps> = ({
   isEnabled,
   onViolation,
   onPauseTimer,
+  isTimerPaused,
   currentSkill,
   className = "",
   noiseThreshold = 20, // Ngưỡng tạp âm mặc định
@@ -147,6 +149,14 @@ const ExamProctoring: React.FC<ExamProctoringProps> = ({
       //   dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
       const { average, voiceLevel } = analyzeAudio(dataArray);
 
+      // Reset voice detection khi timer tiếp tục
+      if (!isTimerPaused && voiceDetected) {
+        setVoiceDetected(false);
+        if (voiceDetectionTimeoutRef.current) {
+          clearTimeout(voiceDetectionTimeoutRef.current);
+        }
+      }
+
       // Giai đoạn hiệu chỉnh (5 giây đầu)
       if (isCalibrating && calibrationCount < 50) {
         // 50 samples ~ 5 giây
@@ -235,6 +245,7 @@ const ExamProctoring: React.FC<ExamProctoringProps> = ({
   }, [
     currentSkill,
     isEnabled,
+    isTimerPaused,
     isCalibrating,
     backgroundNoiseLevel,
     noiseThreshold,
@@ -563,7 +574,7 @@ const ExamProctoring: React.FC<ExamProctoringProps> = ({
           </p>
         </div>
       )} */}
-      renderStatusInfo();
+      {renderStatusInfo()}
     </div>
   );
 };

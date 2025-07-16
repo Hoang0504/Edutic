@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: localhost:3306
--- Thời gian đã tạo: Th7 11, 2025 lúc 12:36 PM
+-- Thời gian đã tạo: Th7 16, 2025 lúc 10:24 AM
 -- Phiên bản máy phục vụ: 8.4.3
 -- Phiên bản PHP: 8.3.16
 
@@ -49,7 +49,9 @@ INSERT INTO `ai_feedbacks` (`id`, `content_type`, `content_id`, `feedback_text`,
 (19, 'user_attempt_part', 10, 'Bạn đã làm được 9/30 câu đúng trong phần Part 4 - Short Talks. Đây là một khởi đầu đáng khích lệ! Hãy tiếp tục cố gắng và luyện tập nhiều hơn để cải thiện điểm số của mình.', '\"1. Nghe nhiều bài nói ngắn bằng tiếng Anh hàng ngày để làm quen với tốc độ và ngữ điệu. 2. Tập trung vào các từ khóa trong bài nghe. 3. Luyện tập với các đề thi TOEIC mẫu để hiểu cấu trúc đề và cách ra câu hỏi.\"', '\"Bạn đã trả lời đúng được một số câu, chứng tỏ bạn có khả năng nắm bắt một phần thông tin trong bài nghe.\"', '\"Bạn cần cải thiện khả năng nghe hiểu toàn bộ bài nói, đặc biệt là các chi tiết nhỏ và thông tin cụ thể. Số câu trả lời đúng còn thấp so với tổng số câu hỏi.\"', '2025-07-10 08:42:54'),
 (20, 'user_attempt_part', 10, 'Bạn đã hoàn thành phần thi Part 7 - Reading Comprehension với 13 câu trả lời đúng trên tổng số 54 câu. Đây là một khởi đầu tốt, nhưng vẫn còn nhiều cơ hội để cải thiện. Hãy tiếp tục nỗ lực và luyện tập thêm để nâng cao kỹ năng đọc hiểu của mình!', '\"1. Đọc nhiều tài liệu tiếng Anh đa dạng (báo, tạp chí, bài luận) để làm quen với các chủ đề khác nhau. 2. Luyện tập kỹ năng skimming (đọc lướt) và scanning (tìm kiếm thông tin cụ thể) để tiết kiệm thời gian. 3. Học từ vựng mới mỗi ngày và ôn tập thường xuyên. 4. Làm nhiều bài tập Part 7 để hiểu rõ cấu trúc đề thi và cách ra câu hỏi.\"', '\"Bạn đã trả lời đúng được một số câu hỏi, chứng tỏ bạn có khả năng hiểu được một phần nội dung bài đọc. Điều này cho thấy bạn có nền tảng từ vựng và ngữ pháp nhất định.\"', '\"Số câu trả lời đúng còn thấp so với tổng số câu hỏi, điều này có thể do bạn chưa quen với tốc độ đọc hoặc gặp khó khăn trong việc hiểu ý chính của bài. Bạn cũng có thể cần cải thiện vốn từ vựng và khả năng suy luận từ ngữ cảnh.\"', '2025-07-10 08:43:14'),
 (21, 'user_attempt_part', 8, 'Bạn đã làm được 7/30 câu đúng trong phần Part 4 - Short Talks. Đây là một khởi đầu, và với sự luyện tập đều đặn, bạn chắc chắn sẽ cải thiện điểm số của mình!', '\"1. Nghe nhiều bài nói ngắn bằng tiếng Anh hàng ngày để làm quen với tốc độ và ngữ điệu. 2. Tập trung vào từ khóa (keywords) trong mỗi bài nghe. 3. Luyện tập kỹ năng ghi chú nhanh (note-taking) để nắm bắt thông tin quan trọng.\"', '\"Bạn đã trả lời đúng một số câu, chứng tỏ bạn có khả năng hiểu được một phần nội dung bài nghe.\"', '\"Bạn cần cải thiện khả năng nghe hiểu toàn bộ bài nói, đặc biệt là các chi tiết cụ thể và thông tin quan trọng.\"', '2025-07-10 21:53:39'),
-(22, 'user_attempt_part', 8, 'Bạn đã hoàn thành phần thi với một số câu trả lời đúng. Đừng nản lòng, mỗi câu hỏi là một cơ hội để học hỏi và cải thiện kỹ năng của mình!', '\"Để cải thiện kết quả ở Part 6, hãy tập trung vào việc đọc hiểu ngữ cảnh của đoạn văn. Luyện tập thường xuyên với các bài tập điền từ vào chỗ trống sẽ giúp bạn nhận biết từ vựng và ngữ pháp phù hợp hơn. Ngoài ra, hãy dành thời gian ôn lại các cấu trúc ngữ pháp cơ bản và mở rộng vốn từ vựng của bạn.\"', '\"Bạn đã trả lời đúng được một số câu hỏi, điều này cho thấy bạn có khả năng hiểu một phần nội dung và áp dụng kiến thức ngữ pháp cơ bản.\"', '\"Bạn cần cải thiện khả năng nhận biết ngữ cảnh và lựa chọn từ vựng phù hợp. Số câu trả lời đúng còn thấp so với tổng số câu hỏi, điều này có thể do hạn chế trong vốn từ vựng hoặc khả năng đọc hiểu.\"', '2025-07-10 21:54:03');
+(22, 'user_attempt_part', 8, 'Bạn đã hoàn thành phần thi với một số câu trả lời đúng. Đừng nản lòng, mỗi câu hỏi là một cơ hội để học hỏi và cải thiện kỹ năng của mình!', '\"Để cải thiện kết quả ở Part 6, hãy tập trung vào việc đọc hiểu ngữ cảnh của đoạn văn. Luyện tập thường xuyên với các bài tập điền từ vào chỗ trống sẽ giúp bạn nhận biết từ vựng và ngữ pháp phù hợp hơn. Ngoài ra, hãy dành thời gian ôn lại các cấu trúc ngữ pháp cơ bản và mở rộng vốn từ vựng của bạn.\"', '\"Bạn đã trả lời đúng được một số câu hỏi, điều này cho thấy bạn có khả năng hiểu một phần nội dung và áp dụng kiến thức ngữ pháp cơ bản.\"', '\"Bạn cần cải thiện khả năng nhận biết ngữ cảnh và lựa chọn từ vựng phù hợp. Số câu trả lời đúng còn thấp so với tổng số câu hỏi, điều này có thể do hạn chế trong vốn từ vựng hoặc khả năng đọc hiểu.\"', '2025-07-10 21:54:03'),
+(23, 'user_attempt_part', 11, 'Bạn đã làm tốt một số câu trong phần này, nhưng vẫn còn nhiều cơ hội để cải thiện. Hãy tiếp tục luyện tập để nâng cao kỹ năng nghe và phản xạ của mình!', '\"1. Luyện nghe các đoạn hội thoại ngắn hàng ngày để làm quen với cách phát âm và ngữ điệu. 2. Tập trung vào các từ khóa trong câu hỏi để chọn câu trả lời phù hợp. 3. Làm quen với các tình huống giao tiếp thông dụng trong TOEIC.\"', '\"Bạn có khả năng hiểu và trả lời đúng một số câu hỏi ngắn, cho thấy bạn đã có nền tảng cơ bản về nghe hiểu.\"', '\"Bạn cần cải thiện khả năng nghe chi tiết và phản xạ nhanh hơn để trả lời chính xác nhiều câu hỏi hơn. Phần này có nhiều câu hỏi đòi hỏi sự tập trung cao độ.\"', '2025-07-12 13:39:10'),
+(24, 'user_attempt_part', 11, 'Bạn đã làm được 14/39 câu đúng trong phần Part 3 - Short Conversations. Đây là một khởi đầu tốt, nhưng vẫn còn nhiều cơ hội để cải thiện. Hãy tiếp tục luyện tập và bạn sẽ thấy sự tiến bộ rõ rệt!', '\"1. Luyện nghe thường xuyên các đoạn hội thoại ngắn bằng tiếng Anh. 2. Tập trung vào các từ khóa và ngữ cảnh của cuộc trò chuyện. 3. Làm quen với các dạng câu hỏi thường gặp trong Part 3. 4. Ghi chú lại những từ vựng mới và ôn tập chúng thường xuyên.\"', '\"Bạn đã trả lời đúng được một số câu, chứng tỏ bạn có khả năng hiểu được một phần nội dung của các đoạn hội thoại ngắn.\"', '\"Bạn cần cải thiện khả năng nghe hiểu toàn bộ cuộc trò chuyện và nắm bắt thông tin chi tiết. Số câu trả lời đúng còn thấp so với tổng số câu hỏi, cho thấy bạn cần luyện tập nhiều hơn.\"', '2025-07-12 13:39:27');
 
 -- --------------------------------------------------------
 
@@ -1708,7 +1710,9 @@ CREATE TABLE `exams` (
 
 INSERT INTO `exams` (`id`, `title`, `year_of_release`, `type`, `description`, `estimated_time`, `is_published`, `created_at`, `updated_at`) VALUES
 (7, 'TOEIC Full Test 1 - ETS 2024', 2024, 'full_test', '[full_toeic] Đề thi TOEIC đầy đủ - 200 câu hỏi, 7 parts theo chuẩn ETS 2024', 120, 1, '2025-07-05 15:01:15', '2025-07-05 15:01:15'),
-(8, 'TOEIC Full Test 1 v2 - ETS 2024', 2024, 'full_test', '[full_toeic] Đề thi TOEIC đầy đủ - 200 câu hỏi, 7 parts theo chuẩn ETS 2024', 120, 1, '2025-07-05 15:12:37', '2025-07-05 15:12:37');
+(8, 'TOEIC Full Test 1 v2 - ETS 2024', 2024, 'full_test', '[full_toeic] Đề thi TOEIC đầy đủ - 200 câu hỏi, 7 parts theo chuẩn ETS 2024', 120, 1, '2025-07-05 15:12:37', '2025-07-05 15:12:37'),
+(9, 'Speaking Test - Assessment', 2025, 'speaking', '[speaking] Đề thi Speaking - 11 câu hỏi theo chuẩn đánh giá năng lực nói', 20, 1, '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(10, 'Writing Test - Assessment', 2025, 'writing', '[writing] Đề thi Writing - 8 câu hỏi theo chuẩn đánh giá năng lực viết', 60, 1, '2025-07-14 14:24:55', '2025-07-14 14:24:55');
 
 -- --------------------------------------------------------
 
@@ -1741,7 +1745,12 @@ INSERT INTO `exam_parts` (`id`, `exam_id`, `part_id`, `order_index`) VALUES
 (49, 8, 50, 4),
 (50, 8, 51, 5),
 (51, 8, 52, 6),
-(52, 8, 53, 7);
+(52, 8, 53, 7),
+(53, 9, 54, 1),
+(54, 9, 55, 2),
+(55, 9, 56, 3),
+(56, 10, 57, 1),
+(57, 10, 58, 2);
 
 -- --------------------------------------------------------
 
@@ -1866,7 +1875,12 @@ INSERT INTO `parts` (`id`, `part_number`, `title`, `description`, `instruction`,
 (50, 4, 'Part 4 - Short Talks', 'Short Talks - 30 questions (71-100)', NULL, 'medium', 14, '2025-07-05 15:12:37', '2025-07-05 15:12:37'),
 (51, 5, 'Part 5 - Incomplete Sentences', 'Incomplete Sentences - 30 questions (101-130)', NULL, 'medium', 10, '2025-07-05 15:12:37', '2025-07-05 15:12:37'),
 (52, 6, 'Part 6 - Text Completion', 'Text Completion - 16 questions (131-146)', NULL, 'medium', 8, '2025-07-05 15:12:37', '2025-07-05 15:12:37'),
-(53, 7, 'Part 7 - Reading Comprehension', 'Reading Comprehension - 54 questions (147-200)', NULL, 'medium', 57, '2025-07-05 15:12:37', '2025-07-05 15:12:37');
+(53, 7, 'Part 7 - Reading Comprehension', 'Reading Comprehension - 54 questions (147-200)', NULL, 'medium', 57, '2025-07-05 15:12:37', '2025-07-05 15:12:37'),
+(54, 1, 'Part 1 - Personal Introduction', 'Giới thiệu bản thân và trả lời câu hỏi cá nhân', 'Answer the questions about yourself and your background', 'medium', 5, '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(55, 2, 'Part 2 - Describe & Express', 'Mô tả hình ảnh và diễn đạt ý kiến', 'Describe the picture and express your thoughts', 'medium', 7, '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(56, 3, 'Part 3 - Express Opinion', 'Trình bày quan điểm về các chủ đề', 'Express your opinion on the given topics', 'hard', 8, '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(57, 1, 'Part 1 - Complete Sentences', 'Hoàn thành câu theo yêu cầu', 'Complete the sentences based on the given prompts', 'medium', 25, '2025-07-14 14:24:55', '2025-07-14 14:24:55'),
+(58, 2, 'Part 2 - Write Essays', 'Viết bài luận theo chủ đề', 'Write essays on the given topics', 'hard', 35, '2025-07-14 14:24:55', '2025-07-14 14:24:55');
 
 -- --------------------------------------------------------
 
@@ -2291,7 +2305,26 @@ INSERT INTO `questions` (`id`, `part_id`, `question_number`, `group_id`, `conten
 (1008, 53, 197, 343, 'Why most likely did Green Canyon receive a discount on its order dated June 10?', 'multiple_choice', '', '2025-07-05 15:12:38', '2025-07-05 15:12:38'),
 (1009, 53, 198, 343, 'According to the notice, what is changing at Orbys Distributors?', 'multiple_choice', '', '2025-07-05 15:12:38', '2025-07-05 15:12:38'),
 (1010, 53, 199, 343, 'What is suggested about Mr. Tesoriero?', 'multiple_choice', '', '2025-07-05 15:12:38', '2025-07-05 15:12:38'),
-(1011, 53, 200, 343, 'What does Mr. Singh ask Ms. Peterson to do?', 'multiple_choice', '', '2025-07-05 15:12:38', '2025-07-05 15:12:38');
+(1011, 53, 200, 343, 'What does Mr. Singh ask Ms. Peterson to do?', 'multiple_choice', '', '2025-07-05 15:12:38', '2025-07-05 15:12:38'),
+(1012, 54, 1, NULL, 'Tell me about yourself. What is your name and where are you from?', 'speaking', '', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(1013, 54, 2, NULL, 'What do you do for work or study? Can you describe your daily routine?', 'speaking', '', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(1014, 54, 3, NULL, 'What are your hobbies and interests? Why do you enjoy them?', 'speaking', '', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(1015, 55, 4, NULL, 'Describe this picture in detail. What do you see and what is happening?', 'speaking', 'speaking_test_-_assessment_2025/part2/4.png', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(1016, 55, 5, NULL, 'How does this picture make you feel? What memories or thoughts does it bring?', 'speaking', 'speaking_test_-_assessment_2025/part2/5.png', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(1017, 55, 6, NULL, 'If you were in this situation, what would you do? Explain your choice.', 'speaking', 'speaking_test_-_assessment_2025/part2/6.png', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(1018, 56, 7, NULL, 'Do you think technology has more positive or negative effects on communication? Explain your view.', 'speaking', '', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(1019, 56, 8, NULL, 'What is the most important quality in a good friend? Give reasons and examples.', 'speaking', '', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(1020, 56, 9, NULL, 'Should students be required to learn a foreign language? Why or why not?', 'speaking', '', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(1021, 56, 10, NULL, 'How do you think cities will change in the next 20 years? What improvements would you like to see?', 'speaking', '', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(1022, 56, 11, NULL, 'What advice would you give to someone who wants to improve their English speaking skills?', 'speaking', '', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(1023, 57, 1, NULL, 'Complete the sentence: \"If I had more time, I would...\" (Write at least 50 words explaining what you would do and why)', 'writing', '', '2025-07-14 14:24:55', '2025-07-14 14:24:55'),
+(1024, 57, 2, NULL, 'Describe your ideal workplace in 3-4 sentences. Include details about the environment, colleagues, and work culture.', 'writing', '', '2025-07-14 14:24:55', '2025-07-14 14:24:55'),
+(1025, 57, 3, NULL, 'Write instructions for a friend on how to prepare your favorite dish. Use sequence words and be specific.', 'writing', '', '2025-07-14 14:24:55', '2025-07-14 14:24:55'),
+(1026, 57, 4, NULL, 'Compare two different ways of learning (online vs traditional classroom). Write 4-5 sentences.', 'writing', '', '2025-07-14 14:24:55', '2025-07-14 14:24:55'),
+(1027, 57, 5, NULL, 'Write a short email (60-80 words) to your manager requesting time off for a family emergency.', 'writing', '', '2025-07-14 14:24:55', '2025-07-14 14:24:55'),
+(1028, 58, 6, NULL, 'Essay Topic: \"The role of social media in modern communication\" - Write a 150-200 word essay discussing both positive and negative aspects. Include your personal opinion with supporting examples.', 'writing', '', '2025-07-14 14:24:55', '2025-07-14 14:24:55'),
+(1029, 58, 7, NULL, 'Essay Topic: \"Should all students be required to learn coding in school?\" - Write a 180-220 word argumentative essay. Present your position clearly with at least 3 supporting points and relevant examples.', 'writing', '', '2025-07-14 14:24:55', '2025-07-14 14:24:55'),
+(1030, 58, 8, NULL, 'Essay Topic: \"Describe a significant challenge you have overcome and explain how it changed you\" - Write a 200-250 word personal narrative essay with specific details and reflection on the experience.', 'writing', '', '2025-07-14 14:24:55', '2025-07-14 14:24:55');
 
 -- --------------------------------------------------------
 
@@ -4466,7 +4499,26 @@ INSERT INTO `translations` (`id`, `content_type`, `content_id`, `vietnamese_text
 (4885, 'answer', 3868, 'A. Thanh toán hóa đơn.', '2025-07-05 15:12:39', '2025-07-05 15:12:39'),
 (4886, 'answer', 3869, 'B. Giải quyết vấn đề.', '2025-07-05 15:12:39', '2025-07-05 15:12:39'),
 (4887, 'answer', 3870, 'C. Xác nhận đơn hàng.', '2025-07-05 15:12:39', '2025-07-05 15:12:39'),
-(4888, 'audio_transcript', 22, '1. A. Cô ấy đang ăn ở khu vực picnic.\nB. Cô ấy đang xếp hàng ở xe bán đồ ăn.\nC. Cô ấy đang lau ghế dài.\nD. Cô ấy đang vứt bỏ một cái đĩa.\n2. A. Người đàn ông đang phủi tuyết khỏi nóc xe.\nB. Người đàn ông đang đứng cạnh xe trên tuyết.\nC. Người đàn ông đang xúc tuyết trên lối đi.\nD. Người đàn ông đang chạy qua tuyết.\n3. A. Một số nhân viên đang treo tranh trong phòng trưng bày.\nB. Hai người đang trò chuyện với nhau.\nC. Một người đàn ông đang sắp xếp gối trên ghế sofa.\nD. Một người đàn ông đang vẽ tranh.\n4. A. Xe đang đi vào bãi đậu xe.\nB. Móc quần áo nằm rải rác trên mặt đất.\nC. Giá đỡ trống được xếp dọc theo tòa nhà.\nD. Quần áo đang được trưng bày dưới một chiếc lều.\n5. A. Cây chậu được treo từ trần nhà.\nB. Ghế được xếp chồng trước lối vào.\nC. Một trạm máy tính được lắp đặt trên bàn.\nD. Một tấm thảm được cuộn lại đặt cạnh tường.\n6. A. Một người đàn ông đang quét sân.\nB. Một người đàn ông đang thay sàn nhà.\nC. Một cánh cửa đã bị tháo khỏi khung.\nD. Đèn chiếu sáng đã được đặt trên sàn.', '2025-07-11 08:29:48', '2025-07-11 15:32:03');
+(4888, 'audio_transcript', 22, '1. A. Cô ấy đang ăn ở khu vực picnic.\nB. Cô ấy đang xếp hàng ở xe bán đồ ăn.\nC. Cô ấy đang lau ghế dài.\nD. Cô ấy đang vứt bỏ một cái đĩa.\n2. A. Người đàn ông đang phủi tuyết khỏi nóc xe.\nB. Người đàn ông đang đứng cạnh xe trên tuyết.\nC. Người đàn ông đang xúc tuyết trên lối đi.\nD. Người đàn ông đang chạy qua tuyết.\n3. A. Một số nhân viên đang treo tranh trong phòng trưng bày.\nB. Hai người đang trò chuyện với nhau.\nC. Một người đàn ông đang sắp xếp gối trên ghế sofa.\nD. Một người đàn ông đang vẽ tranh.\n4. A. Xe đang đi vào bãi đậu xe.\nB. Móc quần áo nằm rải rác trên mặt đất.\nC. Giá đỡ trống được xếp dọc theo tòa nhà.\nD. Quần áo đang được trưng bày dưới một chiếc lều.\n5. A. Cây chậu được treo từ trần nhà.\nB. Ghế được xếp chồng trước lối vào.\nC. Một trạm máy tính được lắp đặt trên bàn.\nD. Một tấm thảm được cuộn lại đặt cạnh tường.\n6. A. Một người đàn ông đang quét sân.\nB. Một người đàn ông đang thay sàn nhà.\nC. Một cánh cửa đã bị tháo khỏi khung.\nD. Đèn chiếu sáng đã được đặt trên sàn.', '2025-07-11 08:29:48', '2025-07-11 15:32:03'),
+(4889, 'question', 1012, 'Hãy giới thiệu về bản thân. Tên bạn là gì và bạn đến từ đâu?', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(4890, 'question', 1013, 'Bạn làm công việc gì hoặc học tập như thế nào? Bạn có thể mô tả thói quen hàng ngày của mình không?', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(4891, 'question', 1014, 'Sở thích và mối quan tâm của bạn là gì? Tại sao bạn thích những điều đó?', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(4892, 'question', 1015, 'Mô tả chi tiết bức tranh này. Bạn nhìn thấy gì và chuyện gì đang xảy ra?', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(4893, 'question', 1016, 'Bức tranh này khiến bạn cảm thấy như thế nào? Nó gợi lên những kỷ niệm hay suy nghĩ gì?', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(4894, 'question', 1017, 'Nếu bạn ở trong tình huống này, bạn sẽ làm gì? Giải thích lựa chọn của bạn.', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(4895, 'question', 1018, 'Bạn có nghĩ rằng công nghệ có tác động tích cực hay tiêu cực hơn đến giao tiếp? Giải thích quan điểm của bạn.', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(4896, 'question', 1019, 'Đặc điểm quan trọng nhất của một người bạn tốt là gì? Đưa ra lý do và ví dụ.', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(4897, 'question', 1020, 'Có nên bắt buộc học sinh học ngoại ngữ không? Tại sao có hoặc tại sao không?', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(4898, 'question', 1021, 'Bạn nghĩ các thành phố sẽ thay đổi như thế nào trong 20 năm tới? Bạn muốn thấy những cải tiến nào?', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(4899, 'question', 1022, 'Bạn sẽ khuyên gì cho ai đó muốn cải thiện kỹ năng nói tiếng Anh của mình?', '2025-07-14 14:20:09', '2025-07-14 14:20:09'),
+(4900, 'question', 1023, 'Hoàn thành câu: \"Nếu tôi có nhiều thời gian hơn, tôi sẽ...\" (Viết ít nhất 50 từ giải thích bạn sẽ làm gì và tại sao)', '2025-07-14 14:24:55', '2025-07-14 14:24:55'),
+(4901, 'question', 1024, 'Mô tả nơi làm việc lý tưởng của bạn trong 3-4 câu. Bao gồm chi tiết về môi trường, đồng nghiệp và văn hóa làm việc.', '2025-07-14 14:24:55', '2025-07-14 14:24:55'),
+(4902, 'question', 1025, 'Viết hướng dẫn cho bạn về cách chuẩn bị món ăn yêu thích của bạn. Sử dụng từ nối và cụ thể.', '2025-07-14 14:24:55', '2025-07-14 14:24:55'),
+(4903, 'question', 1026, 'So sánh hai cách học khác nhau (trực tuyến vs lớp học truyền thống). Viết 4-5 câu.', '2025-07-14 14:24:55', '2025-07-14 14:24:55'),
+(4904, 'question', 1027, 'Viết email ngắn (60-80 từ) cho quản lý để xin nghỉ phép vì việc khẩn cấp gia đình.', '2025-07-14 14:24:55', '2025-07-14 14:24:55'),
+(4905, 'question', 1028, 'Chủ đề luận: \"Vai trò của mạng xã hội trong giao tiếp hiện đại\" - Viết bài luận 150-200 từ thảo luận cả mặt tích cực và tiêu cực. Bao gồm ý kiến cá nhân với ví dụ hỗ trợ.', '2025-07-14 14:24:55', '2025-07-14 14:24:55'),
+(4906, 'question', 1029, 'Chủ đề luận: \"Có nên bắt buộc tất cả học sinh học lập trình ở trường không?\" - Viết bài luận lập luận 180-220 từ. Trình bày quan điểm rõ ràng với ít nhất 3 điểm hỗ trợ và ví dụ phù hợp.', '2025-07-14 14:24:55', '2025-07-14 14:24:55'),
+(4907, 'question', 1030, 'Chủ đề luận: \"Mô tả một thách thức quan trọng mà bạn đã vượt qua và giải thích nó đã thay đổi bạn như thế nào\" - Viết bài luận tự sự cá nhân 200-250 từ với chi tiết cụ thể và suy ngẫm về trải nghiệm.', '2025-07-14 14:24:55', '2025-07-14 14:24:55');
 
 -- --------------------------------------------------------
 
@@ -4495,10 +4547,10 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `email`, `password_hash`, `name`, `avatar`, `is_email_verified`, `auth_provider`, `auth_provider_id`, `role`, `created_at`, `updated_at`, `last_login`, `uuid`) VALUES
-(2, 'ngochoanghuy0504@gmail.com', '$2b$10$ozcMaOTHw8E2LbbC8oeOCuwzHEHWhw4OURSFKB2kWBviJjLZvNM4a', 'hoang', NULL, 1, 'google', NULL, 'student', '2025-06-16 22:37:36', '2025-07-09 22:16:01', '2025-07-09 22:16:01', 'c282a6be-20c2-4ec1-a90c-0f4b28538879'),
-(5, 'admin@gmail.com', '$2b$10$VY8xR0RBFsrr8MsHT7mIde0W/4ajjTvGCPJmdqr6nHI7wmLpceAZq', 'Hoàng Trần', NULL, 1, 'google', '105163267029214394861', 'admin', '2025-06-28 14:26:13', '2025-07-11 08:37:18', '2025-07-11 08:37:18', '5462d806-1813-4d90-8304-1df4f7bff210'),
-(6, 'truonghuy@gmail.com', '$2b$10$nZ0zoh0tHJ1Tfi3tOyND7eW0XpBuq3SmU9saDJolQSUFTH8QJKm56', NULL, '/uploads/images/1752220531008-gen-n-logo-2.jpg', 1, 'email', NULL, 'student', '2025-07-02 10:34:23', '2025-07-02 10:34:23', NULL, '65b977fd-05a9-4085-b869-08b7d54b1e5c'),
-(7, 'phong@gmail.com', '$2b$10$ugX2PtxQJ5m2A7EqDAT3f.obb7oWpM7EFy3PtUmJrSIIsUH5sKFAO', NULL, '/uploads/images/1752220519021-EDUTIC_LOGO.png', 1, 'email', NULL, 'student', '2025-07-02 10:36:50', '2025-07-02 10:36:50', NULL, '0e1d0cc6-3bb1-4279-b503-c9845a00d9a5');
+(2, 'ngochoanghuy0504@gmail.com', '$2b$10$ozcMaOTHw8E2LbbC8oeOCuwzHEHWhw4OURSFKB2kWBviJjLZvNM4a', 'hoang', NULL, 1, 'google', NULL, 'student', '2025-06-16 22:37:36', '2025-07-14 14:32:09', '2025-07-14 14:32:09', 'c282a6be-20c2-4ec1-a90c-0f4b28538879'),
+(5, 'admin@gmail.com', '$2b$10$VY8xR0RBFsrr8MsHT7mIde0W/4ajjTvGCPJmdqr6nHI7wmLpceAZq', 'Hoàng Trần', NULL, 1, 'google', '105163267029214394861', 'admin', '2025-06-28 14:26:13', '2025-07-14 14:04:01', '2025-07-14 14:04:01', '5462d806-1813-4d90-8304-1df4f7bff210'),
+(6, 'truonghuy@gmail.com', '$2b$10$nZ0zoh0tHJ1Tfi3tOyND7eW0XpBuq3SmU9saDJolQSUFTH8QJKm56', 'Huy', '/uploads/images/1752220531008-gen-n-logo-2.jpg', 1, 'email', NULL, 'student', '2025-07-02 10:34:23', '2025-07-02 10:34:23', NULL, '65b977fd-05a9-4085-b869-08b7d54b1e5c'),
+(7, 'phong@gmail.com', '$2b$10$cT4WixiNPevRineRE8eE/.fxP99VXmdHQFgmS8a2VTlhbu..ihspW', 'Phong', '/uploads/images/1752220519021-EDUTIC_LOGO.png', 1, 'email', NULL, 'student', '2025-07-02 10:36:50', '2025-07-14 14:03:31', '2025-07-14 14:03:31', '0e1d0cc6-3bb1-4279-b503-c9845a00d9a5');
 
 -- --------------------------------------------------------
 
@@ -4628,7 +4680,71 @@ INSERT INTO `user_answers` (`id`, `user_exam_attempt_id`, `question_id`, `answer
 (754, 10, 808, 3084, NULL, 0, '2025-07-10 08:42:39'),
 (755, 10, 809, 3085, NULL, 1, '2025-07-10 08:42:39'),
 (756, 10, 810, 3091, NULL, 0, '2025-07-10 08:42:39'),
-(757, 10, 811, 3093, NULL, 1, '2025-07-10 08:42:39');
+(757, 10, 811, 3093, NULL, 1, '2025-07-10 08:42:39'),
+(804, 11, 818, 3122, NULL, 1, '2025-07-12 13:38:54'),
+(805, 11, 819, 3125, NULL, 0, '2025-07-12 13:38:54'),
+(806, 11, 820, 3129, NULL, 1, '2025-07-12 13:38:54'),
+(807, 11, 821, 3131, NULL, 0, '2025-07-12 13:38:54'),
+(808, 11, 822, 3133, NULL, 0, '2025-07-12 13:38:54'),
+(809, 11, 823, 3138, NULL, 1, '2025-07-12 13:38:54'),
+(810, 11, 824, 3139, NULL, 0, '2025-07-12 13:38:54'),
+(811, 11, 825, 3144, NULL, 0, '2025-07-12 13:38:54'),
+(812, 11, 826, 3146, NULL, 0, '2025-07-12 13:38:54'),
+(813, 11, 827, 3148, NULL, 1, '2025-07-12 13:38:54'),
+(814, 11, 828, 3151, NULL, 1, '2025-07-12 13:38:54'),
+(815, 11, 829, 3156, NULL, 1, '2025-07-12 13:38:54'),
+(816, 11, 830, 3157, NULL, 0, '2025-07-12 13:38:54'),
+(817, 11, 831, 3161, NULL, 0, '2025-07-12 13:38:54'),
+(818, 11, 832, 3165, NULL, 0, '2025-07-12 13:38:54'),
+(819, 11, 833, 3168, NULL, 0, '2025-07-12 13:38:54'),
+(820, 11, 834, 3169, NULL, 0, '2025-07-12 13:38:54'),
+(821, 11, 835, 3172, NULL, 1, '2025-07-12 13:38:54'),
+(822, 11, 836, 3175, NULL, 0, '2025-07-12 13:38:54'),
+(823, 11, 837, 3178, NULL, 1, '2025-07-12 13:38:54'),
+(824, 11, 838, 3183, NULL, 0, '2025-07-12 13:38:54'),
+(825, 11, 839, 3186, NULL, 0, '2025-07-12 13:38:54'),
+(826, 11, 840, 3187, NULL, 0, '2025-07-12 13:38:54'),
+(827, 11, 841, 3191, NULL, 0, '2025-07-12 13:38:54'),
+(828, 11, 842, 3194, NULL, 1, '2025-07-12 13:38:54'),
+(829, 11, 843, 3196, NULL, 0, '2025-07-12 13:38:54'),
+(830, 11, 844, 3201, NULL, 1, '2025-07-12 13:38:54'),
+(831, 11, 845, 3205, NULL, 1, '2025-07-12 13:38:54'),
+(832, 11, 846, 3209, NULL, 0, '2025-07-12 13:38:54'),
+(833, 11, 847, 3215, NULL, 0, '2025-07-12 13:38:54'),
+(834, 11, 848, 3218, NULL, 0, '2025-07-12 13:38:54'),
+(835, 11, 849, 3220, NULL, 1, '2025-07-12 13:38:54'),
+(836, 11, 850, 3225, NULL, 0, '2025-07-12 13:38:54'),
+(837, 11, 851, 3231, NULL, 1, '2025-07-12 13:38:54'),
+(838, 11, 852, 3232, NULL, 0, '2025-07-12 13:38:54'),
+(839, 11, 853, 3239, NULL, 1, '2025-07-12 13:38:54'),
+(840, 11, 854, 3243, NULL, 0, '2025-07-12 13:38:54'),
+(841, 11, 855, 3245, NULL, 0, '2025-07-12 13:38:54'),
+(842, 11, 856, 3251, NULL, 1, '2025-07-12 13:38:54'),
+(843, 11, 857, 3253, NULL, 1, '2025-07-12 13:38:54'),
+(844, 11, 858, 3259, NULL, 0, '2025-07-12 13:38:55'),
+(845, 11, 859, 3262, NULL, 1, '2025-07-12 13:38:55'),
+(846, 11, 860, 3264, NULL, 1, '2025-07-12 13:38:55'),
+(847, 11, 861, 3271, NULL, 0, '2025-07-12 13:38:55'),
+(848, 11, 862, 3273, NULL, 0, '2025-07-12 13:38:55'),
+(849, 11, 863, 3278, NULL, 0, '2025-07-12 13:38:55'),
+(850, 11, 864, 3281, NULL, 0, '2025-07-12 13:38:55'),
+(851, 11, 865, 3285, NULL, 1, '2025-07-12 13:38:55'),
+(852, 11, 866, 3289, NULL, 0, '2025-07-12 13:38:55'),
+(853, 11, 867, 3294, NULL, 1, '2025-07-12 13:38:55'),
+(854, 11, 868, 3297, NULL, 0, '2025-07-12 13:38:55'),
+(855, 11, 869, 3303, NULL, 1, '2025-07-12 13:38:55'),
+(856, 11, 870, 3306, NULL, 0, '2025-07-12 13:38:55'),
+(857, 11, 871, 3310, NULL, 0, '2025-07-12 13:38:55'),
+(858, 11, 872, 3312, NULL, 0, '2025-07-12 13:38:55'),
+(859, 11, 873, 3316, NULL, 0, '2025-07-12 13:38:55'),
+(860, 11, 874, 3322, NULL, 1, '2025-07-12 13:38:55'),
+(861, 11, 875, 3327, NULL, 0, '2025-07-12 13:38:55'),
+(862, 11, 876, 3328, NULL, 0, '2025-07-12 13:38:55'),
+(863, 11, 877, 3332, NULL, 0, '2025-07-12 13:38:55'),
+(864, 11, 878, 3338, NULL, 0, '2025-07-12 13:38:55'),
+(865, 11, 879, 3341, NULL, 1, '2025-07-12 13:38:55'),
+(866, 11, 880, 3346, NULL, 0, '2025-07-12 13:38:55'),
+(867, 11, 881, 3350, NULL, 0, '2025-07-12 13:38:55');
 
 -- --------------------------------------------------------
 
@@ -4656,7 +4772,12 @@ INSERT INTO `user_attempt_parts` (`id`, `user_exam_attempt_id`, `part_id`, `orde
 (21, 9, 43, 1, 17, 15, '2025-07-09 15:32:56'),
 (22, 9, 44, 2, 18, 20, '2025-07-09 15:32:56'),
 (23, 10, 43, 1, 19, 45, '2025-07-10 01:37:11'),
-(24, 10, 46, 2, 20, 65, '2025-07-10 01:37:11');
+(24, 10, 46, 2, 20, 65, '2025-07-10 01:37:11'),
+(25, 11, 49, 1, 24, 70, '2025-07-12 06:35:54'),
+(26, 11, 48, 2, 23, 45, '2025-07-12 06:35:54'),
+(30, 13, 54, 1, NULL, 0, '2025-07-15 13:22:48'),
+(31, 13, 55, 2, NULL, 0, '2025-07-15 13:22:48'),
+(32, 13, 56, 3, NULL, 0, '2025-07-15 13:22:48');
 
 -- --------------------------------------------------------
 
@@ -4683,7 +4804,9 @@ CREATE TABLE `user_exam_attempts` (
 INSERT INTO `user_exam_attempts` (`id`, `user_id`, `exam_id`, `estimated_time`, `start_time`, `end_time`, `score`, `status`, `created_at`) VALUES
 (8, 2, 7, 19, '2025-07-10 21:50:06', '2025-07-10 21:53:22', 50, 'abandoned', '2025-07-09 08:36:48'),
 (9, 2, 7, 24, '2025-07-09 22:32:57', '2025-07-09 22:34:15', 35, 'completed', '2025-07-09 22:32:56'),
-(10, 2, 7, 71, '2025-07-10 08:38:15', '2025-07-10 08:42:39', 110, 'completed', '2025-07-10 08:37:11');
+(10, 2, 7, 71, '2025-07-10 08:38:15', '2025-07-10 08:42:39', 110, 'completed', '2025-07-10 08:37:11'),
+(11, 7, 8, 21, '2025-07-12 13:35:57', '2025-07-12 13:38:54', 115, 'completed', '2025-07-12 13:35:54'),
+(13, 2, 9, 20, NULL, NULL, 0, 'abandoned', '2025-07-15 20:22:48');
 
 -- --------------------------------------------------------
 
@@ -5025,7 +5148,7 @@ ALTER TABLE `vocabularies`
 -- AUTO_INCREMENT cho bảng `ai_feedbacks`
 --
 ALTER TABLE `ai_feedbacks`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT cho bảng `ai_generated_contents`
@@ -5055,13 +5178,13 @@ ALTER TABLE `audio_files`
 -- AUTO_INCREMENT cho bảng `exams`
 --
 ALTER TABLE `exams`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT cho bảng `exam_parts`
 --
 ALTER TABLE `exam_parts`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT cho bảng `feedbacks`
@@ -5091,13 +5214,13 @@ ALTER TABLE `listening_transcripts`
 -- AUTO_INCREMENT cho bảng `parts`
 --
 ALTER TABLE `parts`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
 
 --
 -- AUTO_INCREMENT cho bảng `questions`
 --
 ALTER TABLE `questions`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1012;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1031;
 
 --
 -- AUTO_INCREMENT cho bảng `question_groups`
@@ -5127,7 +5250,7 @@ ALTER TABLE `study_sessions`
 -- AUTO_INCREMENT cho bảng `translations`
 --
 ALTER TABLE `translations`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4889;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4908;
 
 --
 -- AUTO_INCREMENT cho bảng `users`
@@ -5139,19 +5262,19 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT cho bảng `user_answers`
 --
 ALTER TABLE `user_answers`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=804;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=868;
 
 --
 -- AUTO_INCREMENT cho bảng `user_attempt_parts`
 --
 ALTER TABLE `user_attempt_parts`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT cho bảng `user_exam_attempts`
 --
 ALTER TABLE `user_exam_attempts`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT cho bảng `user_profiles`

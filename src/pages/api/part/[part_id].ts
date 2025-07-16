@@ -83,8 +83,14 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const standalone = individualQuestions.map((q) => ({
     id: q.id,
     question_number: q.question_number,
-    content: part.part_number === 2 ? "" : q.content,
-    image_url: part.part_number === 2 ? "" : q.image_url,
+    content:
+      q.question_type === "multiple_choice" && part.part_number === 2
+        ? ""
+        : q.content,
+    image_url:
+      q.question_type === "multiple_choice" && part.part_number === 2
+        ? ""
+        : q.image_url,
     question_type: q.question_type,
     answers: q.answers.map((a) => ({
       id: a.id,
@@ -99,6 +105,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     part: {
       id: part.id,
       title: part.title,
+      part_number: part.part_number,
       instructions: part.instruction,
       audio: part.audioFile?.file_path || null,
       time_limit: part.time_limit,

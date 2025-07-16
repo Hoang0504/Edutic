@@ -10,6 +10,70 @@ import { UserAttemptPart } from "@/models/UserAttemptPart";
 import { UserExamAttempt } from "@/models/UserExamAttempt";
 import { withErrorHandler } from "@/lib/withErrorHandler";
 
+const getSkill = (examType: string, partNumber: number): string => {
+  switch (examType) {
+    case "full_test":
+      if (partNumber >= 1 && partNumber <= 4) return "l";
+      if (partNumber >= 5 && partNumber <= 7) return "r";
+      return "";
+    case "speaking":
+      return "s"; // All parts in speaking exam are speaking
+    case "writing":
+      return "w"; // All parts in writing exam are writing
+    default:
+      return "";
+  }
+};
+
+const getQuestionInfo = (
+  examType: string,
+  partNumber: number
+): { questionCount: number; questionStart: number } => {
+  switch (examType) {
+    case "full-test":
+      switch (partNumber) {
+        case 1:
+          return { questionCount: 6, questionStart: 1 };
+        case 2:
+          return { questionCount: 25, questionStart: 7 };
+        case 3:
+          return { questionCount: 39, questionStart: 32 };
+        case 4:
+          return { questionCount: 30, questionStart: 71 };
+        case 5:
+          return { questionCount: 30, questionStart: 101 };
+        case 6:
+          return { questionCount: 16, questionStart: 131 };
+        case 7:
+          return { questionCount: 54, questionStart: 147 };
+        default:
+          return { questionCount: 0, questionStart: 0 };
+      }
+    case "speaking":
+      switch (partNumber) {
+        case 1:
+          return { questionCount: 4, questionStart: 1 };
+        case 2:
+          return { questionCount: 5, questionStart: 5 };
+        case 3:
+          return { questionCount: 2, questionStart: 10 };
+        default:
+          return { questionCount: 0, questionStart: 0 };
+      }
+    case "writing":
+      switch (partNumber) {
+        case 1:
+          return { questionCount: 5, questionStart: 1 };
+        case 2:
+          return { questionCount: 3, questionStart: 6 };
+        default:
+          return { questionCount: 0, questionStart: 0 };
+      }
+    default:
+      return { questionCount: 0, questionStart: 0 };
+  }
+};
+
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   await sequelize.authenticate();
   if (req.method === "GET") {
@@ -41,20 +105,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       order: [["order_index", "ASC"]],
     });
 
-    const getSkill = (partNumber: number): string => {
-      if (partNumber >= 1 && partNumber <= 4) return "l";
-      if (partNumber >= 5 && partNumber <= 7) return "r";
-      if (partNumber >= 8 && partNumber <= 12) return "s";
-      if (partNumber >= 13 && partNumber <= 15) return "w";
-      return "";
-    };
     const skillSet = new Set<string>([]);
 
     const parts = await Promise.all(
       userParts.map(async (up) => {
-        let questionCount = 0;
-        let questionStart = 0;
-
         const firstQuestion = await Question.findOne({
           where: {
             part_id: up.part.id,
@@ -62,43 +116,14 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
           attributes: ["id"],
         });
 
-        const skill = getSkill(up.part.part_number);
+        const skill = getSkill(attempt.exam.type, up.part.part_number);
 
         skillSet.add(skill);
-        switch (up.part.part_number) {
-          case 1:
-            questionCount = 6;
-            questionStart = 1;
-            break;
-          case 2:
-            questionCount = 25;
-            questionStart = 7;
-            break;
-          case 3:
-            questionCount = 39;
-            questionStart = 32;
-            break;
-          case 4:
-            questionCount = 30;
-            questionStart = 71;
-            break;
-          case 5:
-            questionCount = 30;
-            questionStart = 101;
-            break;
-          case 6:
-            questionCount = 16;
-            questionStart = 131;
-            break;
-          case 7:
-            questionCount = 54;
-            questionStart = 147;
-            break;
-          default:
-            questionCount = 0;
-            questionStart = 0;
-            break;
-        }
+
+        const { questionCount, questionStart } = getQuestionInfo(
+          attempt.exam.type,
+          up.part.part_number
+        );
 
         totalQuestionCount += questionCount;
 

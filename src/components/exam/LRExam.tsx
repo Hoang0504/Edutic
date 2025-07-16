@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, memo } from "react";
 
 import PartContent from "./PartContent";
 import FullPageLoading from "../features/FullPageLoading";
@@ -76,4 +76,4 @@ function LRExam({ activeSkill }: LRExamProps) {
   );
 }
 
-export default LRExam;
+export default memo(LRExam);

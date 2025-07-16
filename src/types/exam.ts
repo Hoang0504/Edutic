@@ -273,6 +273,7 @@ export type QuestionGroup = {
 export type PartInfo = {
   id: number;
   title: string;
+  part_number: number;
   instructions: string | null;
   audio: string | null;
   time_limit: number;

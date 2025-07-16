@@ -53,6 +53,8 @@ const getInitialSkills = (mode: string | undefined) => {
 
 function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
   const { data, loadData } = useExamAttemptInfo(); // Custom context hook
+  // console.log(data);
+
   const mode = data?.mode;
   const examTitle = data?.title;
   const totalQuestions = data?.totalQuestionCount ?? 0;
@@ -185,6 +187,8 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
   };
 
   useEffect(() => {
+    // console.log(mode);
+
     if (mode && !activeSkill) {
       setActiveSkill(getInitialActiveSkill(mode));
     }
@@ -561,7 +565,7 @@ function ExamLayout({ examAttemptId }: { examAttemptId: string }) {
         <div className="flex gap-6">
           {/* Main Content */}
           <div className="flex-1 min-w-0">
-            {(activeSkill === "listening" || activeSkill === "reading") && (
+            {data?.type === "full_test" && activeSkill !== null && (
               <LRExam activeSkill={activeSkill} />
             )}
             {data?.type === "writing" && (

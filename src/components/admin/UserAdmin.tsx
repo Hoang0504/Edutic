@@ -1,0 +1,284 @@
+// UserAdmin.tsx
+'use client';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import AddUserPage from '@/components/admin/add/AddUser';
+import EditUserPage from '@/components/admin/edit/EditUser';
+import UserProfile from '@/components/admin/UserProfile';
+
+interface User {
+  id: number;
+  email: string;
+  name: string;
+  avatar: string;
+  role: string;
+}
+
+const UserAdmin = () => {
+  const router = useRouter();
+  const [filterName, setFilterName] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [isEditUserModalVisible, setIsEditUserModalVisible] = useState(false);
+  const [isProfileVisible, setIsProfileVisible] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/admin/users', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) throw new Error('Failed to fetch users');
+        const data = await response.json();
+        setUsers(data.data || []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilterName(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const filteredUsers = users.filter((user: User) => {
+    const searchLower = filterName.toLowerCase();
+    return user.email.toLowerCase().includes(searchLower) || user.name.toLowerCase().includes(searchLower);
+  });
+
+  const pageSize = 5;
+  const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const totalUsers = filteredUsers.length;
+
+  const handleModalCancel = () => {
+    setIsAddModalVisible(false);
+    setIsEditUserModalVisible(false);
+    setIsProfileVisible(false);
+  };
+
+  const handleLogoutAdmin = () => {
+    router.push('/admin/login');
+  };
+
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
+    setIsEditUserModalVisible(true);
+  };
+
+  const handleRowClick = (user: User) => {
+    setSelectedUser(user);
+    setIsProfileVisible(true);
+  };
+
+  const handleAddUser = async (
+    e: React.FormEvent,
+    formData: { email: string; name: string; role: string; avatarFile?: File; password: string }
+  ) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('password', formData.password);
+      formDataToSend.append('role', formData.role);
+      if (formData.avatarFile) {
+        formDataToSend.append('avatar', formData.avatarFile);
+      }
+
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/admin/users/create', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formDataToSend,
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to add user');
+
+      setUsers((prev) => [...prev, data]);
+      setIsAddModalVisible(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateUser = async (
+    e: React.FormEvent,
+    formData: { email?: string; name?: string; role?: string; avatar?: string; avatarFile?: File; password?: string }
+  ) => {
+    e.preventDefault();
+    if (!selectedUser) return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const formDataToSend = new FormData();
+      if (formData.email) formDataToSend.append('email', formData.email);
+      if (formData.name) formDataToSend.append('name', formData.name);
+      if (formData.role) formDataToSend.append('role', formData.role);
+      if (formData.password) formDataToSend.append('password', formData.password);
+      if (formData.avatarFile) formDataToSend.append('avatar', formData.avatarFile);
+
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formDataToSend,
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to update user');
+
+      setUsers((prev) => prev.map((u) => (u.id === data.id ? { ...u, ...data } : u)));
+      setIsEditUserModalVisible(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId: number) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 204) {
+        setUsers((prev) => prev.filter((u) => u.id !== userId));
+      } else {
+        const data = await response.json();
+        throw new Error(data.message || 'Failed to delete user');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) return <div className="text-center p-4">Loading...</div>;
+  if (error) return <div className="text-center p-4 text-red-500">Error: {error}</div>;
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <header className="bg-[#006494] text-white flex justify-between items-center p-4">
+        <button
+          className="flex items-center bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          onClick={() => setIsAddModalVisible(true)}
+        >
+          <span className="mr-2">+</span> Add User
+        </button>
+        <h1 className="text-2xl font-semibold mx-auto">User Management</h1>
+        <div className="flex space-x-2">
+          <button
+            className="flex items-center bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
+            onClick={handleLogoutAdmin}
+          >
+            Logout
+          </button>
+        </div>
+      </header>
+
+      <main className="flex-1 p-4">
+        <div className="bg-white p-4 rounded-lg shadow">
+          <input
+            type="text"
+            placeholder="Search for user by email or name"
+            value={filterName}
+            onChange={handleFilterChange}
+            className="w-full p-2 border rounded mb-4"
+          />
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="p-2 border">Id</th>
+                  <th className="p-2 border">Email</th>
+                  <th className="p-2 border">Name</th>
+                  <th className="p-2 border">Avatar</th>
+                  <th className="p-2 border">Role</th>
+                  <th className="p-2 border">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedUsers.map((user) => (
+                  <tr key={user.id} className="border-t cursor-pointer hover:bg-gray-100" onClick={() => handleRowClick(user)}>
+                    <td className="p-2 border">{user.id}</td>
+                    <td className="p-2 border">{user.email}</td>
+                    <td className="p-2 border">{user.name}</td>
+                    <td className="p-2 border">
+                      {user.avatar && (
+                        <Image src={user.avatar} alt={user.email} width={100} height={100} />
+                      )}
+                    </td>
+                    <td className="p-2 border">{user.role}</td>
+                    <td className="p-2 border flex space-x-2">
+                      <button className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600" onClick={(e) => { e.stopPropagation(); handleEditUser(user); }}>Edit</button>
+                      <button className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600" onClick={(e) => { e.stopPropagation(); handleDeleteUser(user.id); }}>Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="mt-4 flex justify-end">
+              <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>Previous</button>
+              <span className="mx-4 py-2">{currentPage} / {Math.ceil(totalUsers / pageSize)}</span>
+              <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === Math.ceil(totalUsers / pageSize)}>Next</button>
+            </div>
+          </div>
+        </div>
+        {isProfileVisible && selectedUser && <UserProfile user={selectedUser} onClose={() => setIsProfileVisible(false)} />}
+      </main>
+
+      <div className="modal">
+        {isAddModalVisible && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-6 w-1/3 relative">
+              <AddUserPage onSubmit={handleAddUser} onCancel={handleModalCancel} />
+            </div>
+          </div>
+        )}
+
+        {isEditUserModalVisible && selectedUser && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-6 w-1/3 relative">
+              <EditUserPage onSubmit={handleUpdateUser} onCancel={handleModalCancel} initialData={{ email: selectedUser.email, name: selectedUser.name, role: selectedUser.role, avatar: selectedUser.avatar }} />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default UserAdmin;

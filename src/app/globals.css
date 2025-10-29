@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
 :root {
   --background: #ffffff;
@@ -17,11 +18,175 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+html {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+/* Marquee Text Animations */
+@keyframes marqueeScroll {
+  0% {
+    transform: translateX(0);
+  }
+  15% {
+    transform: translateX(0);
+  }
+  85% {
+    transform: translateX(calc(-100% + var(--container-width, 300px)));
+  }
+  100% {
+    transform: translateX(calc(-100% + var(--container-width, 300px)));
+  }
+}
+
+.marquee-container {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+
+.marquee-text {
+  white-space: nowrap;
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.marquee-text.animate-marquee {
+  animation-name: marqueeScroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.marquee-text.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Custom styles for better input visibility */
+@layer components {
+  .input-enhanced {
+    @apply text-gray-900 bg-white border-gray-300 placeholder-gray-500;
+    color: #111827 !important;
+    background-color: #ffffff !important;
+  }
+  
+  .input-enhanced:focus {
+    @apply ring-2 ring-blue-500 border-blue-500;
+    color: #111827 !important;
+    background-color: #ffffff !important;
+  }
+  
+  .input-enhanced::placeholder {
+    color: #6b7280 !important;
+    opacity: 0.7 !important;
+  }
+}
+
+/* Ensure all form inputs have proper contrast */
+input[type="text"],
+input[type="email"], 
+input[type="password"],
+textarea,
+select {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+}
+
+/* Music Player Slider Styles */
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.slider::-moz-range-thumb {
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Quizlet */
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.perspective {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.rotate-x-180 {
+  transform: rotateX(180deg);
+}
+
+/* Blog Article Content Styles */
+.article-content {
+  @apply text-gray-800 leading-relaxed;
+}
+
+.article-content h2 {
+  @apply text-2xl font-bold text-gray-900 mt-8 mb-4;
+}
+
+.article-content h3 {
+  @apply text-xl font-semibold text-gray-900 mt-6 mb-3;
+}
+
+.article-content h4 {
+  @apply text-lg font-semibold text-gray-900 mt-4 mb-2;
+}
+
+.article-content p {
+  @apply mb-4 leading-relaxed;
+}
+
+.article-content ul {
+  @apply mb-4 pl-6 space-y-2;
+}
+
+.article-content li {
+  @apply list-disc text-gray-700;
+}
+
+.article-content strong {
+  @apply font-semibold text-gray-900;
+}
+
+.article-content code {
+  @apply bg-gray-100 text-gray-800 px-1 py-0.5 rounded text-sm font-mono;
+}
+
+/* Responsive line clamping */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }

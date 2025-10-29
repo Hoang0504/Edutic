@@ -1,0 +1,150 @@
+{
+  "header": {
+    "home": "Trang chủ",
+    "dashboard": "Bảng điều khiển",
+    "studyMode": "Chế độ học",
+    "examMode": "Chế độ thi",
+    "flashcards": "Flashcard của tôi",
+    "exams": "Đề thi online",
+    "addMusic": "Thêm nhạc",
+    "profile": "Thông tin cá nhân",
+    "settings": "Cài đặt",
+    "logout": "Đăng xuất",
+    "timer": "Bộ đếm thời gian",
+    "study": "Học",
+    "break": "Nghỉ",
+    "pause": "Tạm dừng",
+    "continue": "Tiếp tục",
+    "stop": "Dừng",
+    "musicControl": "Điều khiển nhạc",
+    "language": "Ngôn ngữ",
+    "practiceSmartListening": "Luyện nghe thông minh",
+    "blog": "Kiến thức TOEIC"
+  },
+  "notifications": {
+    "title": "Thông báo",
+    "all": "Tất cả",
+    "unread": "Chưa đọc",
+    "read": "Đã đọc",
+    "empty": "Không có thông báo nào"
+  },
+  "timer": {
+    "studySession": "Phiên học tập",
+    "breakTime": "Thời gian nghỉ",
+    "continueStudy": "Tiếp tục học bài",
+    "close": "Đóng"
+  },
+  "common": {
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "delete": "Xóa",
+    "edit": "Sửa",
+    "loading": "Đang tải...",
+    "error": "Lỗi",
+    "success": "Thành công"
+  },
+  "home": {
+    "greeting": "Xin chào, {{name}}!",
+    "defaultGreeting": "Chào mừng bạn đến với Edutic",
+    "welcomeBack": "Chào mừng bạn trở lại với Edutic. Hãy bắt đầu hành trình học tập hôm nay!",
+    "defaultMessage": "Khám phá lộ trình luyện thi TOEIC cùng Edutic ngay hôm nay.",
+    "nearestExam": "Kỳ thi gần nhất",
+    "examDate": "Ngày dự thi",
+    "targetScore": "Target Score",
+    "skill": {
+      "listening": "Nghe",
+      "speaking": "Nói",
+      "reading": "Đọc",
+      "writing": "Viết"
+    },
+    "save": "Lưu",
+    "edit": "Chỉnh sửa",
+    "recentResults": "Kết quả thi gần nhất",
+    "latestTests": "Đề thi mới nhất",
+    "flashcard": "Flashcard",
+    "onlineMembers": "Thành viên đang online",
+    "leaderboard": "Bảng xếp hạng",
+    "score": "Điểm"
+  },
+  "exams": {
+    "noExams": "Không có bài thi nào.",
+    "library": "Thư viện đề thi",
+    "tabs": {
+      "all": "Tất cả",
+      "random": "Tạo đề thi ngẫu nhiên",
+      "written": "Đề thi viết",
+      "speaking": "Đề thi nói"
+    },
+    "sortLabel": "Sắp xếp:",
+    "sortOptions": {
+      "releaseDate": "Ngày phát hành",
+      "title": "Tên đề thi",
+      "duration": "Thời gian"
+    },
+    "filterReleaseDate": "Ngày phát hành",
+    "status": {
+      "completed": "Đã làm",
+      "incomplete": "Chưa hoàn thành",
+      "not_started": "Chưa làm"
+    },
+    "durationMin": "{{min}} phút",
+    "questionCount": "{{count}} câu",
+    "releaseDate": "Ngày phát hành: {{date}}",
+    "testDuration": "{{min}} phút thi",
+    "scoreLabel": "Điểm thi:",
+    "viewDetails": "Xem chi tiết >>"
+  },
+  "blog": {
+    "title": "Kiến thức TOEIC",
+    "subtitle": "Tổng hợp kiến thức và mẹo làm bài để chinh phục TOEIC",
+    "searchPlaceholder": "Tìm kiếm kiến thức...",
+    "filter": {
+      "all": "Tất cả"
+    },
+    "lessonsCount": "{{count}} bài học",
+    "noResults": {
+      "title": "Không tìm thấy kết quả",
+      "message": "Hãy thử tìm kiếm với từ khóa khác hoặc chọn danh mục khác."
+    }
+  },
+  "addMusic": {
+    "pageTitle": "Thêm nhạc mới",
+    "subtitle": "Tải lên nhạc học tập của bạn",
+    "uploadSuccess": "Tải lên nhạc thành công!",
+    "form": {
+      "titleLabel": "Tiêu đề bài hát",
+      "titlePlaceholder": "Nhập tiêu đề bài hát (3-100 ký tự)",
+      "fileLabel": "File nhạc (.mp3)",
+      "fileSelect": "Click để chọn file .mp3",
+      "fileOnly": "Chỉ chấp nhận file .mp3",
+      "durationLabel": "Thời lượng",
+      "durationPlaceholder": "Tự động tính khi tải file",
+      "submit": "Thêm nhạc",
+      "uploading": "Đang tải lên..."
+    },
+    "errors": {
+      "titleShort": "Tiêu đề phải có ít nhất 3 ký tự",
+      "titleLong": "Tiêu đề không được vượt quá 100 ký tự",
+      "fileRequired": "Vui lòng chọn file nhạc",
+      "fileInvalid": "Chỉ chấp nhận file .mp3",
+      "audioError": "Không thể đọc file âm thanh"
+    },
+    "instructionsTitle": "Hướng dẫn:",
+    "instructions": [
+      "Tiêu đề phải có từ 3-100 ký tự",
+      "Chỉ chấp nhận file .mp3",
+      "Thời lượng sẽ được tự động tính toán",
+      "File nhạc sẽ được sử dụng trong chế độ Pomodoro"
+    ],
+    "musicLibrary": "Kho nhạc hiện có",
+    "loadingMusic": "Đang tải danh sách nhạc...",
+    "table": {
+      "index": "STT",
+      "title": "Tên bài hát",
+      "duration": "Thời lượng",
+      "source": "Nguồn",
+      "actions": "Thao tác",
+      "delete": "Xóa"
+    }
+  }
+}
